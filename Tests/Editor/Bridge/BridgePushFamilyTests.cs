@@ -122,7 +122,11 @@ namespace BS.Bridge.Tests
 
         static BSComponentPropertyUpdate Position(int oid, Vector3 v) => new BSComponentPropertyUpdate
         {
-            name = PropertyName.position, type = PropertyType.Vector3, value = v, componentType = ComponentType.Transform, oid = oid,
+            name = PropertyName.position,
+            type = PropertyType.Vector3,
+            value = v,
+            componentType = ComponentType.Transform,
+            oid = oid,
         };
 
         sealed class Page

@@ -21,9 +21,12 @@ namespace BS.SDKEditor.Tests
             return go;
         }
 
-        [TestCase(false, false, false)] [TestCase(false, false, true)]
-        [TestCase(true, false, false)] [TestCase(true, false, true)]
-        [TestCase(true, true, false)] [TestCase(true, true, true)]
+        [TestCase(false, false, false)]
+        [TestCase(false, false, true)]
+        [TestCase(true, false, false)]
+        [TestCase(true, false, true)]
+        [TestCase(true, true, false)]
+        [TestCase(true, true, true)]
         public void CustomWrist_AgreesWithNativeJointAndEditor_WithMirroringAndScaledHierarchy(bool rigidbody, bool nested, bool left)
         {
             var root = New("Object");
@@ -95,7 +98,8 @@ namespace BS.SDKEditor.Tests
             Assert.That(copy.GetHand(true).thumb.x, Is.EqualTo(.35f));
         }
 
-        [TestCase(false)] [TestCase(true)]
+        [TestCase(false)]
+        [TestCase(true)]
         public void SceneWristEdit_RoundTripsOffsetWithoutMovingProp(bool left)
         {
             var go = New("Authoring target");
@@ -192,7 +196,8 @@ namespace BS.SDKEditor.Tests
                 null, new object[] { collider, wrist }, null);
         }
 
-        [TestCase(false)] [TestCase(true)]
+        [TestCase(false)]
+        [TestCase(true)]
         public void JointHandleAxes_PredictActualFingerMotion_IncludingSpreadAndMirroring(bool left)
         {
             var collider = New("Joint edit target").AddComponent<BoxCollider>();
@@ -220,7 +225,8 @@ namespace BS.SDKEditor.Tests
                     }
         }
 
-        [TestCase(false)] [TestCase(true)]
+        [TestCase(false)]
+        [TestCase(true)]
         public void ThumbSpread_IsIndependentFromOppositionCurl(bool left)
         {
             var collider = New("Thumb sideways target").AddComponent<BoxCollider>();
@@ -234,7 +240,9 @@ namespace BS.SDKEditor.Tests
             }
         }
 
-        [TestCase(false, false)] [TestCase(true, false)] [TestCase(true, true)]
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(true, true)]
         public void SceneJointEditing_SavesCorrectSide_WithUndoRedoAndLimits(bool left, bool separate)
         {
             var go = New("Scene joint edit");
@@ -263,7 +271,8 @@ namespace BS.SDKEditor.Tests
             Undo.ClearUndo(handle);
         }
 
-        [TestCase(false)] [TestCase(true)]
+        [TestCase(false)]
+        [TestCase(true)]
         public void ThumbSpread_AllowsSixtyDegreesWithoutIncreasingFingerSpread(bool left)
         {
             var handle = New("Raised thumb").AddComponent<BSGrabHandle>();
@@ -282,7 +291,9 @@ namespace BS.SDKEditor.Tests
             Undo.ClearUndo(handle);
         }
 
-        [TestCase(false, false)] [TestCase(true, false)] [TestCase(true, true)]
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(true, true)]
         public void ThumbBaseBend_ExtendsBelowRest_WithMirroringAndUndo(bool left, bool separate)
         {
             var handle = New("Extended thumb").AddComponent<BSGrabHandle>();
@@ -343,7 +354,8 @@ namespace BS.SDKEditor.Tests
             (System.Func<Vector3, float, bool>)System.Delegate.CreateDelegate(typeof(System.Func<Vector3, float, bool>),
                 surface, surface.GetType().GetMethod("Touches", BindingFlags.Instance | BindingFlags.NonPublic));
 
-        [TestCase(false)] [TestCase(true)]
+        [TestCase(false)]
+        [TestCase(true)]
         public void GrabInspector_GroupsAllControlsUnderAvailableProperties(bool grabbable)
         {
             var go = New("Clean grab inspector");
@@ -365,7 +377,8 @@ namespace BS.SDKEditor.Tests
             finally { Object.DestroyImmediate(editor); }
         }
 
-        [TestCase(false)] [TestCase(true)]
+        [TestCase(false)]
+        [TestCase(true)]
         public void Fitting_UsesAssignedTargetWithoutChangingGrabDetectionOrPlacement(bool mesh)
         {
             var go = New("Separate grab handle");
@@ -420,7 +433,8 @@ namespace BS.SDKEditor.Tests
             finally { Object.DestroyImmediate(mesh); }
         }
 
-        [TestCase(false)] [TestCase(true)]
+        [TestCase(false)]
+        [TestCase(true)]
         public void MeshFit_UsesVisibleSurfaceInsteadOfOversizedCollider_AndReplays(bool left)
         {
             var target = GameObject.CreatePrimitive(PrimitiveType.Sphere);

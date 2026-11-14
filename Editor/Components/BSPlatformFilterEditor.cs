@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "includeOnMobile", "includeOnDesktop", "includeInVR", "includeInNonVR" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

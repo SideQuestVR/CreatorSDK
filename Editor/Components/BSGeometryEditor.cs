@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "geometryType", "parametricType", "width", "height", "depth", "widthSegments", "heightSegments", "depthSegments", "radius", "segments", "thetaStart", "thetaLength", "phiStart", "phiLength", "radialSegments", "openEnded", "radiusTop", "radiusBottom", "innerRadius", "outerRadius", "thetaSegments", "phiSegments", "tube", "tubularSegments", "arc", "p", "q", "stacks", "slices", "detail", "parametricPoints", "curvePoints", "shapePoints" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

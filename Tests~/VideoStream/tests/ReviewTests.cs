@@ -233,7 +233,9 @@ namespace VideoStreamTests
             var original = AudioCodecRegistry.Find(AudioCodecId.Aac);
             AudioCodecRegistry.Register(AudioCodecId.Aac, new AudioCodecRegistry.Entry
             {
-                Name = original.Name, Framer = original.Framer, Available = original.Available,
+                Name = original.Name,
+                Framer = original.Framer,
+                Available = original.Available,
                 Decoder = c => new CountingDecoder(original.Decoder(c)),
             });
             CountingDecoder.Made = CountingDecoder.Disposed = 0;

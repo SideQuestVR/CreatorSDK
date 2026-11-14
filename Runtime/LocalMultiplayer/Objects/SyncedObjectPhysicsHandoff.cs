@@ -300,23 +300,23 @@ namespace BS.LocalMultiplayer.Objects
                 case BoxCollider box: return (col.transform, box.center, box.size * 0.5f);
                 case SphereCollider sphere: return (col.transform, sphere.center, Vector3.one * sphere.radius);
                 case CapsuleCollider capsule:
-                {
-                    var half = Vector3.one * capsule.radius;
-                    half[capsule.direction] = Mathf.Max(capsule.radius, capsule.height * 0.5f);
-                    return (col.transform, capsule.center, half);
-                }
+                    {
+                        var half = Vector3.one * capsule.radius;
+                        half[capsule.direction] = Mathf.Max(capsule.radius, capsule.height * 0.5f);
+                        return (col.transform, capsule.center, half);
+                    }
                 case MeshCollider mesh when mesh.sharedMesh != null:
                     return (col.transform, mesh.sharedMesh.bounds.center, mesh.sharedMesh.bounds.extents);
                 default:
-                {
-                    // Unknown shape: its world box, brought into its space.
-                    var b = col.bounds;
-                    var s = col.transform.lossyScale;
-                    var half = new Vector3(b.extents.x / Mathf.Max(Mathf.Abs(s.x), 1e-4f),
-                                           b.extents.y / Mathf.Max(Mathf.Abs(s.y), 1e-4f),
-                                           b.extents.z / Mathf.Max(Mathf.Abs(s.z), 1e-4f));
-                    return (col.transform, col.transform.InverseTransformPoint(b.center), half);
-                }
+                    {
+                        // Unknown shape: its world box, brought into its space.
+                        var b = col.bounds;
+                        var s = col.transform.lossyScale;
+                        var half = new Vector3(b.extents.x / Mathf.Max(Mathf.Abs(s.x), 1e-4f),
+                                               b.extents.y / Mathf.Max(Mathf.Abs(s.y), 1e-4f),
+                                               b.extents.z / Mathf.Max(Mathf.Abs(s.z), 1e-4f));
+                        return (col.transform, col.transform.InverseTransformPoint(b.center), half);
+                    }
             }
         }
 

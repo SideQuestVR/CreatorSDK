@@ -208,7 +208,8 @@ namespace BS.SDKEditor.Tests
                 {
                     // Stopping the listener ends the wait with an exception.
                 }
-            }) { IsBackground = true }.Start();
+            })
+            { IsBackground = true }.Start();
             return listener;
         }
 

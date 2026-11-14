@@ -247,30 +247,30 @@ sealed class TestPage
         switch (h.Kind)
         {
             case FrameKind.Data:
-            {
-                DataFrames++;
-                if (!f.IsText) BinaryDataFrames++;
-                var msgs = new List<BridgeMessage>();
-                var e = f.IsText ? Link.ReceiveData(h, f.Body, null, 0, 0, msgs) : Link.ReceiveData(h, null, f.Frame, BridgeWire.HeaderBytes, h.Length, msgs);
-                if (e != BridgeError.None) throw new Exception("Unity frames broke the page link: " + e);
-                foreach (var m in msgs)
-                    foreach (var it in m.Items)
-                    {
-                        if (it.IsText) Got.Add(it.Text);
-                        else if (it.Opcode == BridgeOp.Reply && ReplyPayload.TryDecode(it.Payload, out var id, out var st, out var body))
+                {
+                    DataFrames++;
+                    if (!f.IsText) BinaryDataFrames++;
+                    var msgs = new List<BridgeMessage>();
+                    var e = f.IsText ? Link.ReceiveData(h, f.Body, null, 0, 0, msgs) : Link.ReceiveData(h, null, f.Frame, BridgeWire.HeaderBytes, h.Length, msgs);
+                    if (e != BridgeError.None) throw new Exception("Unity frames broke the page link: " + e);
+                    foreach (var m in msgs)
+                        foreach (var it in m.Items)
                         {
-                            Replies.Add((id, st));
-                            ReplyBodies[id] = body.ToArray();
+                            if (it.IsText) Got.Add(it.Text);
+                            else if (it.Opcode == BridgeOp.Reply && ReplyPayload.TryDecode(it.Payload, out var id, out var st, out var body))
+                            {
+                                Replies.Add((id, st));
+                                ReplyBodies[id] = body.ToArray();
+                            }
+                            else if (it.Opcode == BridgeOp.Delta || it.Opcode == BridgeOp.Announce || it.Opcode == BridgeOp.Destroyed)
+                            {
+                                Pushes.Add((it.Opcode, it.Payload.ToArray()));
+                                // In order with the strings: "#<opcode>" marks where a push arrived.
+                                Got.Add("#" + it.Opcode);
+                            }
                         }
-                        else if (it.Opcode == BridgeOp.Delta || it.Opcode == BridgeOp.Announce || it.Opcode == BridgeOp.Destroyed)
-                        {
-                            Pushes.Add((it.Opcode, it.Payload.ToArray()));
-                            // In order with the strings: "#<opcode>" marks where a push arrived.
-                            Got.Add("#" + it.Opcode);
-                        }
-                    }
-                return;
-            }
+                    return;
+                }
         }
     }
 

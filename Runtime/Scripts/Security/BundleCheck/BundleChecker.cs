@@ -784,8 +784,15 @@ namespace BS.Security
                 if (calls.Count >= MaxCalls) throw new BundleRefusedException(BundleRule.TooLarge, "more than " + MaxCalls + " persistent calls");
                 calls.Add(new Call
                 {
-                    Owner = owner, Path = where, Index = index, Target = target, TypeName = typeName, Method = method, Mode = mode,
-                    ArgumentTypeName = argumentType, Argument = argument,
+                    Owner = owner,
+                    Path = where,
+                    Index = index,
+                    Target = target,
+                    TypeName = typeName,
+                    Method = method,
+                    Mode = mode,
+                    ArgumentTypeName = argumentType,
+                    Argument = argument,
                 });
                 stats.PersistentCalls++;
             }
@@ -832,14 +839,21 @@ namespace BS.Security
                     if (references.Count >= MaxReferences) throw new BundleRefusedException(BundleRule.TooLarge, "more than " + MaxReferences + " [SerializeReference] values");
                     references.Add(new Reference
                     {
-                        Holder = outer, Name = name, Candidates = candidates,
+                        Holder = outer,
+                        Name = name,
+                        Candidates = candidates,
                         // Generic or otherwise unusual names Unity might still resolve: a type the checker cannot find there cannot be judged.
                         Unjudgeable = candidates.Length == 0 && (className.IndexOfAny(new[] { '[', '`', ',' }) >= 0 || ns.IndexOfAny(new[] { '[', '`', ',' }) >= 0),
                     });
                     owner = new Owner
                     {
-                        File = file, PathId = outer.PathId, Kind = outer.Kind, IsReference = true,
-                        ReferenceType = BundleTypeResolver.ResolveManaged(asm, ns, className), ReferenceAmbiguous = candidates.Length > 1, ReferenceName = name,
+                        File = file,
+                        PathId = outer.PathId,
+                        Kind = outer.Kind,
+                        IsReference = true,
+                        ReferenceType = BundleTypeResolver.ResolveManaged(asm, ns, className),
+                        ReferenceAmbiguous = candidates.Length > 1,
+                        ReferenceName = name,
                     };
                     path.Clear();
                     // A referenced type's tree ends with its own registry when it has [SerializeReference] fields, but

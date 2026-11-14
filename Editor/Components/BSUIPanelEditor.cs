@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "resolution", "screenSpace", "meshInput", "enableHaptics", "clickHaptic", "enterHaptic", "exitHaptic", "enableSounds", "clickSoundUrl", "enterSoundUrl", "exitSoundUrl" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

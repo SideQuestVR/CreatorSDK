@@ -25,8 +25,8 @@ namespace BS.SDKEditor
 
             return BSComponentInspector.Build(
                 editor,
-                new string[] {  },
-                new string[] {  });
+                new string[] { },
+                new string[] { });
         }
     }
 }

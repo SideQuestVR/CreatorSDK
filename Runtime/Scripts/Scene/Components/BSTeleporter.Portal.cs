@@ -196,8 +196,10 @@ namespace BS
                 DestroyPortalImage();
                 portalImage = new RenderTexture(width, resolution, 0, RenderTextureFormat.ARGB32)
                 {
-                    name = "Teleporter destination", hideFlags = HideFlags.HideAndDontSave,
-                    antiAliasing = 1, useMipMap = false
+                    name = "Teleporter destination",
+                    hideFlags = HideFlags.HideAndDontSave,
+                    antiAliasing = 1,
+                    useMipMap = false
                 };
                 portalImage.Create();
             }

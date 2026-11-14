@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "renderTextureSize", "cameraClear", "backgroundColor" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

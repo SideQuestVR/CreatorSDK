@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "smoothing", "enableXAxis", "enableYAxis", "enableZAxis" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

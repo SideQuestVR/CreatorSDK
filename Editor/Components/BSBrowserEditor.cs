@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "url", "mipMaps", "pixelsPerUnit", "pageWidth", "pageHeight", "actions", "rolloffMode", "minDistance", "maxDistance" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

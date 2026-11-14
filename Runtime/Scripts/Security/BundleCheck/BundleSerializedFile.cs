@@ -872,8 +872,13 @@ namespace BS.Security
             {
                 nodes.Add(new BundleScriptLayouts.LayoutNode
                 {
-                    Level = node.Level, TypeFlags = (int)node.TypeFlags, Version = node.Version, Size = node.ByteSize,
-                    Align = (node.MetaFlags & 0x4000) != 0, Type = node.GetTypeString(strings), Name = node.GetNameString(strings),
+                    Level = node.Level,
+                    TypeFlags = (int)node.TypeFlags,
+                    Version = node.Version,
+                    Size = node.ByteSize,
+                    Align = (node.MetaFlags & 0x4000) != 0,
+                    Type = node.GetTypeString(strings),
+                    Name = node.GetNameString(strings),
                 });
             }
             BundleCheckBudget.ChargeCurrent((long)nodes.Count * 64);

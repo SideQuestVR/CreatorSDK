@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "blendShapes", "bones", "rootBoneInstanceId", "updateWhenOffscreen", "skinnedMotionVectors", "quality" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

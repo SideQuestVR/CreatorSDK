@@ -323,7 +323,9 @@ namespace BS.SDKEditor.Tests
 
         static Obj Script(long pathId, string assembly, string ns, string cls) => new Obj
         {
-            PathId = pathId, ClassId = 115, Tree = monoScriptTree,
+            PathId = pathId,
+            ClassId = 115,
+            Tree = monoScriptTree,
             Data = w =>
             {
                 w.Str(cls);
@@ -340,7 +342,10 @@ namespace BS.SDKEditor.Tests
 
         static Obj Behaviour(long pathId, long script, N tree, Action<Writer> fields, long gameObject = 1) => new Obj
         {
-            PathId = pathId, ClassId = 114, Tree = tree, Script = script,
+            PathId = pathId,
+            ClassId = 114,
+            Tree = tree,
+            Script = script,
             Data = w =>
             {
                 w.I32(0); w.I64(gameObject);

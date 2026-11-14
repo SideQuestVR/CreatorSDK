@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "radius", "widthSegments", "heightSegments", "phiStart", "phiLength", "thetaStart", "thetaLength" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

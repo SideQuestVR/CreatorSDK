@@ -145,62 +145,62 @@ namespace BS.Bridge
             switch (tag)
             {
                 case ValueTag.Bool:
-                {
-                    byte b = c.U8();
-                    if (c.Failed || b > 1) return ReplyStatus.Malformed;
-                    v.I = b;
-                    return ReplyStatus.Ok;
-                }
+                    {
+                        byte b = c.U8();
+                        if (c.Failed || b > 1) return ReplyStatus.Malformed;
+                        v.I = b;
+                        return ReplyStatus.Ok;
+                    }
                 case ValueTag.Int:
-                {
-                    uint z = c.Varint();
-                    if (c.Failed) return ReplyStatus.Malformed;
-                    v.I = Unzigzag(z);
-                    return ReplyStatus.Ok;
-                }
+                    {
+                        uint z = c.Varint();
+                        if (c.Failed) return ReplyStatus.Malformed;
+                        v.I = Unzigzag(z);
+                        return ReplyStatus.Ok;
+                    }
                 case ValueTag.Float:
-                {
-                    float f = c.F32();
-                    if (c.Failed) return ReplyStatus.Malformed;
-                    if (args && !Usable(f)) return ReplyStatus.Type;
-                    v.X = f;
-                    v.D = f;
-                    return ReplyStatus.Ok;
-                }
+                    {
+                        float f = c.F32();
+                        if (c.Failed) return ReplyStatus.Malformed;
+                        if (args && !Usable(f)) return ReplyStatus.Type;
+                        v.X = f;
+                        v.D = f;
+                        return ReplyStatus.Ok;
+                    }
                 case ValueTag.Double:
-                {
-                    double d = c.F64();
-                    if (c.Failed) return ReplyStatus.Malformed;
-                    if (args && !(Math.Abs(d) <= MaxNumber)) return ReplyStatus.Type;
-                    v.D = d;
-                    return ReplyStatus.Ok;
-                }
+                    {
+                        double d = c.F64();
+                        if (c.Failed) return ReplyStatus.Malformed;
+                        if (args && !(Math.Abs(d) <= MaxNumber)) return ReplyStatus.Type;
+                        v.D = d;
+                        return ReplyStatus.Ok;
+                    }
                 case ValueTag.String:
-                {
-                    uint n = StringLength(c);
-                    if (args && n > MaxArgString) return ReplyStatus.Limit;
-                    v.S = c.Str(int.MaxValue);
-                    return c.Failed ? ReplyStatus.Malformed : ReplyStatus.Ok;
-                }
+                    {
+                        uint n = StringLength(c);
+                        if (args && n > MaxArgString) return ReplyStatus.Limit;
+                        v.S = c.Str(int.MaxValue);
+                        return c.Failed ? ReplyStatus.Malformed : ReplyStatus.Ok;
+                    }
                 case ValueTag.Ref:
-                {
-                    uint h = c.Varint(), t = c.Varint();
-                    if (c.Failed || h > int.MaxValue || t > int.MaxValue || (h == 0 && (!element || t != 0))) return ReplyStatus.Malformed;
-                    v.I = (int)h;
-                    v.TypeId = (int)t;
-                    return ReplyStatus.Ok;
-                }
+                    {
+                        uint h = c.Varint(), t = c.Varint();
+                        if (c.Failed || h > int.MaxValue || t > int.MaxValue || (h == 0 && (!element || t != 0))) return ReplyStatus.Malformed;
+                        v.I = (int)h;
+                        v.TypeId = (int)t;
+                        return ReplyStatus.Ok;
+                    }
                 default:
-                {
-                    int width = ValueTag.Width(tag);
-                    v.X = c.F32();
-                    v.Y = c.F32();
-                    if (width > 2) v.Z = c.F32();
-                    if (width > 3) v.W = c.F32();
-                    if (c.Failed) return ReplyStatus.Malformed;
-                    if (args && !(Usable(v.X) && Usable(v.Y) && Usable(v.Z) && Usable(v.W))) return ReplyStatus.Type;
-                    return ReplyStatus.Ok;
-                }
+                    {
+                        int width = ValueTag.Width(tag);
+                        v.X = c.F32();
+                        v.Y = c.F32();
+                        if (width > 2) v.Z = c.F32();
+                        if (width > 3) v.W = c.F32();
+                        if (c.Failed) return ReplyStatus.Malformed;
+                        if (args && !(Usable(v.X) && Usable(v.Y) && Usable(v.Z) && Usable(v.W))) return ReplyStatus.Type;
+                        return ReplyStatus.Ok;
+                    }
             }
         }
 

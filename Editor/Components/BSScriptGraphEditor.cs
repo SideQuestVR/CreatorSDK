@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "machineCount", "graphTitles" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

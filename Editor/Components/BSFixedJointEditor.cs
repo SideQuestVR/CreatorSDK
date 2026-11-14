@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "anchor", "connectedAnchor", "autoConfigureConnectedAnchor", "breakForce", "breakTorque", "enableCollision", "enablePreprocessing", "connectedMassScale", "massScale", "connectedBody" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

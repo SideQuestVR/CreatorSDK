@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "volume", "pitch", "mute", "loop", "bypassEffects", "bypassListenerEffects", "bypassReverbZones", "playOnAwake", "spatialBlend" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

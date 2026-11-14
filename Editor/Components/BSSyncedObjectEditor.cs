@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "syncPosition", "syncRotation", "takeOwnershipOnCollision", "takeOwnershipOnGrab", "kinematicIfNotOwned", "resetAfterSeconds", "takeOwnershipOnProximity" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

@@ -1188,16 +1188,16 @@ namespace BS
                 case PropertyName.eulerAngles:
                 case PropertyName.localEulerAngles:
                 case PropertyName.localScale:
-                {
-                    var v = (Vector3)update.value;
-                    return (int)update.name + t + NumberFormat.Format(v.x) + t + NumberFormat.Format(v.y) + t + NumberFormat.Format(v.z);
-                }
+                    {
+                        var v = (Vector3)update.value;
+                        return (int)update.name + t + NumberFormat.Format(v.x) + t + NumberFormat.Format(v.y) + t + NumberFormat.Format(v.z);
+                    }
                 case PropertyName.rotation:
                 case PropertyName.localRotation:
-                {
-                    var q = (Quaternion)update.value;
-                    return (int)update.name + t + NumberFormat.Format(q.x) + t + NumberFormat.Format(q.y) + t + NumberFormat.Format(q.z) + t + NumberFormat.Format(q.w);
-                }
+                    {
+                        var q = (Quaternion)update.value;
+                        return (int)update.name + t + NumberFormat.Format(q.x) + t + NumberFormat.Format(q.y) + t + NumberFormat.Format(q.z) + t + NumberFormat.Format(q.w);
+                    }
                 default:
                     return null;
             }

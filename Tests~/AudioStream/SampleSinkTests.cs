@@ -276,7 +276,8 @@ namespace BS.AudioStream.Tests
                         return;
                     }
                 }
-            }) { IsBackground = true };
+            })
+            { IsBackground = true };
             writer.Start();
             try
             {
@@ -330,7 +331,8 @@ namespace BS.AudioStream.Tests
                         return;
                     }
                 }
-            }) { IsBackground = true };
+            })
+            { IsBackground = true };
             writer.Start();
             try
             {
