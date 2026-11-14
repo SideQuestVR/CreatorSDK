@@ -34,6 +34,17 @@ namespace BS.SDKEditor.Tests
         [Test]
         public void AFullUrl_PassesThrough() => Assert.AreEqual("https://example.com/a.png", Get.Cdn("https://example.com/a.png"));
 
+        // Unity can't decode WebP; the CDN converts to the type the file name asks for.
+        [Test]
+        public void AWebpWorldImage_IsAskedForAsPng() =>
+            Assert.AreEqual("https://cdn.sidequestvr.com/file/1/card.png", Get.Cdn("file/1/card.webp"));
+
+        [TestCase("https://cdn.sidequestvr.com/file/1/a.webp?size=512", "https://cdn.sidequestvr.com/file/1/a.png?size=512")]
+        [TestCase("https://cdn.sidequestvr.com/file/1/a.png?size=512", "https://cdn.sidequestvr.com/file/1/a.png?size=512")]
+        [TestCase("https://example.com/a.webp", "https://example.com/a.webp")]
+        public void TextureDownloads_AskTheCdnForADecodableType(string url, string expected) =>
+            Assert.AreEqual(expected, Get.Decodable(url));
+
         [TestCase("/assets/images/old.png")]
         [TestCase("")]
         [TestCase(null)]

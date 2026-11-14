@@ -241,6 +241,8 @@ namespace BS
         static async Task<Texture2D> DownloadTexture(string url, string key, bool linear, bool mipmaps)
         {
             Texture2D texture;
+            // Cached under the url asked for; fetched as a type Unity can decode.
+            url = Decodable(url);
             if (!linear && !mipmaps)
             {
                 using (UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(url))
@@ -372,7 +374,24 @@ namespace BS
             if (path.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
                 path.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) return path;
             if (path.StartsWith("/assets/", StringComparison.OrdinalIgnoreCase)) return null;
-            return GetUrl(EnvType.PROD, UrlType.CDN) + "/" + path.TrimStart('/');
+            return Decodable(GetUrl(EnvType.PROD, UrlType.CDN) + "/" + path.TrimStart('/'));
+        }
+
+        static readonly string[] CdnHosts = { "cdn.sidequestvr.com", "cdn.sidetestvr.com", "cdn.friedquest.com" };
+
+        /// <summary>
+        /// <paramref name="url"/> with a ".webp" file name on the SideQuest CDN asked for as ".png"; anything else
+        /// unchanged. Unity can't decode WebP (profile pictures and group badges are uploaded as WebP now), and the
+        /// CDN converts an image to the type its URL's file name ends with.
+        /// </summary>
+        internal static string Decodable(string url)
+        {
+            if (string.IsNullOrEmpty(url) || !Uri.TryCreate(url, UriKind.Absolute, out var uri)) return url;
+            if (Array.IndexOf(CdnHosts, uri.Host.ToLowerInvariant()) < 0) return url;
+            int end = url.IndexOfAny(new[] { '?', '#' });
+            string head = end >= 0 ? url.Substring(0, end) : url;
+            if (!head.EndsWith(".webp", StringComparison.OrdinalIgnoreCase)) return url;
+            return head.Substring(0, head.Length - ".webp".Length) + ".png" + (end >= 0 ? url.Substring(end) : string.Empty);
         }
         public static async Task<SqAvatar> AvatarDetails(long avatarId)
         {
