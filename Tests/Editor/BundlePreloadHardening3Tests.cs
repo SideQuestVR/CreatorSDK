@@ -24,7 +24,13 @@ namespace BS.SDKEditor.Tests
         {
             yield return new BundleScriptLayouts.LayoutNode
             {
-                Level = level, TypeFlags = node.IsArray ? 1 : 0, Version = 1, Size = node.Size, Align = node.Align, Type = node.Type, Name = node.Name,
+                Level = level,
+                TypeFlags = node.IsArray ? 1 : 0,
+                Version = 1,
+                Size = node.Size,
+                Align = node.Align,
+                Type = node.Type,
+                Name = node.Name,
             };
             foreach (var child in node.Children)
             {

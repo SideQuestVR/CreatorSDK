@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "dynamicFriction", "staticFriction", "bounciness", "frictionCombine", "bounceCombine" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

@@ -409,8 +409,15 @@ namespace BS.SDKEditor.Tests
                     for (var i = 0; i < nodes; i++)
                         type.Nodes.Add(new Node
                         {
-                            Version = r.U16(), Level = r.U8(), TypeFlags = r.U8(), TypeOffset = r.U32(), NameOffset = r.U32(), Size = r.I32(), Index = r.U32(),
-                            MetaFlags = r.U32(), RefHash = r.U64(),
+                            Version = r.U16(),
+                            Level = r.U8(),
+                            TypeFlags = r.U8(),
+                            TypeOffset = r.U32(),
+                            NameOffset = r.U32(),
+                            Size = r.I32(),
+                            Index = r.U32(),
+                            MetaFlags = r.U32(),
+                            RefHash = r.U64(),
                         });
                     type.Strings = r.Bytes(strings);
                 }
@@ -600,8 +607,14 @@ namespace BS.SDKEditor.Tests
                 var copy = Types[o.TypeIndex];
                 var type = new TypeEntry
                 {
-                    ClassId = copy.ClassId, Stripped = copy.Stripped, ScriptHash = copy.ScriptHash, Hash = copy.Hash, Nodes = copy.Nodes.Select(n => n.Clone()).ToList(),
-                    Strings = copy.Strings, Dependencies = copy.Dependencies, ScriptIndex = (short)Scripts.Count,
+                    ClassId = copy.ClassId,
+                    Stripped = copy.Stripped,
+                    ScriptHash = copy.ScriptHash,
+                    Hash = copy.Hash,
+                    Nodes = copy.Nodes.Select(n => n.Clone()).ToList(),
+                    Strings = copy.Strings,
+                    Dependencies = copy.Dependencies,
+                    ScriptIndex = (short)Scripts.Count,
                 };
                 Scripts.Add((fileId, pathId));
                 Types.Add(type);

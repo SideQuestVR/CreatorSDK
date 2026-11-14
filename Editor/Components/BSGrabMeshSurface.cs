@@ -20,7 +20,8 @@ namespace BS.SDKEditor
 
         internal BSGrabMeshSurface(Collider collider, Vector3 wrist)
             : this(collider.attachedRigidbody != null ? collider.attachedRigidbody.transform : collider.transform,
-                collider.attachedRigidbody, true, wrist) { }
+                collider.attachedRigidbody, true, wrist)
+        { }
 
         internal BSGrabMeshSurface(GameObject target, Vector3 wrist)
             : this(target.transform, null, false, wrist) { }

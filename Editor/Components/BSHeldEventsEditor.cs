@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "sensitivity", "fireRate", "auto", "blockLeftPrimary", "blockLeftSecondary", "blockRightPrimary", "blockRightSecondary", "blockLeftThumbstick", "blockLeftThumbstickClick", "blockRightThumbstick", "blockRightThumbstickClick", "blockLeftTrigger", "blockRightTrigger" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

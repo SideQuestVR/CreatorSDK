@@ -74,38 +74,38 @@ static class Peer
                 case 'T': rig.Now += long.Parse(arg); break;
                 case 'Q': stdout.Flush(); return 0;
                 case 'M':
-                {
-                    var p = arg.Trim('"').Split(' ');
-                    int id = int.Parse(p[0]), argc = int.Parse(p[1]);
-                    members[id] = new BridgeMember(id, BridgeTier.Write, false, p[2] == "1", argc, "", 0, c =>
                     {
-                        var args = new string[c.ArgCount];
-                        for (int i = 0; i < c.ArgCount; i++) args[i] = CallTests.Describe(c.Args[i]);
-                        stdout.WriteLine("C " + id + " " + JsonSerializer.Serialize(args));
-                        c.RetInt(c.ArgCount);
-                    });
-                    break;
-                }
+                        var p = arg.Trim('"').Split(' ');
+                        int id = int.Parse(p[0]), argc = int.Parse(p[1]);
+                        members[id] = new BridgeMember(id, BridgeTier.Write, false, p[2] == "1", argc, "", 0, c =>
+                        {
+                            var args = new string[c.ArgCount];
+                            for (int i = 0; i < c.ArgCount; i++) args[i] = CallTests.Describe(c.Args[i]);
+                            stdout.WriteLine("C " + id + " " + JsonSerializer.Serialize(args));
+                            c.RetInt(c.ArgCount);
+                        });
+                        break;
+                    }
                 case 'P':
-                {
-                    var d = JsonSerializer.Deserialize<JsonElement>(arg);
-                    rig.View.SendDelta(d[0].GetInt32(), d[1].GetInt32(), d[2].GetInt32(), d[3].GetInt32(), d[4].GetString(), rig.View.AppliedMark);
-                    break;
-                }
+                    {
+                        var d = JsonSerializer.Deserialize<JsonElement>(arg);
+                        rig.View.SendDelta(d[0].GetInt32(), d[1].GetInt32(), d[2].GetInt32(), d[3].GetInt32(), d[4].GetString(), rig.View.AppliedMark);
+                        break;
+                    }
                 case 'K': rig.View.SendDestroyed(int.Parse(arg.Trim('"')), DestroyedReason.Destroyed); break;
                 case 'J':
-                {
-                    var a = JsonSerializer.Deserialize<JsonElement>(arg);
-                    if (a[0].GetInt32() == 1) rig.View.SendAnnounce(new AnnounceEntry(a[1].GetInt32(), a[2].GetInt32() == 1, a[3].GetString(), a[4].GetInt32(), a[5].GetString(), a[6].GetInt32()));
-                    else rig.View.SendAnnounce(new AnnounceEntry(a[1].GetInt32(), a[2].GetInt32(), a[3].GetInt32()));
-                    break;
-                }
+                    {
+                        var a = JsonSerializer.Deserialize<JsonElement>(arg);
+                        if (a[0].GetInt32() == 1) rig.View.SendAnnounce(new AnnounceEntry(a[1].GetInt32(), a[2].GetInt32() == 1, a[3].GetString(), a[4].GetInt32(), a[5].GetString(), a[6].GetInt32()));
+                        else rig.View.SendAnnounce(new AnnounceEntry(a[1].GetInt32(), a[2].GetInt32(), a[3].GetInt32()));
+                        break;
+                    }
                 case 'Z':
-                {
-                    var s = rig.View.Current;
-                    stdout.WriteLine("Z " + JsonSerializer.Serialize(new { accepted = s?.Accepted ?? 0, itemsIn = s?.ItemsIn ?? 0, applied = s?.Applied ?? 0 }));
-                    break;
-                }
+                    {
+                        var s = rig.View.Current;
+                        stdout.WriteLine("Z " + JsonSerializer.Serialize(new { accepted = s?.Accepted ?? 0, itemsIn = s?.ItemsIn ?? 0, applied = s?.Applied ?? 0 }));
+                        break;
+                    }
                 case 'D':
                     rig.View.Drain();
                     rig.View.Tick();

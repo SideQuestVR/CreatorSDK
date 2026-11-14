@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "shapePoints", "curvePoints", "depth", "depthSegments", "segments" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

@@ -167,8 +167,13 @@ namespace BS
             properties.SetFloat("_Opacity", opacity);
             var parameters = new RenderParams(material)
             {
-                layer = 0, camera = camera, matProps = properties, shadowCastingMode = ShadowCastingMode.Off,
-                receiveShadows = false, lightProbeUsage = LightProbeUsage.Off, reflectionProbeUsage = ReflectionProbeUsage.Off
+                layer = 0,
+                camera = camera,
+                matProps = properties,
+                shadowCastingMode = ShadowCastingMode.Off,
+                receiveShadows = false,
+                lightProbeUsage = LightProbeUsage.Off,
+                reflectionProbeUsage = ReflectionProbeUsage.Off
             };
 #if UNITY_EDITOR
             if (camera != null)
@@ -192,7 +197,7 @@ namespace BS
             if (scene.IsValid()) EditorSceneManager.ClosePreviewScene(scene);
             else
 #endif
-                Destroy(instance);
+            Destroy(instance);
         }
 
         static void Destroy(UnityEngine.Object value)

@@ -62,9 +62,19 @@ namespace BS.GuardProbe
             var stack = new System.Diagnostics.StackTrace(1, false).ToString();
             return new Entry
             {
-                What = what, Name = name, Scene = scene, SceneName = scene.name, ScenePath = scene.path, SceneHandle = scene.handle,
-                Phase = Phase, InPreloading = InPreloading, InsideLoop = InsideLoop, CallContext = CallContext, Frame = Time.frameCount,
-                Stack = stack, FromTestCode = stack.Contains(TestFrame),
+                What = what,
+                Name = name,
+                Scene = scene,
+                SceneName = scene.name,
+                ScenePath = scene.path,
+                SceneHandle = scene.handle,
+                Phase = Phase,
+                InPreloading = InPreloading,
+                InsideLoop = InsideLoop,
+                CallContext = CallContext,
+                Frame = Time.frameCount,
+                Stack = stack,
+                FromTestCode = stack.Contains(TestFrame),
             };
         }
 
@@ -103,11 +113,13 @@ namespace BS.GuardProbe
                     {
                         systems.Insert(at + 1, new PlayerLoopSystem
                         {
-                            type = typeof(AfterUpdatePreloading), updateDelegate = () => Mark("EarlyUpdate, after UpdatePreloading", false, null),
+                            type = typeof(AfterUpdatePreloading),
+                            updateDelegate = () => Mark("EarlyUpdate, after UpdatePreloading", false, null),
                         });
                         systems.Insert(at, new PlayerLoopSystem
                         {
-                            type = typeof(BeforeUpdatePreloading), updateDelegate = () => Mark("EarlyUpdate.UpdatePreloading", true, null),
+                            type = typeof(BeforeUpdatePreloading),
+                            updateDelegate = () => Mark("EarlyUpdate.UpdatePreloading", true, null),
                         });
                     }
                 }

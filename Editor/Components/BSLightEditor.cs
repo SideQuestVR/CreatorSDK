@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "type", "color", "intensity", "range", "spotAngle", "innerSpotAngle", "shadows" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

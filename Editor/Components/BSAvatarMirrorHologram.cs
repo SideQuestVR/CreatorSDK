@@ -51,10 +51,14 @@ namespace BS.SDKEditor
             float rx = robot.rightUpperLeg.position.x - robot.hips.position.x;
             standing = new SeatPose
             {
-                pelvisPosition = new Vector3(0f, pelvis, 0f), pelvisRotation = Quaternion.identity,
-                leftFootPosition = new Vector3(lx, 0f, 0f), leftFootRotation = Quaternion.identity,
-                rightFootPosition = new Vector3(rx, 0f, 0f), rightFootRotation = Quaternion.identity,
-                leftKneeHint = new Vector3(lx, pelvis * 0.5f, 0.3f), rightKneeHint = new Vector3(rx, pelvis * 0.5f, 0.3f),
+                pelvisPosition = new Vector3(0f, pelvis, 0f),
+                pelvisRotation = Quaternion.identity,
+                leftFootPosition = new Vector3(lx, 0f, 0f),
+                leftFootRotation = Quaternion.identity,
+                rightFootPosition = new Vector3(rx, 0f, 0f),
+                rightFootRotation = Quaternion.identity,
+                leftKneeHint = new Vector3(lx, pelvis * 0.5f, 0.3f),
+                rightKneeHint = new Vector3(rx, pelvis * 0.5f, 0.3f),
             };
             return standing;
         }

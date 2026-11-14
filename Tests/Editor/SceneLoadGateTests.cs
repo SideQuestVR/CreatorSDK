@@ -229,8 +229,15 @@ namespace BS.SDKEditor.Tests
         {
             var opening = new BSLoadGate.Diagnosis
             {
-                cid = 2, oid = 1, typeName = "AssetBundle", path = "World/AssetBundleLoader",
-                exists = true, activeInHierarchy = true, enabled = true, started = true, progress = 1f,
+                cid = 2,
+                oid = 1,
+                typeName = "AssetBundle",
+                path = "World/AssetBundleLoader",
+                exists = true,
+                activeInHierarchy = true,
+                enabled = true,
+                started = true,
+                progress = 1f,
             };
             var named = new List<BSLoadGate.Diagnosis> { opening };
             Assert.IsTrue(BSLoadGate.OnlyFinishing(1, named));
@@ -250,8 +257,15 @@ namespace BS.SDKEditor.Tests
         {
             var named = Enumerable.Range(1, 12).Select(i => new BSLoadGate.Diagnosis
             {
-                cid = i, oid = 100 + i, typeName = "GLTF", path = "World/Model" + i,
-                exists = true, activeInHierarchy = true, enabled = true, started = true, progress = .4f,
+                cid = i,
+                oid = 100 + i,
+                typeName = "GLTF",
+                path = "World/Model" + i,
+                exists = true,
+                activeInHierarchy = true,
+                enabled = true,
+                started = true,
+                progress = .4f,
             }).ToList();
 
             var missing = BSLoadGate.MissingReport("https://example.host", SceneState.SCENE_READY, 40, 12, named.Take(10).ToList());

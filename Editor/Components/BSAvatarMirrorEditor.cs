@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "shared", "heightOffset", "loadDistance" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

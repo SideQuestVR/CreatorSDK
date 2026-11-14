@@ -26,10 +26,14 @@ namespace BS
 
         public static SeatPose Default => new SeatPose
         {
-            pelvisPosition = new Vector3(0f, .04f, 0f), pelvisRotation = Quaternion.identity,
-            leftFootPosition = new Vector3(-.14f, -.6f, .475f), leftFootRotation = Quaternion.identity,
-            rightFootPosition = new Vector3(.14f, -.6f, .475f), rightFootRotation = Quaternion.identity,
-            leftKneeHint = new Vector3(-.14f, .15f, .45f), rightKneeHint = new Vector3(.14f, .15f, .45f)
+            pelvisPosition = new Vector3(0f, .04f, 0f),
+            pelvisRotation = Quaternion.identity,
+            leftFootPosition = new Vector3(-.14f, -.6f, .475f),
+            leftFootRotation = Quaternion.identity,
+            rightFootPosition = new Vector3(.14f, -.6f, .475f),
+            rightFootRotation = Quaternion.identity,
+            leftKneeHint = new Vector3(-.14f, .15f, .45f),
+            rightKneeHint = new Vector3(.14f, .15f, .45f)
         };
 
         public bool IsValid => Finite(pelvisPosition) && Finite(leftFootPosition) && Finite(rightFootPosition)

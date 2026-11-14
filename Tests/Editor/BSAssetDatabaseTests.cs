@@ -79,7 +79,10 @@ namespace BS.SDKEditor.Tests
         {
             var task = database.Acquire(Key(key), critical, () => Task.FromResult(new BSLoadedAsset
             {
-                Asset = Texture(), Type = AssetType.Texture2D, Size = size, Dispose = disposed,
+                Asset = Texture(),
+                Type = AssetType.Texture2D,
+                Size = size,
+                Dispose = disposed,
                 Url = key.StartsWith("url:") ? key.Substring(4) : null,
             }));
             Assert.IsTrue(task.IsCompleted, "a load that needs no frames");

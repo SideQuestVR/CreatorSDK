@@ -224,7 +224,8 @@ namespace BS.AudioStream.Tests
                     {
                         conductor.Finish();
                     }
-                }) { IsBackground = true };
+                })
+                { IsBackground = true };
                 _thread.Start();
             }
 
@@ -508,7 +509,8 @@ namespace BS.AudioStream.Tests
                         return;
                     }
                 }
-            }) { IsBackground = true };
+            })
+            { IsBackground = true };
             thread.Start();
             try
             {
@@ -548,7 +550,8 @@ namespace BS.AudioStream.Tests
                     }
                 }
                 ended.Set();
-            }) { IsBackground = true };
+            })
+            { IsBackground = true };
             thread.Start();
             var now = 0.0;
             Run(conductor, unity, ref now, 0.2);

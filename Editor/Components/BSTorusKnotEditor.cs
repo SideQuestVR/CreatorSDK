@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "radius", "tube", "radialSegments", "tubularSegments", "p", "q" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "targetPosition", "autoConfigureConnectedAnchor", "xMotion", "yMotion", "zMotion", "angularXMotion", "angularYMotion", "angularZMotion", "anchor", "axis", "secondaryAxis", "connectedAnchor", "targetRotation", "targetVelocity", "targetAngularVelocity", "enableCollision", "enablePreprocessing", "breakForce", "breakTorque", "connectedMassScale", "massScale", "rotationDriveMode", "configuredInWorldSpace", "swapBodies", "connectedBody", "linearLimit", "lowAngularXLimit", "highAngularXLimit", "angularYLimit", "angularZLimit", "xDrive", "yDrive", "zDrive", "angularXDrive", "angularYZDrive", "slerpDrive" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

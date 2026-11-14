@@ -203,8 +203,15 @@ namespace BS.Bridge
             var c = new PayloadCursor(p);
             var x = new WelcomePayload
             {
-                Epoch = c.U32(), Mode = c.U8(), Lane = c.U8(), Families = c.U32(), Caps = c.U32(), Features = c.U32(),
-                RecvWindow = c.U32(), MaxFramePayload = c.U32(), FragmentSize = c.U32(),
+                Epoch = c.U32(),
+                Mode = c.U8(),
+                Lane = c.U8(),
+                Families = c.U32(),
+                Caps = c.U32(),
+                Features = c.U32(),
+                RecvWindow = c.U32(),
+                MaxFramePayload = c.U32(),
+                FragmentSize = c.U32(),
             };
             if (!c.Done || x.Mode > 1 || x.Lane > 1) return null;
             return x;

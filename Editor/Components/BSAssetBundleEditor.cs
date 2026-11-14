@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "windowsUrl", "osxUrl", "linuxUrl", "androidUrl", "iosUrl", "vosUrl", "isScene", "legacyShaderFix" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "slot", "label", "isToggle", "isOn" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

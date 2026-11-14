@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "uid", "attachmentPosition", "attachmentRotation", "attachmentType", "avatarAttachmentType", "avatarAttachmentPoint", "attachmentPoint", "autoSync", "jointAvatar", "autoAttach", "isSeat", "unseatOnMove", "unseatOnJump" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "url", "generateMipMaps", "addColliders", "nonConvexColliders", "slippery", "climbable", "legacyRotate", "childrenLayer" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }

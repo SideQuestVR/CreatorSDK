@@ -26,7 +26,7 @@ namespace BS.SDKEditor
             return BSComponentInspector.Build(
                 editor,
                 new string[] { "subdivisionLevel", "sampleCount", "aoIntensity", "aoBias", "aoRadius", "hideSourceObjects", "targetShaderName", "isProcessing", "progress" },
-                new string[] {  });
+                new string[] { });
         }
     }
 }
