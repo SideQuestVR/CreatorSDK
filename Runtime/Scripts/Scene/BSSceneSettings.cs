@@ -50,7 +50,7 @@ namespace BS
         /// <summary>The furthest players can teleport in this space, in metres along the ground. 0 = the space sets no
         /// limit and each player's own Teleport Range applies. Above 0 it caps every player's range, and a player whose
         /// range is at its maximum gets this distance (so a space can also allow longer teleports than the default).
-        /// Stored as given; the app ignores negative values.</summary>
+        /// Stored as given; the app ignores negative values and brings anything above 100 m down to 100.</summary>
         private float _TeleportMaxRange = 0f;
         public float TeleportMaxRange { get { return _TeleportMaxRange; } set { _TeleportMaxRange = value; scene.events.OnTeleportMaxRangeChanged.Invoke(value); } }
         /// <summary>Players can stream their menu browser into the space for everyone to see and hear. On unless the
