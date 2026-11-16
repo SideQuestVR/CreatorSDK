@@ -2252,6 +2252,7 @@ BS.BSSettings.ClippingPlane
 BS.BSSettings.CompareTag
 BS.BSSettings.Destroy
 BS.BSSettings.EnableBirdFlight
+BS.BSSettings.EnableBrowserStreaming
 BS.BSSettings.EnableForceGrab
 BS.BSSettings.EnableGuests
 BS.BSSettings.EnableHandHold
@@ -2292,6 +2293,7 @@ BS.BSSettings.PhysicsMoveSpeed
 BS.BSSettings.ReferenceEquals
 BS.BSSettings.Refresh
 BS.BSSettings.RefreshRate
+BS.BSSettings.TeleportMaxRange
 BS.BSSettings.ToString
 BS.BSSettings.TryGetComponent
 BS.BSSettings.VoiceDistanceMultiplier
@@ -5336,6 +5338,7 @@ BS.BanterSettings.ClippingPlane
 BS.BanterSettings.CompareTag
 BS.BanterSettings.Destroy
 BS.BanterSettings.EnableBirdFlight
+BS.BanterSettings.EnableBrowserStreaming
 BS.BanterSettings.EnableForceGrab
 BS.BanterSettings.EnableGuests
 BS.BanterSettings.EnableHandHold
@@ -5376,6 +5379,7 @@ BS.BanterSettings.PhysicsMoveSpeed
 BS.BanterSettings.ReferenceEquals
 BS.BanterSettings.Refresh
 BS.BanterSettings.RefreshRate
+BS.BanterSettings.TeleportMaxRange
 BS.BanterSettings.ToString
 BS.BanterSettings.TryGetComponent
 BS.BanterSettings.VoiceDistanceMultiplier
@@ -8550,6 +8554,7 @@ Banter.SDK.BSSettings.ClippingPlane
 Banter.SDK.BSSettings.CompareTag
 Banter.SDK.BSSettings.Destroy
 Banter.SDK.BSSettings.EnableBirdFlight
+Banter.SDK.BSSettings.EnableBrowserStreaming
 Banter.SDK.BSSettings.EnableForceGrab
 Banter.SDK.BSSettings.EnableGuests
 Banter.SDK.BSSettings.EnableHandHold
@@ -8590,6 +8595,7 @@ Banter.SDK.BSSettings.PhysicsMoveSpeed
 Banter.SDK.BSSettings.ReferenceEquals
 Banter.SDK.BSSettings.Refresh
 Banter.SDK.BSSettings.RefreshRate
+Banter.SDK.BSSettings.TeleportMaxRange
 Banter.SDK.BSSettings.ToString
 Banter.SDK.BSSettings.TryGetComponent
 Banter.SDK.BSSettings.VoiceDistanceMultiplier
@@ -11634,6 +11640,7 @@ Banter.SDK.BanterSettings.ClippingPlane
 Banter.SDK.BanterSettings.CompareTag
 Banter.SDK.BanterSettings.Destroy
 Banter.SDK.BanterSettings.EnableBirdFlight
+Banter.SDK.BanterSettings.EnableBrowserStreaming
 Banter.SDK.BanterSettings.EnableForceGrab
 Banter.SDK.BanterSettings.EnableGuests
 Banter.SDK.BanterSettings.EnableHandHold
@@ -11674,6 +11681,7 @@ Banter.SDK.BanterSettings.PhysicsMoveSpeed
 Banter.SDK.BanterSettings.ReferenceEquals
 Banter.SDK.BanterSettings.Refresh
 Banter.SDK.BanterSettings.RefreshRate
+Banter.SDK.BanterSettings.TeleportMaxRange
 Banter.SDK.BanterSettings.ToString
 Banter.SDK.BanterSettings.TryGetComponent
 Banter.SDK.BanterSettings.VoiceDistanceMultiplier
