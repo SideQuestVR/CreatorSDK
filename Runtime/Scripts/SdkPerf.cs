@@ -13,5 +13,8 @@ namespace BS
         /// running a flow to compare IDs. Read when a graph starts listening.
         /// </summary>
         public static bool KeyedJsCallbacks = true;
+
+        /// <summary>Inject JS with no Return ID asks for no reply: nothing comes back over the bridge for it.</summary>
+        public static bool InjectJsNoReplyWithoutId = true;
     }
 }
