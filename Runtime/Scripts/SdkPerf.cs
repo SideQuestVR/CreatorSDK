@@ -16,5 +16,8 @@ namespace BS
 
         /// <summary>Inject JS with no Return ID asks for no reply: nothing comes back over the bridge for it.</summary>
         public static bool InjectJsNoReplyWithoutId = true;
+
+        /// <summary>BSObjectId.SyncProperties returns before allocating when nothing it watches can have changed.</summary>
+        public static bool ObjectIdIdleFastPath = true;
     }
 }
