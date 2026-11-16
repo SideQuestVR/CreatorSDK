@@ -19,5 +19,8 @@ namespace BS
 
         /// <summary>BSObjectId.SyncProperties returns before allocating when nothing it watches can have changed.</summary>
         public static bool ObjectIdIdleFastPath = true;
+
+        /// <summary>BSScene.FixedUpdate skips its tick buffer when nothing is subscribed to Tick.</summary>
+        public static bool IdleTickFastPath = true;
     }
 }

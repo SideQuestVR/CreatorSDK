@@ -3861,6 +3861,8 @@ namespace BS
         #region Utilities and startup methods
         public void FixedUpdate()
         {
+            // BS (perf): no tick subscribers, nothing to buffer (SdkPerf.IdleTickFastPath).
+            if (SdkPerf.IdleTickFastPath && Tick == null) return;
             _tickBuffer = new List<BSComponentPropertyUpdate>();
             try
             {
