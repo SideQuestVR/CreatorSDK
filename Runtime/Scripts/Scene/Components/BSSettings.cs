@@ -155,9 +155,8 @@ namespace BS
 
         [Header("Teleport range")]
         [Tooltip("The furthest players can teleport in this space, in metres along the ground. 0 = no limit from the " +
-                 "space: each player's own Teleport Range applies (up to 8 m). Set it lower to keep teleports short. " +
-                 "Set it above 8 to let players reach further: a player whose Teleport Range is at its maximum gets " +
-                 "this distance. The app caps it at 100 m.")]
+                 "space: each player's own Teleport Range applies (8 m unless they change it, up to 100 m). Set it to " +
+                 "cap everyone's teleports at that distance. It only ever shortens a player's range.")]
         [See(initial = "0")][SerializeField] internal float teleportMaxRange = 0f;
 
         [Header("Browser")]
