@@ -9,6 +9,12 @@ namespace BS
 
         [SerializeField] SeatPose pose = SeatPose.Default;
 
+        [Tooltip("Editor only: moving or turning the seat in the Scene view drops the feet onto the floor below. At runtime the last saved pose is used as-is.")]
+        [SerializeField] bool autoPlaceFeet;
+
+        /// <summary>Editor authoring aid; runtime never reads it.</summary>
+        internal bool AutoPlaceFeet { get => autoPlaceFeet; set => autoPlaceFeet = value; }
+
         public float ViewSmoothing { get => Mathf.Max(0f, viewSmoothing); set => viewSmoothing = Mathf.Max(0f, value); }
 
         public SeatPose Pose { get => pose.Validated(); set => pose = value.Validated(); }

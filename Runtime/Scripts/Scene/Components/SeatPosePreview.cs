@@ -40,6 +40,25 @@ namespace BS
             right = IsValid ? robot.rightLowerLeg.position : Vector3.zero;
             return IsValid;
         }
+
+        /// <summary>One robot leg for this pose, in the seat's metre frame: hip joint, full reach to the ankle, the
+        /// ankle-to-sole offset and the foot's rest rotation (a pose foot rotation applies on top of it).</summary>
+        internal bool TryGetLeg(SeatPose pose, bool left, out Vector3 hip, out float reach, out Vector3 soleOffset, out Quaternion restFoot)
+        {
+            Evaluate(pose);
+            hip = soleOffset = Vector3.zero;
+            reach = 0f;
+            restFoot = Quaternion.identity;
+            if (!IsValid) return false;
+            var upper = left ? robot.leftUpperLeg : robot.rightUpperLeg;
+            var knee = left ? robot.leftLowerLeg : robot.rightLowerLeg;
+            var foot = left ? robot.leftFoot : robot.rightFoot;
+            hip = upper.position;
+            reach = Vector3.Distance(upper.position, knee.position) + Vector3.Distance(knee.position, foot.position);
+            soleOffset = left ? robot.leftSoleOffset : robot.rightSoleOffset;
+            restFoot = left ? leftFootRotation : rightFootRotation;
+            return reach > .0001f;
+        }
 #endif
 
         public SeatPosePreview() : this(Resources.Load<GameObject>(ResourcePath)) { }

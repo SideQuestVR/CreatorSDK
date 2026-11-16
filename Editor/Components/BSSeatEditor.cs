@@ -16,6 +16,7 @@ namespace BS.SDKEditor
         static BSSeatEditor editing;
         bool previousToolsHidden, showPreview = true;
         Target poseTarget;
+        string floorMessage;
         SeatPosePreview preview;
 
         void OnEnable()
@@ -144,6 +145,24 @@ namespace BS.SDKEditor
                     EditorGUILayout.HelpBox("Click a pelvis, sole or knee point, then use the Move (W) gizmo. Press E to rotate the selected pelvis or sole. Knees bend within the leg's reach while feet stay in place.", MessageType.Info);
                 }
                 if (GUILayout.Button("Reset Seated Pose")) WritePose(serializedObject.FindProperty("pose"), SeatPose.Default);
+                using (new EditorGUI.DisabledScope(EditorUtility.IsPersistent(seat) || !seat.gameObject.scene.IsValid()))
+                {
+                    if (GUILayout.Button(new GUIContent("Place Feet on Floor",
+                        "Drops both soles onto the colliders below them, sized for the preview robot's legs.")))
+                    {
+                        var seats = System.Array.ConvertAll(targets, t => (BSSeat)t);
+                        EditorApplication.delayCall += () => PlaceFeetOnFloor(seats);
+                    }
+                }
+                var autoPlace = serializedObject.FindProperty("autoPlaceFeet");
+                EditorGUI.BeginChangeCheck();
+                EditorGUILayout.PropertyField(autoPlace, new GUIContent("Auto Place Feet", autoPlace.tooltip));
+                if (EditorGUI.EndChangeCheck() && autoPlace.boolValue && !autoPlace.hasMultipleDifferentValues)
+                {
+                    var seats = System.Array.ConvertAll(targets, t => (BSSeat)t);
+                    EditorApplication.delayCall += () => PlaceFeetOnFloor(seats);
+                }
+                if (!string.IsNullOrEmpty(floorMessage)) EditorGUILayout.HelpBox(floorMessage, MessageType.Warning);
                 // File dialogs would break this IMGUI layout pass, so they open after it.
                 using (new EditorGUILayout.HorizontalScope())
                 {
@@ -153,6 +172,27 @@ namespace BS.SDKEditor
                 BSPosePresetFile.DrawFolderPresets(BSPosePresetFile.SeatKind, path => BSPosePresetFile.Load(seat, path));
             }
             if (serializedObject.ApplyModifiedProperties()) SceneView.RepaintAll();
+        }
+
+        void PlaceFeetOnFloor(BSSeat[] seats)
+        {
+            floorMessage = null;
+            Undo.SetCurrentGroupName("Place feet on floor");
+            var group = Undo.GetCurrentGroup();
+            foreach (var seat in seats)
+            {
+                if (seat == null) continue;
+                var pose = BSSeatFloorPlacement.Place(seat, seat.Pose, out var left, out var right);
+                var serialized = new SerializedObject(seat);
+                WritePose(serialized.FindProperty("pose"), pose);
+                serialized.ApplyModifiedProperties();
+                var message = BSSeatFloorPlacement.Describe(left, right);
+                if (message != null) floorMessage += (seats.Length > 1 ? seat.name + ": " : "") + message + "\n";
+            }
+            Undo.CollapseUndoOperations(group);
+            floorMessage = floorMessage?.TrimEnd();
+            Repaint();
+            SceneView.RepaintAll();
         }
 
         internal static void WritePose(SerializedProperty property, SeatPose pose)
