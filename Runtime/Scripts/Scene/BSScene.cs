@@ -2875,7 +2875,9 @@ namespace BS
                     obj.id.watchRotation = false;
                     obj.id.watchLocalRotation = false;
                     obj.id.watchLocalScale = false;
-                    var transformParts = parts[1].Split(MessageDelimiters.PRIMARY);
+                    // An empty list stops watching (WatchTransform([]) is the page's unwatch); it used to throw on
+                    // int.Parse("") after clearing the flags, so it already stopped, with an error in the log.
+                    var transformParts = string.IsNullOrEmpty(parts[1]) ? Array.Empty<string>() : parts[1].Split(MessageDelimiters.PRIMARY);
                     foreach (var part in transformParts)
                     {
                         switch ((PropertyName)int.Parse(part))
