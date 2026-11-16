@@ -22,6 +22,8 @@ namespace BS
     - `avatarSyncMode` - How often players far from each other see each other move: `social` (the default) or `action`.
     - `voiceDistanceMultiplier` - Scales how far voices carry here, on top of each player's own Voice Distance: 2 = twice as far, 0.5 = half (default 1).
     - `enableRun` - Players can run (hold Shift on desktop, click the left stick in VR). On by default; turn it off to keep everyone at walking speed.
+    - `teleportMaxRange` - The furthest players can teleport here, in metres. 0 (the default) leaves it to each player's own Teleport Range.
+    - `enableBrowserStreaming` - Players can stream their menu browser into the space for everyone to see. On by default; turn it off to forbid it here.
     - `enableHandHold` - Players can hold hands.
     - `enableRadar` - Show the radar.
     - `enableNametags` - Show name tags above players.
@@ -151,6 +153,18 @@ namespace BS
                  "to keep everyone at this space's walking speed.")]
         [See(initial = "true")][SerializeField] internal bool enableRun = true;
 
+        [Header("Teleport range")]
+        [Tooltip("The furthest players can teleport in this space, in metres along the ground. 0 = no limit from the " +
+                 "space: each player's own Teleport Range applies (up to 8 m). Set it lower to keep teleports short. " +
+                 "Set it above 8 to let players reach further: a player whose Teleport Range is at its maximum gets " +
+                 "this distance.")]
+        [See(initial = "0")][SerializeField] internal float teleportMaxRange = 0f;
+
+        [Header("Browser")]
+        [Tooltip("Players can stream their menu browser into this space, for everyone to see and hear. On by default; " +
+                 "turn it off to forbid it here. Browsers you place in the scene yourself are not affected.")]
+        [See(initial = "true")][SerializeField] internal bool enableBrowserStreaming = true;
+
         bool started;
         // The settings object (it is recreated on every page load) that this component locked, if any.
         // Its own locks don't stop it; locks set by anything else do.
@@ -211,6 +225,8 @@ namespace BS
                 if (Has(PropertyName.avatarSyncMode)) settings.AvatarSyncMode = avatarSyncMode;
                 if (Has(PropertyName.voiceDistanceMultiplier)) settings.VoiceDistanceMultiplier = voiceDistanceMultiplier;
                 if (Has(PropertyName.enableRun)) settings.EnableRun = enableRun;
+                if (Has(PropertyName.teleportMaxRange)) settings.TeleportMaxRange = teleportMaxRange;
+                if (Has(PropertyName.enableBrowserStreaming)) settings.EnableBrowserStreaming = enableBrowserStreaming;
                 if (Has(PropertyName.enableHandHold)) settings.EnableHandHold = enableHandHold;
                 if (Has(PropertyName.enableRadar)) settings.EnableRadar = enableRadar;
                 if (Has(PropertyName.enableNametags)) settings.EnableNametags = enableNametags;

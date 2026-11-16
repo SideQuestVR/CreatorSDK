@@ -308,5 +308,7 @@ namespace BS
         heightOffset,
         loadDistance,
         enableRun,
+        teleportMaxRange,
+        enableBrowserStreaming,
     }
 }

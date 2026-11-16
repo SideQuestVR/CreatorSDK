@@ -47,6 +47,17 @@ namespace BS
         /// off, everyone moves at the space's walking speed only.</summary>
         private bool _EnableRun = true;
         public bool EnableRun { get { return _EnableRun; } set { _EnableRun = value; scene.events.OnEnableRunChanged.Invoke(value); } }
+        /// <summary>The furthest players can teleport in this space, in metres along the ground. 0 = the space sets no
+        /// limit and each player's own Teleport Range applies. Above 0 it caps every player's range, and a player whose
+        /// range is at its maximum gets this distance (so a space can also allow longer teleports than the default).
+        /// Stored as given; the app ignores negative values.</summary>
+        private float _TeleportMaxRange = 0f;
+        public float TeleportMaxRange { get { return _TeleportMaxRange; } set { _TeleportMaxRange = value; scene.events.OnTeleportMaxRangeChanged.Invoke(value); } }
+        /// <summary>Players can stream their menu browser into the space for everyone to see and hear. On unless the
+        /// space turns it off; off, the menu browser's stream controls are hidden, a running stream is stopped, and
+        /// streams shared by other players are not shown. Browsers placed in the scene are not affected.</summary>
+        private bool _EnableBrowserStreaming = true;
+        public bool EnableBrowserStreaming { get { return _EnableBrowserStreaming; } set { _EnableBrowserStreaming = value; scene.events.OnEnableBrowserStreamingChanged.Invoke(value); } }
         // TODO(not wired up in the app yet): let players grab and hold other players' hands (remote players' hands get
         // grabbable colliders, also gated by the player's own Hand Holding comfort option). Remote players have no hand
         // colliders in the client yet.
@@ -235,6 +246,8 @@ namespace BS
             AvatarSyncMode = AvatarSyncModes.Social;
             VoiceDistanceMultiplier = 1f;
             EnableRun = true;
+            TeleportMaxRange = 0f;
+            EnableBrowserStreaming = true;
             EnableHandHold = true;
             EnableRadar = true;
             EnableNametags = true;
