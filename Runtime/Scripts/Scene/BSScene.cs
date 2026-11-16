@@ -3499,7 +3499,7 @@ namespace BS
             ForgetCreationsMark(); // and the creation watermark: taken at the new page's first check
         }
 
-        public async Task OnLoad(string instanceId)
+        public Task OnLoad(string instanceId)
         {
             // This is fired when the page loads or realods from the browser end, so it can be fired becuase 
             // we have explicitly naviagted the page, but also becuase someone hut f5 in the debugger. 
@@ -3517,12 +3517,10 @@ namespace BS
                  RestoreWorldBrowserSize();
                  events.OnLoad.Invoke();
              }, $"{nameof(BSScene)}.{nameof(OnLoad)}"));
-            // TODO: This wont work with 5 ms, but I tested it hundreds of times at 10ms and it never
-            // failed at that level. Maybe it is because the other thread stuff above? I think so.
-            // Maybe it will fail on android? Or other slower computers? Making it 100 for good measure.
-            // :thumbsup: :worksonmymachine: :sadcat:
-            await new WaitForSeconds(0.1f);
-            FlushAllSceneProps();
+            // The objects Unity already holds are sent when the page's Scene says SCENE_START (ReplaySceneToPage), not
+            // here: nothing on the page listens until then. This used to send them 0.1 s after LoadStarted, which a
+            // page that makes its Scene later (from "bs-loaded", 200 ms after the SDK script runs) never received.
+            return Task.CompletedTask;
         }
 
         // The world browser's size before SetWorldBrowserSize changed it; put back when the next space loads.
@@ -3567,8 +3565,17 @@ namespace BS
             if (view.isActiveAndEnabled) view.StartCoroutine(view.ResizeWindow(view.GetAdjustedSize()));
         }
 
-        void FlushAllSceneProps()
+        /// <summary>
+        /// Send the page everything Unity has registered: each object, its components, their property values, and which
+        /// components have finished loading. Unity announces each of these once, when it happens, and the bridge drops
+        /// what it sends while the page has no session, so whatever existed before the page's Scene did (the objects of
+        /// the scene being played in the editor, anything made before the page asked) reaches it only through this.
+        /// Runs on the Scene's SCENE_START, the first thing a Scene sends, in the same turn that it starts listening.
+        /// Main thread.
+        /// </summary>
+        internal void ReplaySceneToPage()
         {
+            if (link == null) return;
             foreach (var obj in objects.Values)
             {
                 var comps = obj.banterObject.banterComponents.Values;
@@ -3594,6 +3601,13 @@ namespace BS
                         {
                             LogLine.Do(Color.red, "[Banter]", "Unknown property type: " + prop.type);
                         }
+                    }
+                    // After the updates that make the component on the page: its LOADED went out once, when it loaded.
+                    // Asked of the component itself: BSComponent.loaded is also set when the load gate gives up waiting.
+                    var id = obj.id;
+                    if (id != null && id.mainThreadComponentMap.TryGetValue(comp.cid, out var unityComp) && unityComp != null && unityComp.IsLoaded)
+                    {
+                        link.Send(APICommands.EVENT + APICommands.LOADED + MessageDelimiters.PRIMARY + comp.cid);
                     }
                 }
             }

@@ -182,6 +182,12 @@ namespace BS
                 }
                 scene.state = SceneState.SCENE_START;
                 scene.RestartEmptySceneGrace();
+                // The page's Scene now listens: tell it what Unity already has. Queued, so it runs on the main thread
+                // behind OnLoad's reset.
+                UnityMainThreadTaskScheduler.Default.Enqueue(TaskRunner.Track(() =>
+                {
+                    if (!shuttingDown) scene.ReplaySceneToPage();
+                }, $"{nameof(BSLink)}.{nameof(ParseCommand)}.SCENE_START ReplaySceneToPage"));
             }
             // else if (msg.StartsWith(APICommands.DOM_READY))
             // {
