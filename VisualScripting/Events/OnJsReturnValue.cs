@@ -19,9 +19,19 @@ namespace BS.VisualScripting
 
         protected override bool register => true;
 
+        public const string HookName = "OnJsReturnValue";
+
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook("OnJsReturnValue");
+            // BS (perf): a literal Return ID (no connection) registers under that ID, so a callback runs only its own
+            // listeners instead of a flow in every OnJsReturnValue of every graph (SdkPerf.KeyedJsCallbacks; BSLink
+            // triggers both the keyed hook and the plain one, which listeners with a connected ID still use).
+            if (SdkPerf.KeyedJsCallbacks && id != null && !id.hasValidConnection && id.hasDefaultValue
+                && defaultValues.TryGetValue(id.key, out var v) && v is string literal)
+            {
+                return new EventHook(HookName, null, literal.Trim());
+            }
+            return new EventHook(HookName);
         }
 
         protected override void Definition()

@@ -61,7 +61,10 @@ namespace BS
             {
                 UnityMainThreadTaskScheduler.Default.Enqueue(TaskRunner.Track(() =>
                 {
-                    EventBus.Trigger("OnJsReturnValue", new CustomEventArgs(id, new object[] { data }));
+                    var args = new CustomEventArgs(id, new object[] { data });
+                    // BS (perf): listeners with a literal Return ID registered under it (OnJsReturnValue.GetHook).
+                    if (SdkPerf.KeyedJsCallbacks && id != null) EventBus.Trigger(new EventHook("OnJsReturnValue", null, id.Trim()), args);
+                    EventBus.Trigger("OnJsReturnValue", args);
                 }, $"{nameof(BSLink)}.{nameof(Start)}"));
             });
         }
