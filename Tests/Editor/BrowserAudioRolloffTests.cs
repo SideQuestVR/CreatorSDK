@@ -115,16 +115,19 @@ namespace BS.SDKEditor.Tests
         }
 
         [Test]
-        public void Tracker_FindsOnlyThisEmittersSpeakers()
+        public void Tracker_TakesExactlyTheSpeakersTheEmitterLists()
         {
+            // The tracker no longer searches under the view: the emitter's own list (OraAudioEmitter.ManagedSpeakers,
+            // which a live emitter fills as it builds its speakers) is the truth. Tests hand that list in.
             var emitter = New("view").AddComponent<OraAudioEmitter>();
-            var other = New("other").AddComponent<OraAudioEmitter>();
             var mine = AddSpeaker(emitter);
-            AddSpeaker(emitter, other);                                    // another emitter's filter
-            New("plain", emitter.transform).AddComponent<AudioSource>();   // an AudioSource that isn't a speaker
+            var gone = AddSpeaker(emitter);
+            Object.DestroyImmediate(gone.gameObject);                      // a speaker Ora has already torn down
+            New("plain", emitter.transform).AddComponent<AudioSource>();   // an AudioSource under the view that isn't listed
 
             var tracker = new BSBrowser.SpeakerTracker();
-            Assert.IsTrue(tracker.Refresh(emitter));
+            Assert.IsFalse(tracker.Refresh(emitter), "this emitter never built speakers of its own");
+            Assert.IsTrue(tracker.Refresh(emitter, new[] { mine, gone }));
             CollectionAssert.AreEqual(new[] { mine }, tracker.Speakers);
         }
 
@@ -136,36 +139,41 @@ namespace BS.SDKEditor.Tests
             emitter.speakerMode = OraSpeakerMode.Custom;
             emitter.gameObject.AddComponent<AudioSource>();
             emitter.gameObject.AddComponent<OraSpeakerFilter>().emitter = emitter;
-            AddSpeaker(emitter);
+            var listed = new[] { AddSpeaker(emitter) };
 
             var tracker = new BSBrowser.SpeakerTracker();
-            Assert.IsFalse(tracker.Refresh(emitter));
+            Assert.IsFalse(tracker.Refresh(emitter, listed));
             Assert.IsEmpty(tracker.Speakers);
 
             emitter.speakerMode = OraSpeakerMode.Managed;
-            Assert.IsTrue(tracker.Refresh(emitter), "back to Ora's own speakers");
+            Assert.IsTrue(tracker.Refresh(emitter, listed), "back to Ora's own speakers");
         }
 
         [Test]
         public void Tracker_ReportsSpeakersOnlyWhenTheyMayHaveChanged()
         {
             var emitter = New("view").AddComponent<OraAudioEmitter>();
+            var speakers = new List<AudioSource>();     // the emitter's speaker list, as Ora keeps it
             var tracker = new BSBrowser.SpeakerTracker();
             Assert.IsFalse(tracker.Refresh(null), "no view audio yet");
-            Assert.IsFalse(tracker.Refresh(emitter), "an emitter without speakers");
+            Assert.IsFalse(tracker.Refresh(emitter, speakers), "an emitter without speakers");
 
             var first = AddSpeaker(emitter);
-            Assert.IsTrue(tracker.Refresh(emitter), "speaker built");
-            Assert.IsFalse(tracker.Refresh(emitter), "nothing changed");
+            speakers.Add(first);
+            Assert.IsTrue(tracker.Refresh(emitter, speakers), "speaker built");
+            Assert.IsFalse(tracker.Refresh(emitter, speakers), "nothing changed");
 
             // Ora rebuilds its speakers (an output-rate change): the old one goes, a new one comes.
             Object.DestroyImmediate(first.gameObject);
+            speakers.Clear();
             var second = AddSpeaker(emitter);
-            Assert.IsTrue(tracker.Refresh(emitter), "rebuilt");
+            speakers.Add(second);
+            Assert.IsTrue(tracker.Refresh(emitter, speakers), "rebuilt");
             CollectionAssert.AreEqual(new[] { second }, tracker.Speakers);
 
             var wide = AddSpeaker(emitter);
-            Assert.IsTrue(tracker.Refresh(emitter), "wide stereo pair");
+            speakers.Add(wide);
+            Assert.IsTrue(tracker.Refresh(emitter, speakers), "wide stereo pair");
             CollectionAssert.AreEquivalent(new[] { second, wide }, tracker.Speakers);
 
             Assert.IsFalse(tracker.Refresh(null), "view audio gone");

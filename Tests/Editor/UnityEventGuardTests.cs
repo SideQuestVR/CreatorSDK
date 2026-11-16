@@ -1005,8 +1005,13 @@ namespace BS.SDKEditor.Tests
                     "TMPro.TMP_Text", "UnityEngine.UI.InputField" } },
                 // SocialEffectsPresenter.Play (main, 2026-11-04 merge) takes 4 parameters, so no AnimationEvent can call it
                 // (events take at most one), and world bundles can't add the host component. Reviewed by Atlas: keep the sink.
+                // PacketPartyVoiceGenerator.Play (PacketParty, 2026-11-13) is static and takes 4 parameters (the voice's
+                // AudioSource, its track, a flag and a PCM handler): no AnimationEvent can call it (events take at most
+                // one parameter), and the component is internal to the client's voice output, not something a world
+                // bundle can carry. Same reasoning as SocialEffectsPresenter above: keep the sink.
                 { "Play", new[] { "BS.BSAudioSource", "Greenfield.Emoji.EmojiReactionService", "Greenfield.HandCamera.CameraSoundEffects",
-                    "Greenfield.Social.SocialEffectsPresenter", "SideQuest.FlexaBody.BirdFlightSound", "Whisper.Utils.PlayAudioAndDestroy" } },
+                    "Greenfield.Social.SocialEffectsPresenter", "PacketParty.Audio.PacketPartyVoiceGenerator",
+                    "SideQuest.FlexaBody.BirdFlightSound", "Whisper.Utils.PlayAudioAndDestroy" } },
                 { "SetDirty", new[] { "UnityEngine.UI.AspectRatioFitter", "UnityEngine.UI.ContentSizeFitter", "UnityEngine.UI.LayoutElement",
                     "UnityEngine.UI.LayoutGroup", "UnityEngine.UI.ScrollRect" } },
                 { "AddCullingLayer", new[] { "BS.BSMirror" } },
