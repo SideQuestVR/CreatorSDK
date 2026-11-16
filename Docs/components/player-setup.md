@@ -173,10 +173,11 @@ When it starts, it applies all of its values, so anything you don't set goes bac
 | Property | Type | Default | Sets |
 |---|---|---|---|
 | `enableTeleport` | boolean | true | `EnableTeleport`: players can teleport |
-| `enableForceGrab` | boolean | false | `EnableForceGrab`: players can grab objects from a distance |
+| `enableForceGrab` | boolean | true | `EnableForceGrab`: players can grab objects from a distance. On by default; untick it to forbid distance grab in this space. A component built in a page script (`new BS.BSSettings()`) still starts with it `false`, as it always has, so name it there if you want it on. |
 | `enableSpiderMan` | boolean | false | `EnableSpiderMan`: players can use the grapple |
 | `enableBirdFlight` | boolean | true | `EnableBirdFlight`: space permission for controller-driven wing flight. Explicit `false` forbids it; the player's Bird Flight preference must also be on. Missing values allow flight. |
 | `avatarSyncMode` | string | "social" | `AvatarSyncMode`: how often distant players see each other move. `"social"` thins to once a second past 70 m; `"action"` keeps 2 to 24 updates a second out to 150 m and beyond, for games and flight |
+| `enableRun` | boolean | true | `EnableRun`: players can run (hold Shift on desktop, click the left stick while moving in VR). Untick it to keep everyone at this space's walking speed |
 | `voiceDistanceMultiplier` | number | 1 | `VoiceDistanceMultiplier`: scales how far voices carry here, on top of each player's own Voice Distance setting: 2 = twice as far (a stage or auditorium), 0.5 = half. Clamped to 0.1-10. Voices beyond that distance aren't received at all, so a large multiplier in a crowded space costs players bandwidth |
 | `enableHandHold` | boolean | true | `EnableHandHold`: players can hold hands |
 | `enableRadar` | boolean | true | `EnableRadar`: the radar is shown |

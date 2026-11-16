@@ -24,6 +24,7 @@ public class BSSceneEvents
     public UnityEvent<bool> OnEnableBirdFlightChanged = new UnityEvent<bool>();
     public UnityEvent<string> OnAvatarSyncModeChanged = new UnityEvent<string>();
     public UnityEvent<float> OnVoiceDistanceMultiplierChanged = new UnityEvent<float>();
+    public UnityEvent<bool> OnEnableRunChanged = new UnityEvent<bool>();
     public UnityEvent<bool> OnEnableHandHoldChanged = new UnityEvent<bool>();
     public UnityEvent<bool> OnEnableRadarChanged = new UnityEvent<bool>();
     public UnityEvent<bool> OnEnableNametagsChanged = new UnityEvent<bool>();
@@ -184,6 +185,7 @@ public class BSSceneEvents
         OnEnableBirdFlightChanged.RemoveAllListeners();
         OnAvatarSyncModeChanged.RemoveAllListeners();
         OnVoiceDistanceMultiplierChanged.RemoveAllListeners();
+        OnEnableRunChanged.RemoveAllListeners();
         OnEnableHandHoldChanged.RemoveAllListeners();
         OnEnableRadarChanged.RemoveAllListeners();
         OnEnableNametagsChanged.RemoveAllListeners();

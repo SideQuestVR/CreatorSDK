@@ -26,7 +26,9 @@ namespace BS
         public bool EnableDevTools { get { return _EnableDevTools; } set { _EnableDevTools = value; scene.events.OnEnableDevToolsChanged.Invoke(value); } }
         private bool _EnableTeleport = true;
         public bool EnableTeleport { get { return _EnableTeleport; } set { _EnableTeleport = value; scene.events.OnEnableTeleportChanged.Invoke(value); } }
-        private bool _EnableForceGrab = false;
+        // On unless the space turns it off (it was off unless the space turned it on until Nov 2026). Each player can
+        // still switch their own distance grab off in Controls.
+        private bool _EnableForceGrab = true;
         public bool EnableForceGrab { get { return _EnableForceGrab; } set { _EnableForceGrab = value; scene.events.OnEnableForceGrabChanged.Invoke(value); } }
         private bool _EnableSpiderMan = false;
         public bool EnableSpiderMan { get { return _EnableSpiderMan; } set { _EnableSpiderMan = value; scene.events.OnEnableSpiderManChanged.Invoke(value); } }
@@ -41,6 +43,10 @@ namespace BS
         /// Stored as given; the app clamps it when it applies it.</summary>
         private float _VoiceDistanceMultiplier = 1f;
         public float VoiceDistanceMultiplier { get { return _VoiceDistanceMultiplier; } set { _VoiceDistanceMultiplier = value; scene.events.OnVoiceDistanceMultiplierChanged.Invoke(value); } }
+        /// <summary>Players can run (hold Shift on desktop, click the left stick in VR). On unless the space turns it off;
+        /// off, everyone moves at the space's walking speed only.</summary>
+        private bool _EnableRun = true;
+        public bool EnableRun { get { return _EnableRun; } set { _EnableRun = value; scene.events.OnEnableRunChanged.Invoke(value); } }
         // TODO(not wired up in the app yet): let players grab and hold other players' hands (remote players' hands get
         // grabbable colliders, also gated by the player's own Hand Holding comfort option). Remote players have no hand
         // colliders in the client yet.
@@ -223,11 +229,12 @@ namespace BS
 
             EnableDevTools = true;
             EnableTeleport = true;
-            EnableForceGrab = false;
+            EnableForceGrab = true;
             EnableSpiderMan = false;
             EnableBirdFlight = true;
             AvatarSyncMode = AvatarSyncModes.Social;
             VoiceDistanceMultiplier = 1f;
+            EnableRun = true;
             EnableHandHold = true;
             EnableRadar = true;
             EnableNametags = true;

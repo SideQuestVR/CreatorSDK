@@ -307,5 +307,6 @@ namespace BS
         shared,
         heightOffset,
         loadDistance,
+        enableRun,
     }
 }

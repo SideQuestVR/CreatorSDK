@@ -80,7 +80,7 @@ Expand **Advanced** to adjust per-eye resolution (64–1024), live distance (def
 
 Sets the space's settings from the scene:
 
-- abilities: teleport, force grab, spider-man, hand holding, radar, name tags, portals, guests
+- abilities: teleport, force grab (distance grab), spider-man, bird flight, running, hand holding, radar, name tags, portals, guests. Distance grab, bird flight and running are on unless you turn them off here
 - refresh rate and clipping planes
 - player physics
 - the two locks
