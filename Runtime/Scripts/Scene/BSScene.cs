@@ -51,6 +51,7 @@ namespace BS
         public const string RefreshRate = "RefreshRate";
         public const string ClippingPlane = "ClippingPlane";
         public const string SpawnPoint = "SpawnPoint";
+        public const string VisualScriptingAcceleration = "VisualScriptingAcceleration";
 
         public const string PhysicsMoveSpeed = "PhysicsMoveSpeed";
         public const string PhysicsMoveAcceleration = "PhysicsMoveAcceleration";
@@ -158,6 +159,15 @@ namespace BS
         public BSLink link;
         public BSSceneEvents events;
         public BSSceneSettings settings;
+
+        /// <summary>
+        /// What the current world asks for the app's Visual Scripting acceleration
+        /// (<see cref="BSSceneSettings.VisualScriptingAcceleration"/>); Default (no preference) before the first load and
+        /// until the page asks. The page's request arrives after the load starts, so the app should also listen to
+        /// events.OnVisualScriptingAccelerationChanged.
+        /// </summary>
+        public VisualScriptingAcceleration VisualScriptingAccelerationRequest =>
+            settings != null ? settings.VisualScriptingAcceleration : VisualScriptingAcceleration.Default;
 
         /// <summary>
         /// Completes once the first page load has created <see cref="settings"/> (the task <see cref="OnLoad"/> queues;
@@ -3918,6 +3928,17 @@ namespace BS
                      var setting = part.Split(MessageDelimiters.SECONDARY);
                      if (setting.Length < 2)
                      {
+                         continue;
+                     }
+                     // Not under SettingsLocked: it is a request to the app, not a rule of the space, and a snippet
+                     // must be able to make it in a world that locked its settings. A value that doesn't parse
+                     // leaves the request as it was.
+                     if (setting[0] == SettingsMap.VisualScriptingAcceleration)
+                     {
+                         if (BSSceneSettings.TryParseVisualScriptingAcceleration(setting[1], out var acceleration))
+                         {
+                             settings.VisualScriptingAcceleration = acceleration;
+                         }
                          continue;
                      }
                      if (!settings.IsSettingsLocked)
