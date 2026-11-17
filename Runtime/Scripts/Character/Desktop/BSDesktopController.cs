@@ -286,7 +286,7 @@ namespace BS
 
             UpdateSeatInput(keyboard);
             UpdateHeldInputs(keyboard);
-            UpdateKeyRelay(keyboard);
+            UpdateKeyRelay(keyboard, mouse, pointerUsable);
         }
 
         void LateUpdate()
@@ -621,7 +621,7 @@ namespace BS
 
         // Sends the page key-press / key-release as the app does, so held keys can be tested in Play
         // mode. Movement keys are sent too: in the app the page gets them while they move the player.
-        void UpdateKeyRelay(Keyboard keyboard)
+        void UpdateKeyRelay(Keyboard keyboard, Mouse mouse, bool pointerUsable)
         {
             var link = _scene?.link;
             if (link == null)
@@ -644,6 +644,26 @@ namespace BS
                     _keysSent.Remove(keyCode);
                     link.OnKeyRelease((KeyCode)keyCode);
                 }
+            }
+            // The mouse buttons go the same way, as KeyCode.Mouse0 (left), Mouse1 (right) and Mouse2 (middle). A press only counts over the game view
+            // (so a click on another editor panel is not a click in the page); a release is always sent, so a button is never left down.
+            RelayMouseButton(link, mouse.leftButton, (int)KeyCode.Mouse0, pointerUsable);
+            RelayMouseButton(link, mouse.rightButton, (int)KeyCode.Mouse1, pointerUsable);
+            RelayMouseButton(link, mouse.middleButton, (int)KeyCode.Mouse2, pointerUsable);
+        }
+
+        void RelayMouseButton(BSLink link, UnityEngine.InputSystem.Controls.ButtonControl button, int keyCode, bool pointerUsable)
+        {
+            bool held = _keysSent.Contains(keyCode);
+            if (button.wasPressedThisFrame && !held && pointerUsable)
+            {
+                link.OnKeyPress((KeyCode)keyCode);
+                _keysSent.Add(keyCode);
+            }
+            else if (!button.isPressed && held)
+            {
+                _keysSent.Remove(keyCode);
+                link.OnKeyRelease((KeyCode)keyCode);
             }
         }
 
