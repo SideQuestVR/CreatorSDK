@@ -142,7 +142,7 @@ namespace BS.SDKEditor
                     EditorGUILayout.HelpBox("Open the prefab in Prefab Mode to pose it in the Scene view.", MessageType.Info);
                 if (editing == this)
                 {
-                    EditorGUILayout.HelpBox("Click a pelvis, sole or knee point, then use the Move (W) gizmo. Press E to rotate the selected pelvis or sole. Knees bend within the leg's reach while feet stay in place.", MessageType.Info);
+                    EditorGUILayout.HelpBox("Click a pelvis, sole or knee point, then use the Move (W) gizmo. Press E to rotate the selected pelvis or sole. Drag a knee to place it: its foot stays while it can and follows past that. A knee above the hip never goes behind it.", MessageType.Info);
                 }
                 if (GUILayout.Button("Reset Seated Pose")) WritePose(serializedObject.FindProperty("pose"), SeatPose.Default);
                 using (new EditorGUI.DisabledScope(EditorUtility.IsPersistent(seat) || !seat.gameObject.scene.IsValid()))
@@ -281,10 +281,49 @@ namespace BS.SDKEditor
                 case Target.Pelvis: pose.pelvisPosition = position; break;
                 case Target.LeftFoot: pose.leftFootPosition = position; break;
                 case Target.RightFoot: pose.rightFootPosition = position; break;
-                case Target.LeftKnee: pose.leftKneeHint = position; break;
-                case Target.RightKnee: pose.rightKneeHint = position; break;
+                case Target.LeftKnee: pose = DragKnee(pose, true, position); break;
+                case Target.RightKnee: pose = DragKnee(pose, false, position); break;
             }
             SavePose(pose);
+        }
+
+        // Dragging a knee puts the knee there, at thigh length from the hip and never behind the pelvis while above it. A
+        // drag the planted foot allows only re-aims the bend; past that the foot follows, keeping the shin's direction, so a
+        // knee can be pulled forward (Elin, 2026-11-17: "I should be able to bring the knee forwards").
+        const float KneeFollowTolerance = .02f;
+
+        internal SeatPose DragKnee(SeatPose pose, bool left, Vector3 position)
+        {
+            if (preview == null) preview = new SeatPosePreview();
+            if (!preview.TryGetLegSegments(pose, left, out var hip, out var upper, out var lower, out var soleOffset, out var restFoot))
+            {
+                if (left) pose.leftKneeHint = position;
+                else pose.rightKneeHint = position;
+                return pose;
+            }
+            var forward = pose.pelvisRotation * Vector3.forward;
+            var up = pose.pelvisRotation * Vector3.up;
+            var thigh = position - hip;
+            if (thigh.sqrMagnitude < 1e-8f) thigh = forward;
+            if (Vector3.Dot(thigh, up) > 0f && Vector3.Dot(thigh, forward) < 0f) thigh = Vector3.ProjectOnPlane(thigh, forward);
+            if (thigh.sqrMagnitude < 1e-8f) thigh = up;
+            var knee = hip + thigh.normalized * upper;
+
+            var footRotation = (left ? pose.leftFootRotation : pose.rightFootRotation) * restFoot;
+            var sole = left ? pose.leftFootPosition : pose.rightFootPosition;
+            var ankle = sole - footRotation * soleOffset;
+            SeatPose.SolveLeg(hip, knee, ankle, upper, lower, forward, up, out var reached, out _);
+            if (Vector3.Distance(reached, knee) > KneeFollowTolerance)
+            {
+                var shin = ankle - knee;
+                if (shin.sqrMagnitude < 1e-8f) shin = -up;
+                sole = knee + shin.normalized * lower + footRotation * soleOffset;
+                if (left) pose.leftFootPosition = sole;
+                else pose.rightFootPosition = sole;
+            }
+            if (left) pose.leftKneeHint = knee;
+            else pose.rightKneeHint = knee;
+            return pose;
         }
 
         void SavePose(SeatPose pose)
