@@ -22,5 +22,11 @@ namespace BS
 
         /// <summary>BSScene.FixedUpdate skips its tick buffer when nothing is subscribed to Tick.</summary>
         public static bool IdleTickFastPath = true;
+
+        /// <summary>
+        /// A world-space BSUIPanel whose world scale is zero leaves its UI Toolkit panel (no per-frame update, layout or
+        /// repaint) and returns, content intact, when the scale does.
+        /// </summary>
+        public static bool SleepHiddenPanels = true;
     }
 }
