@@ -366,6 +366,9 @@ namespace BS
                 if (!asleep && uiDocument.rootVisualElement != null && uiDocument.panelSettings == panelSettings)
                 {
                     asleep = true;
+                    // The raycaster and event handler are bound to the UI Toolkit panel that is about to go: off until
+                    // the panel is back, so the input module never asks a disposed panel for a hit.
+                    SetPanelInputEnabled(false);
                     uiDocument.panelSettings = null;
                 }
             }
@@ -380,6 +383,21 @@ namespace BS
             asleep = false;
             if (uiDocument != null && uiDocument.panelSettings == null && panelSettings != null)
                 uiDocument.panelSettings = panelSettings;
+            // Going back on its settings gives the document a NEW UI Toolkit panel. The pointer raycaster, the event
+            // handler and the panel's selectable object were bound to the old one (AddPanelStuff), so without this the
+            // panel looks right and takes no input. Reset() binds them to the new panel (waiting for it if needed) and
+            // announces it again (PanelReady: input lock, virtual keyboard).
+            SetPanelInputEnabled(true);
+            var binder = GetComponent<AddPanelStuff>();
+            if (binder != null) binder.Reset();
+        }
+
+        private void SetPanelInputEnabled(bool on)
+        {
+            var raycaster = GetComponent<PanelRaycaster>();
+            if (raycaster != null) raycaster.enabled = on;
+            var handler = GetComponent<PanelEventHandler>();
+            if (handler != null) handler.enabled = on;
         }
 
         /// <summary>
