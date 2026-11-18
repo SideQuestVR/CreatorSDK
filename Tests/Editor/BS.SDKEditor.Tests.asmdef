@@ -6,6 +6,7 @@
         "UnityEditor.TestRunner",
         "BS.SDKEditor",
         "BS.SDK",
+        "BS.SDK.UIKit",
         "BS.AudioStream.Core",
         "BasisBundleManagement",
         "Banter.VisualScripting",

@@ -131,7 +131,7 @@ element.RemoveEventListener("click", handler);
 
 **Finding elements:** keep references to the elements you create. `element.QuerySelector("#" + other.id)` finds a descendant by its `id`, but type and class selectors don't match anything.
 
-`AddClass`, `RemoveClass` and `HasClass` exist on most elements, but a world can't load a style sheet for classes to match, and `HasClass` always returns `false`. Style elements with `style` and `SetStyle` instead.
+`AddClass`, `RemoveClass` and `HasClass` exist on most elements. The classes that match are the [UI Kit](ui-kit.md)'s, which every panel has: its [layout helpers](ui-kit.md#layout-classes-on-plain-elements) and its controls' looks. A world can't load a style sheet of its own, and `HasClass` always returns `false`. For anything the kit has no class for, style elements with `style` and `SetStyle`.
 
 ## UIButton
 
