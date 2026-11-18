@@ -84,7 +84,8 @@
     {"id": 79, "name": "SpawnerObject"},
     {"id": 80, "name": "PlatformFilter"},
     {"id": 81, "name": "WorldOption"},
-    {"id": 82, "name": "AvatarMirror"}
+    {"id": 82, "name": "AvatarMirror"},
+    {"id": 83, "name": "PhotoWall"}
   ],
   "propertyNames": [
     {"id": 0, "name": "hasUnity"},
@@ -394,7 +395,11 @@
     {"id": 304, "name": "loadDistance"},
     {"id": 305, "name": "enableRun"},
     {"id": 306, "name": "teleportMaxRange"},
-    {"id": 307, "name": "enableBrowserStreaming"}
+    {"id": 307, "name": "enableBrowserStreaming"},
+    {"id": 308, "name": "photoSize"},
+    {"id": 309, "name": "maxPhotos"},
+    {"id": 310, "name": "replaceOldest"},
+    {"id": 311, "name": "adminsOnly"}
   ],
   "tags": [
     {"index": 0, "name": "UserTag1"},
@@ -3205,6 +3210,20 @@
       ],
       "methods": [],
       "tsConstructor": ["shared: boolean | any = false", "heightOffset: number = 0", "loadDistance: number = 3"]
+    },
+    {
+      "name": "PhotoWall",
+      "cs": "BS.BSPhotoWall",
+      "base": "BS.BSComponentBase",
+      "fields": [
+        {"name": "size", "attr": "See", "type": "UnityEngine.Vector2", "wire": "Vector2", "propId": 60, "initial": "2,1.2"},
+        {"name": "photoSize", "attr": "See", "type": "System.Single", "wire": "Float", "propId": 308, "initial": "0.24"},
+        {"name": "maxPhotos", "attr": "See", "type": "System.Int32", "wire": "Int", "propId": 309, "initial": "35"},
+        {"name": "replaceOldest", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 310, "initial": "true"},
+        {"name": "adminsOnly", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 311, "initial": "false"}
+      ],
+      "methods": [],
+      "tsConstructor": ["size: Vector2 | any = new Vector2(2,1.2)", "photoSize: number = 0.24", "maxPhotos: number = 35", "replaceOldest: boolean = true", "adminsOnly: boolean = false"]
     }
   ],
   "jsAliases": [

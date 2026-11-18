@@ -1,0 +1,89 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4750921736932159902
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4639869255622347866}
+  - component: {fileID: 8442975833583812595}
+  - component: {fileID: 5654588899439703468}
+  m_Layer: 0
+  m_Name: PhotoWall
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4639869255622347866
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4750921736932159902}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8442975833583812595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4750921736932159902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1975fd0838af4a85be3bb6459af67590, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BS.SDK::BS.BSObjectId
+  Id: 
+  jsId: 
+  loaded:
+    m_PersistentCalls:
+      m_Calls: []
+  watchPosition: 0
+  watchLocalPosition: 0
+  watchEuler: 0
+  watchLocalEuler: 0
+  watchRotation: 0
+  watchLocalRotation: 0
+  watchLocalScale: 0
+  lerpPosition: 0
+  lerpRotation: 0
+--- !u!114 &5654588899439703468
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4750921736932159902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d621510f3235b242b2c57a6e3bac543, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BS.SDK::BS.BSPhotoWall
+  jsId: 
+  loaded:
+    m_PersistentCalls:
+      m_Calls: []
+  valuesApplied: 0
+  layout: 1
+  size: {x: 2, y: 1.2}
+  photoSize: 0.24
+  maxPhotos: 35
+  frame: 0
+  shape: 0
+  frameColor: {r: 0.96, g: 0.95, b: 0.92, a: 1}
+  showBoard: 1
+  boardColor: {r: 0.55, g: 0.42, b: 0.3, a: 1}
+  replaceOldest: 1
+  adminsOnly: 0

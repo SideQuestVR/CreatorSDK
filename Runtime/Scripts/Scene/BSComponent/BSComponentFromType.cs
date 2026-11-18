@@ -169,6 +169,8 @@ namespace BS
                     return gameObject.AddComponent<BSWorldOption>();
                 case ComponentType.AvatarMirror:
                     return gameObject.AddComponent<BSAvatarMirror>();
+                case ComponentType.PhotoWall:
+                    return gameObject.AddComponent<BSPhotoWall>();
                 default:
                     return null;
             }

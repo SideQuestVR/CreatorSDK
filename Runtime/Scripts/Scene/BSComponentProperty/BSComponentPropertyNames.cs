@@ -310,5 +310,9 @@ namespace BS
         enableRun,
         teleportMaxRange,
         enableBrowserStreaming,
+        photoSize,
+        maxPhotos,
+        replaceOldest,
+        adminsOnly,
     }
 }
