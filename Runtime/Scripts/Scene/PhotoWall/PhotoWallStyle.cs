@@ -176,7 +176,7 @@ namespace BS
             public float Dip, Reach;
         }
 
-        /// <summary>Rows and columns each 1 to <see cref="BSPhotoWall.PhotoCap"/>; past the cap the last rows go.</summary>
+        // Rows and columns each 1 to PhotoCap; past the cap the last rows go.
         bool Measure(int rows, int columns, float pictureWidth, PhotoWallFrame frame, PhotoWallShape shape, out GridInfo g)
         {
             g = default;
