@@ -3298,7 +3298,29 @@ namespace BS
         }
         public Task LoadUrl(string url, bool isLoadingOpen = false)
         {
-            return ObserveLoadFailure(LoadUrlInternal(url, url, isLoadingOpen, isFallback: false), url);
+            // The world being left gets its user-leaving event first, while it can still write to the room. Finished at
+            // once (the load starts as it always has) unless its page or a graph listens.
+            var preLeave = BSPreLeave.RunAsync(this, BSPreLeave.ReasonFor(this, url));
+            if (preLeave.IsCompleted)
+                return ObserveLoadFailure(LoadUrlInternal(url, url, isLoadingOpen, isFallback: false), url);
+            // Loading from now on, as LoadUrlInternal would have said at once: the guards on `loading` (portals, the
+            // page's own LoadUrl, menu joins, rejoins) must refuse while the world leaves, or the leaving world could
+            // send the player somewhere else, or back into itself, from its own handler.
+            loading = true;
+            return ObserveLoadFailure(LoadAfterPreLeave(preLeave, url, isLoadingOpen), url);
+        }
+
+        // Loads asked for while the user-leaving hook ran (only those that replace a running load get through, such as
+        // Go Home): only the newest goes ahead, the others end cancelled.
+        int loadsAfterPreLeave;
+
+        async Task LoadAfterPreLeave(Task preLeave, string url, bool isLoadingOpen)
+        {
+            int load = ++loadsAfterPreLeave;
+            await preLeave;
+            if (load != loadsAfterPreLeave)
+                throw new OperationCanceledException($"Loading {url} was replaced by a newer load while the world was leaving.");
+            await LoadUrlInternal(url, url, isLoadingOpen, isFallback: false);
         }
 
         /// <summary>
@@ -3570,6 +3592,9 @@ namespace BS
             // we have explicitly naviagted the page, but also becuase someone hut f5 in the debugger. 
             state = SceneState.NONE;
             RestartEmptySceneGrace();
+            // Here, not in OnLoad's queued listeners: the new page's first messages (it may say it listens straight
+            // away) must not arrive before the old page's listening is forgotten.
+            BSPreLeave.PageLoadStarted();
             UnityMainThreadTaskScheduler.Default.Enqueue(TaskRunner.Track(() =>
              {
                  if (settings != null)

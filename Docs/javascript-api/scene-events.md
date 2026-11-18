@@ -49,6 +49,44 @@ scene.On("user-state-changed", (e) => {
 arrive. Each change's `oldValue` is the previous value. See `user-state` under [State Events](#state-events)
 for the same updates with real JSON values.
 
+### Leaving
+
+`user-left` reaches the players who stay, after you have gone. `user-leaving` fires on **your** page just
+before you go, while you can still write space state. Use it to tidy up, for example to reset the game
+when you are the last one out:
+
+```js
+scene.On("user-leaving", (e) => {
+    // e.detail: { reason, isLastUser, peers, timeoutMs, waitUntil }
+    if (e.detail.isLastUser) {
+        e.detail.waitUntil(scene.SpaceStateSet("game", { phase: "lobby" }));
+    }
+});
+```
+
+| Field | Meaning |
+|---|---|
+| `reason` | `"switch"` (another world), `"home"`, `"reload"` (this world again: a rejoin or another instance) or `"quit"` |
+| `isLastUser` | Nobody else is in the room. A player joining or leaving at the same moment can make it wrong |
+| `peers` | How many other players are in the room |
+| `timeoutMs` | How long the app waits for your promises (1500 by default) |
+| `waitUntil(promise)` | Hold the leave until `promise` settles. Call it as often as you like |
+
+- **The leave waits** for every promise you give `waitUntil`, up to `timeoutMs`, then a moment more (half a
+  second at most) for the last writes to go. A handler that doesn't call it costs one round trip. Call
+  `waitUntil` straight away in your handler, not after an `await`. While the world leaves, the player can't
+  be sent anywhere else: a `LoadUrl` or portal from your handler is refused.
+- **Await your writes.** `SpaceStateSet`, `SpaceStateMerge` and `SpaceStateDelete` resolve when the server has
+  answered, so hand those to `waitUntil`. `SetPublicSpaceProps` and `SetProtectedSpaceProps` are sent before
+  the app leaves too, but you can't tell whether they arrived.
+- **It is best-effort.** It doesn't fire on a crash or a dropped connection, when a Quest app is closed or put to sleep,
+  when you are removed from the world, or in the editor (SDK Play mode never leaves your world). Space state is
+  [kept for 24 hours](../multiplayer/overview.md#space-state), so keep a fallback: for example, store when
+  the game last changed and let the next visitor reset a game left too long.
+- **Nothing listening costs nothing.** The app only waits while your page has a `user-leaving` listener, so
+  remove it (`scene.Off`) when you no longer need it. Older versions of the app never fire it; listening for
+  it there does no harm.
+
 ## Keyboard Events
 
 ```js
