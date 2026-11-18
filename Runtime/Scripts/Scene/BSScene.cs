@@ -3859,8 +3859,31 @@ namespace BS
         #endregion
 
         #region Utilities and startup methods
+        // Tick's handlers, as last asked of the delegate in _tickHandlersOf. A delegate never changes once made (each
+        // += or -= makes a new one), so the list is asked for again after a subscription changed, not every tick.
+        EventHandler _tickHandlersOf;
+        Delegate[] _tickHandlers;
+
+        Delegate[] TickHandlers(EventHandler tick)
+        {
+            if (!ReferenceEquals(tick, _tickHandlersOf))
+            {
+                _tickHandlers = tick.GetInvocationList();
+                _tickHandlersOf = tick;
+            }
+            return _tickHandlers;
+        }
+
         public void FixedUpdate()
         {
+            if (Tick == null)
+            {
+                // No handler runs, so nothing is buffered or sent: the tick needs no list. Nor are the last handlers
+                // (destroyed components by now) worth keeping.
+                _tickHandlersOf = null;
+                _tickHandlers = null;
+                return;
+            }
             _tickBuffer = new List<BSComponentPropertyUpdate>();
             try
             {
@@ -3869,7 +3892,7 @@ namespace BS
                 {
                     // One component per handler, each on its own. A throw used to skip every later handler and leave
                     // _tickBuffer set, which silently dropped every Unity->JS update until the next tick (issue 6).
-                    foreach (EventHandler handler in tick.GetInvocationList())
+                    foreach (EventHandler handler in TickHandlers(tick))
                     {
                         try
                         {
