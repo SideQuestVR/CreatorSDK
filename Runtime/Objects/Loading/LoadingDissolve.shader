@@ -21,7 +21,7 @@ Shader "Hidden/BS/LoadingDissolve"
 		ZTest Always
 		CGPROGRAM
 		#pragma target 3.0
-		#pragma only_renderers d3d11 glcore gles gles3 
+		#pragma only_renderers d3d11 glcore gles gles3 metal 
 		#pragma surface surf Unlit keepalpha addshadow fullforwardshadows 
 		struct Input
 		{

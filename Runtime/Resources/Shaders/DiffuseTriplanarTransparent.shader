@@ -42,7 +42,7 @@ Shader "Unlit/DiffuseTriplanarTransparent"
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma target 3.0
-			#pragma only_renderers d3d11 glcore gles3 vulkan
+			#pragma only_renderers d3d11 glcore gles3 vulkan metal
 			#pragma multi_compile_instancing
 			// Runtime-toggled global keywords set by SideQuest.Lighting (LightingSystem).
 			#pragma multi_compile _ _SQ_FAKE_SHADOWS

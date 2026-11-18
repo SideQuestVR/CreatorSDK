@@ -17,7 +17,7 @@ Shader "Hidden/BS/AlphaMasked"
 		Cull Back
 		CGPROGRAM
 		#pragma target 3.0
-		#pragma only_renderers d3d11 glcore gles3 vulkan 
+		#pragma only_renderers d3d11 glcore gles3 vulkan metal 
 		#pragma surface surf Unlit alpha:fade keepalpha noshadow exclude_path:deferred noambient novertexlights nolightmap  nodynlightmap nodirlightmap nofog 
 		struct Input
 		{

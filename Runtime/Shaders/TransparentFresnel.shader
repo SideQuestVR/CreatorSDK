@@ -39,7 +39,7 @@ Shader "TransparentFresnel"
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma target 3.0
-			#pragma only_renderers d3d11 glcore gles3 vulkan
+			#pragma only_renderers d3d11 glcore gles3 vulkan metal
 			#pragma multi_compile_instancing
 
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"

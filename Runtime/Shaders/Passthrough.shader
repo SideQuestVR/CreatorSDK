@@ -114,7 +114,7 @@ Shader "BS/Passthrough"
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma target 3.5
-			#pragma only_renderers d3d11 glcore gles3 vulkan
+			#pragma only_renderers d3d11 glcore gles3 vulkan metal
 			#pragma multi_compile_instancing
 
 			Varyings vert(Attributes v)
@@ -142,7 +142,7 @@ Shader "BS/Passthrough"
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma target 3.5
-			#pragma only_renderers d3d11 glcore gles3 vulkan
+			#pragma only_renderers d3d11 glcore gles3 vulkan metal
 			#pragma multi_compile_instancing
 
 			Varyings vert(Attributes v)

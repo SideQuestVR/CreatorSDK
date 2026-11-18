@@ -46,7 +46,7 @@ Shader "BS/FakeReflectiveA"
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma target 3.0
-			#pragma only_renderers d3d11 glcore gles3 vulkan
+			#pragma only_renderers d3d11 glcore gles3 vulkan metal
 
 			// Universal Pipeline keywords (equivalent of "fullforwardshadows")
 			#pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
@@ -164,7 +164,7 @@ Shader "BS/FakeReflectiveA"
 			#pragma vertex vertShadow
 			#pragma fragment fragShadow
 			#pragma target 3.0
-			#pragma only_renderers d3d11 glcore gles3 vulkan
+			#pragma only_renderers d3d11 glcore gles3 vulkan metal
 			#pragma multi_compile_instancing
 			#pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
 
@@ -235,7 +235,7 @@ Shader "BS/FakeReflectiveA"
 			#pragma vertex vertDepth
 			#pragma fragment fragDepth
 			#pragma target 3.0
-			#pragma only_renderers d3d11 glcore gles3 vulkan
+			#pragma only_renderers d3d11 glcore gles3 vulkan metal
 			#pragma multi_compile_instancing
 
 			struct AttributesDepth

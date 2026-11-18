@@ -381,6 +381,13 @@ namespace BS
                 }
                 else
                 {
+#if UNITY_STANDALONE_OSX
+                    // Worlds are not published for macOS yet: the page sends no osxUrl (it arrives as the text "null"),
+                    // and a combined world.asset has no StandaloneOSX section. So every world with a Unity scene ends
+                    // here on a Mac, and the error below does not say why.
+                    if (isScene)
+                        Debug.LogWarning("[Banter] On macOS a world's Unity scene needs a macOS bundle (osxUrl, or a StandaloneOSX section in world.asset), and worlds are published for Windows and Android only so far. That is the likely cause of the failure below (osxUrl: '" + BSLoadGate.Printable(osxUrl) + "').");
+#endif
                     SetLoadedIfNot(false, e.Message);
                     LogLine.Do(Color.red, LogTag.Banter, androidUrl + ": " + e.Message);
                 }

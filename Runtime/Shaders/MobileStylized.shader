@@ -77,7 +77,7 @@ Shader "Mobile/StylizedFakeLit"
 
             // Mobile targets
             #pragma target 3.0
-            #pragma only_renderers d3d11 glcore gles3 vulkan
+            #pragma only_renderers d3d11 glcore gles3 vulkan metal
 
             #pragma multi_compile_instancing
             #pragma shader_feature_local _USE_OBJECT_BOUNDS
@@ -191,7 +191,7 @@ Shader "Mobile/StylizedFakeLit"
             #pragma vertex vertShadow
             #pragma fragment fragShadow
             #pragma target 3.0
-            #pragma only_renderers d3d11 glcore gles3 vulkan
+            #pragma only_renderers d3d11 glcore gles3 vulkan metal
             #pragma multi_compile_instancing
 
             // Differentiates directional from punctual light shadows, which use
@@ -265,7 +265,7 @@ Shader "Mobile/StylizedFakeLit"
             #pragma vertex vertDepth
             #pragma fragment fragDepth
             #pragma target 3.0
-            #pragma only_renderers d3d11 glcore gles3 vulkan
+            #pragma only_renderers d3d11 glcore gles3 vulkan metal
             #pragma multi_compile_instancing
 
             struct AttributesDepth
