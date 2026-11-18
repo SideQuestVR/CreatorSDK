@@ -169,12 +169,11 @@ A wall players pin their photos to. In the Scene view it shows filled with place
 and shape, and the selected wall says how many photos it holds, so you see the result without pressing Play. It faces
 the way the mirror does: photos are seen from the object's back (−Z), the opposite of the blue axis.
 
-- **Layout**: Grid (tidy rows), Corkboard (each photo a little off its place and tilted, as if pinned by hand), Gallery
-  row (one straight row) or Strings (polaroids hung on strings that dip in the middle).
-- **Size**: the wall's width and height in metres; its middle is the object.
-- **Photo Size**: how wide each photo is, in metres (its frame adds to it). How many photos fit follows from the size
-  and the photo size, never more than 35.
-- **Max Photos**: fewer photos than fit.
+- **Layout**: Grid (tidy rows), Corkboard (each photo a little off its place and tilted, as if pinned by hand) or
+  Strings (polaroids hung on strings that dip in the middle). One row of a grid is a gallery row.
+- **Rows** and **Columns**: how many photos, row by row; rows × columns is at most 35.
+- **Photo Size**: how wide each photo is, in metres (its frame adds to it). The wall's size follows from the rows,
+  columns and photo size; its middle is the object.
 - **Frame**: Layout Default (polaroids on the corkboard and strings, a border otherwise), None, Border or Polaroid.
 - **Shape**: Layout Default, Rectangle, Rounded or Circle (a round photo shows the middle of the picture).
 - **Frame Colour**, **Show Board** and **Board Colour**: the photo paper, and the board behind the photos (off: they
@@ -184,8 +183,8 @@ the way the mirror does: photos are seen from the object's back (−Z), the oppo
 - **Admins Only**: only the world's admins can pin photos, for a hall of fame. Off: anyone signed in.
 
 Each wall gets its own tilt pattern from its `BSObjectId`, the same for every player. Photos are drawn small into one
-texture per wall, so a full wall is a single draw. Scripts can add a wall and set its size, photo size, maximum,
-Replace Oldest and Admins Only: `await gameObject.AddComponent(new BS.PhotoWall(new BS.Vector2(2, 1.2), 0.24, 35, true, false))`;
+texture per wall, so a full wall is a single draw. Scripts can add a wall and set its rows, columns, photo size,
+Replace Oldest and Admins Only: `await gameObject.AddComponent(new BS.PhotoWall(3, 6, 0.24, true, false))`;
 the layout and look are set in the inspector. A wall made by a script is known by its object's id, which differs from
 player to player until the object has a network id: give it one (`SetNetworkId`) so everyone sees the same wall. Photos
 only appear in the client, not in SDK Play Mode.

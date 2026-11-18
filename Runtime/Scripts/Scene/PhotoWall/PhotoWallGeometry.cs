@@ -15,7 +15,6 @@ namespace BS
     /// <summary>A wall's slots and mesh from its settings, for the BS/Photo Wall shader. Front faces -Z.</summary>
     public sealed class PhotoWallGeometry
     {
-        public const float MaxWallSize = 100f;
         public const float MaxPictureWidth = 5f;
 
         public static Material LoadMaterial() => Resources.Load<Material>("BSPhotoWall");
@@ -23,6 +22,9 @@ namespace BS
         public PhotoWallStyle Style { get; private set; } = PhotoWallStyle.For(PhotoWallLayout.Grid);
         public PhotoWallFrame Frame { get; private set; } = PhotoWallFrame.Border;
         public PhotoWallShape Shape { get; private set; } = PhotoWallShape.Rectangle;
+        public int Rows { get; private set; }
+        public int Columns { get; private set; }
+        /// <summary>Width and height in metres, from the rows, columns and photo size.</summary>
         public Vector2 Size { get; private set; }
         public float PictureWidth { get; private set; }
         public int Seed { get; private set; }
@@ -37,23 +39,22 @@ namespace BS
 
         public float PictureAspect => PhotoWallStyle.PictureAspect(Shape);
 
-        int _maxPhotos;
-
         static float Finite(float value, float fallback) => float.IsNaN(value) || float.IsInfinity(value) ? fallback : value;
 
-        public void Set(PhotoWallLayout layout, PhotoWallFrame frame, PhotoWallShape shape, Vector2 size, float pictureWidth,
-            int maxPhotos, int seed, bool board)
+        public void Set(PhotoWallLayout layout, PhotoWallFrame frame, PhotoWallShape shape, int rows, int columns,
+            float pictureWidth, int seed, bool board)
         {
             Style = PhotoWallStyle.For(layout);
             Style.Resolve(frame, shape, out var drawnFrame, out var drawnShape);
             Frame = drawnFrame;
             Shape = drawnShape;
-            Size = new Vector2(Mathf.Clamp(Finite(size.x, 2f), 0.05f, MaxWallSize), Mathf.Clamp(Finite(size.y, 1.2f), 0.05f, MaxWallSize));
+            Rows = rows;
+            Columns = columns;
             PictureWidth = Mathf.Clamp(Finite(pictureWidth, 0.24f), 0.02f, MaxPictureWidth);
-            _maxPhotos = Mathf.Clamp(maxPhotos, 1, BSPhotoWall.PhotoCap);
+            Size = Style.WallSize(Rows, Columns, PictureWidth, Frame, Shape);
             Seed = seed;
             Board = board;
-            Style.Slots(Size, PictureWidth, Frame, Shape, Seed, _maxPhotos, Slots);
+            Style.Slots(Rows, Columns, PictureWidth, Frame, Shape, Seed, Slots);
             Card = PhotoWallStyle.CardSize(Frame, Shape, PictureWidth, out var window);
             Window = window;
         }
@@ -104,7 +105,7 @@ namespace BS
 
             if (Board)
                 AddQuad(Vector2.zero, Size, 0f, 0f, Vector4.zero, Vector4.zero);
-            Style.StringPoints(Size, PictureWidth, Frame, Shape, _maxPhotos, StringPointsPerRow, _stringPoints);
+            Style.StringPoints(Rows, Columns, PictureWidth, Frame, Shape, StringPointsPerRow, _stringPoints);
             for (int i = 0; i + 1 < _stringPoints.Count; i++)
             {
                 if ((i + 1) % StringPointsPerRow == 0)

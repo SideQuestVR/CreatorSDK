@@ -122,7 +122,8 @@ namespace BS.SDKEditor
             var wall = go != null ? go.GetComponent<BSPhotoWall>() : null;
             if (wall == null || !Previews.TryGetValue(wall, out var preview))
                 return;
-            var top = wall.transform.TransformPoint(new Vector3(-wall.size.x * 0.5f, wall.size.y * 0.5f + 0.06f, 0f));
+            var size = wall.Size;
+            var top = wall.transform.TransformPoint(new Vector3(-size.x * 0.5f, size.y * 0.5f + 0.06f, 0f));
             if (labelStyle == null)
                 labelStyle = new GUIStyle(EditorStyles.helpBox) { fontStyle = FontStyle.Bold, fontSize = 11 };
             Handles.Label(top, "Photo Wall: " + preview.Capacity + (preview.Capacity == 1 ? " photo" : " photos"), labelStyle);

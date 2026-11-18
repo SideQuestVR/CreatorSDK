@@ -8,9 +8,9 @@ namespace BS
 {
     partial class BSPhotoWall
     {
-        public UnityEngine.Vector2 Size { get { return size; } set { size = value; UpdateCallback(new List<PropertyName> { PropertyName.size }); } }
+        public System.Int32 Rows { get { return rows; } set { rows = value; UpdateCallback(new List<PropertyName> { PropertyName.rows }); } }
+        public System.Int32 Columns { get { return columns; } set { columns = value; UpdateCallback(new List<PropertyName> { PropertyName.columns }); } }
         public System.Single PhotoSize { get { return photoSize; } set { photoSize = value; UpdateCallback(new List<PropertyName> { PropertyName.photoSize }); } }
-        public System.Int32 MaxPhotos { get { return maxPhotos; } set { maxPhotos = value; UpdateCallback(new List<PropertyName> { PropertyName.maxPhotos }); } }
         public System.Boolean ReplaceOldest { get { return replaceOldest; } set { replaceOldest = value; UpdateCallback(new List<PropertyName> { PropertyName.replaceOldest }); } }
         public System.Boolean AdminsOnly { get { return adminsOnly; } set { adminsOnly = value; UpdateCallback(new List<PropertyName> { PropertyName.adminsOnly }); } }
 
@@ -35,12 +35,12 @@ namespace BS
 
         internal override void ReSetup()
         {
-            List<PropertyName> changedProperties = new List<PropertyName>() { PropertyName.size, PropertyName.photoSize, PropertyName.maxPhotos, PropertyName.replaceOldest, PropertyName.adminsOnly, };
+            List<PropertyName> changedProperties = new List<PropertyName>() { PropertyName.rows, PropertyName.columns, PropertyName.photoSize, PropertyName.replaceOldest, PropertyName.adminsOnly, };
             UpdateCallback(changedProperties);
         }
         internal override string GetSignature()
         {
-            return "PhotoWall" +  PropertyName.size + size + PropertyName.photoSize + photoSize + PropertyName.maxPhotos + maxPhotos + PropertyName.replaceOldest + replaceOldest + PropertyName.adminsOnly + adminsOnly;
+            return "PhotoWall" +  PropertyName.rows + rows + PropertyName.columns + columns + PropertyName.photoSize + photoSize + PropertyName.replaceOldest + replaceOldest + PropertyName.adminsOnly + adminsOnly;
         }
 
         internal override void Init(List<object> constructorProperties = null)
@@ -84,13 +84,22 @@ namespace BS
             List<PropertyName> changedProperties = new List<PropertyName>();
             for (int i = 0; i < values.Count; i++)
             {
-                if (values[i] is BSVector2)
+                if (values[i] is BSInt)
                 {
-                    var valsize = (BSVector2)values[i];
-                    if (valsize.n == PropertyName.size)
+                    var valrows = (BSInt)values[i];
+                    if (valrows.n == PropertyName.rows)
                     {
-                        size = new Vector2(valsize.x, valsize.y);
-                        changedProperties.Add(PropertyName.size);
+                        rows = valrows.x;
+                        changedProperties.Add(PropertyName.rows);
+                    }
+                }
+                if (values[i] is BSInt)
+                {
+                    var valcolumns = (BSInt)values[i];
+                    if (valcolumns.n == PropertyName.columns)
+                    {
+                        columns = valcolumns.x;
+                        changedProperties.Add(PropertyName.columns);
                     }
                 }
                 if (values[i] is BSFloat)
@@ -100,15 +109,6 @@ namespace BS
                     {
                         photoSize = valphotoSize.x;
                         changedProperties.Add(PropertyName.photoSize);
-                    }
-                }
-                if (values[i] is BSInt)
-                {
-                    var valmaxPhotos = (BSInt)values[i];
-                    if (valmaxPhotos.n == PropertyName.maxPhotos)
-                    {
-                        maxPhotos = valmaxPhotos.x;
-                        changedProperties.Add(PropertyName.maxPhotos);
                     }
                 }
                 if (values[i] is BSBool)
@@ -140,9 +140,21 @@ namespace BS
             {
                 updates.Add(new BSComponentPropertyUpdate()
                 {
-                    name = PropertyName.size,
-                    type = PropertyType.Vector2,
-                    value = size,
+                    name = PropertyName.rows,
+                    type = PropertyType.Int,
+                    value = rows,
+                    componentType = ComponentType.PhotoWall,
+                    oid = oid,
+                    cid = cid
+                });
+            }
+            if (force)
+            {
+                updates.Add(new BSComponentPropertyUpdate()
+                {
+                    name = PropertyName.columns,
+                    type = PropertyType.Int,
+                    value = columns,
                     componentType = ComponentType.PhotoWall,
                     oid = oid,
                     cid = cid
@@ -155,18 +167,6 @@ namespace BS
                     name = PropertyName.photoSize,
                     type = PropertyType.Float,
                     value = photoSize,
-                    componentType = ComponentType.PhotoWall,
-                    oid = oid,
-                    cid = cid
-                });
-            }
-            if (force)
-            {
-                updates.Add(new BSComponentPropertyUpdate()
-                {
-                    name = PropertyName.maxPhotos,
-                    type = PropertyType.Int,
-                    value = maxPhotos,
                     componentType = ComponentType.PhotoWall,
                     oid = oid,
                     cid = cid

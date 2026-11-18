@@ -315,5 +315,7 @@ namespace BS
         maxPhotos,
         replaceOldest,
         adminsOnly,
+        rows,
+        columns,
     }
 }

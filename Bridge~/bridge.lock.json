@@ -398,9 +398,11 @@
     {"id": 307, "name": "enableBrowserStreaming"},
     {"id": 308, "name": "enableUserUICollider"},
     {"id": 309, "name": "photoSize"},
-    {"id": 310, "name": "maxPhotos"},
+    {"id": 310, "name": "maxPhotos", "retired": true},
     {"id": 311, "name": "replaceOldest"},
-    {"id": 312, "name": "adminsOnly"}
+    {"id": 312, "name": "adminsOnly"},
+    {"id": 313, "name": "rows"},
+    {"id": 314, "name": "columns"}
   ],
   "tags": [
     {"index": 0, "name": "UserTag1"},
@@ -3218,14 +3220,14 @@
       "cs": "BS.BSPhotoWall",
       "base": "BS.BSComponentBase",
       "fields": [
-        {"name": "size", "attr": "See", "type": "UnityEngine.Vector2", "wire": "Vector2", "propId": 60, "initial": "2,1.2"},
+        {"name": "rows", "attr": "See", "type": "System.Int32", "wire": "Int", "propId": 313, "initial": "3"},
+        {"name": "columns", "attr": "See", "type": "System.Int32", "wire": "Int", "propId": 314, "initial": "6"},
         {"name": "photoSize", "attr": "See", "type": "System.Single", "wire": "Float", "propId": 309, "initial": "0.24"},
-        {"name": "maxPhotos", "attr": "See", "type": "System.Int32", "wire": "Int", "propId": 310, "initial": "35"},
         {"name": "replaceOldest", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 311, "initial": "true"},
         {"name": "adminsOnly", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 312, "initial": "false"}
       ],
       "methods": [],
-      "tsConstructor": ["size: Vector2 | any = new Vector2(2,1.2)", "photoSize: number = 0.24", "maxPhotos: number = 35", "replaceOldest: boolean = true", "adminsOnly: boolean = false"]
+      "tsConstructor": ["rows: number | any = 3", "columns: number = 6", "photoSize: number = 0.24", "replaceOldest: boolean = true", "adminsOnly: boolean = false"]
     }
   ],
   "jsAliases": [

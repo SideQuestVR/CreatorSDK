@@ -25,7 +25,7 @@ namespace BS.SDKEditor
 
             return BSComponentInspector.Build(
                 editor,
-                new string[] { "size", "photoSize", "maxPhotos", "replaceOldest", "adminsOnly" },
+                new string[] { "rows", "columns", "photoSize", "replaceOldest", "adminsOnly" },
                 new string[] { });
         }
     }

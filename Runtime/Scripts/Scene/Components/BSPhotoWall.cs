@@ -10,9 +10,9 @@ namespace BS
     back (-Z), like a Unity Quad.
 
     **Properties**
-    - `size` - The wall's width and height, in metres.
-    - `photoSize` - How wide each photo is, in metres.
-    - `maxPhotos` - At most this many photos (up to 35).
+    - `rows` - Rows of photos.
+    - `columns` - Photos in a row. Rows × columns is at most 35.
+    - `photoSize` - How wide each photo is, in metres. The wall's size follows.
     - `replaceOldest` - A full wall replaces its oldest photo. Off: it stays full.
     - `adminsOnly` - Only the world's admins can pin photos.
 
@@ -21,7 +21,7 @@ namespace BS
     **Code Example**
     ```js
         const gameObject = new BS.GameObject("MyPhotoWall");
-        const wall = await gameObject.AddComponent(new BS.PhotoWall(new BS.Vector2(2, 1.2), 0.24, 35, true, false));
+        const wall = await gameObject.AddComponent(new BS.PhotoWall(3, 6, 0.24, true, false));
     ```
     */
     [DefaultExecutionOrder(-1)]
@@ -36,16 +36,17 @@ namespace BS
         [Tooltip("How the photos are arranged.")]
         [SerializeField] PhotoWallLayout layout = PhotoWallLayout.Corkboard;
 
-        [Tooltip("Width and height in metres.")]
-        [See(initial = "2,1.2")][SerializeField] internal Vector2 size = new Vector2(2f, 1.2f);
+        [Tooltip("Rows of photos.")]
+        [Range(1, PhotoCap)]
+        [See(initial = "3")][SerializeField] internal int rows = 3;
 
-        [Tooltip("Photo width in metres.")]
+        [Tooltip("Photos in a row. Rows × columns is at most 35.")]
+        [Range(1, PhotoCap)]
+        [See(initial = "6")][SerializeField] internal int columns = 6;
+
+        [Tooltip("Photo width in metres. The wall's size follows.")]
         [Range(0.08f, 0.6f)]
         [See(initial = "0.24")][SerializeField] internal float photoSize = 0.24f;
-
-        [Tooltip("At most this many photos (up to 35).")]
-        [Range(1, PhotoCap)]
-        [See(initial = "35")][SerializeField] internal int maxPhotos = PhotoCap;
 
         [Header("Look")]
         [Tooltip("Layout Default: polaroids on the corkboard and strings, a border otherwise.")]
@@ -81,10 +82,20 @@ namespace BS
         public PhotoWallLayout Layout => layout;
         public PhotoWallFrame Frame => frame;
         public PhotoWallShape Shape => shape;
-        public int PhotoLimit => Mathf.Clamp(maxPhotos, 1, PhotoCap);
         public Color FrameColor => frameColor;
         public bool ShowBoard => showBoard;
         public Color BoardColor => boardColor;
+
+        /// <summary>Width and height in metres, from the rows, columns and photo size.</summary>
+        public Vector2 Size
+        {
+            get
+            {
+                var style = PhotoWallStyle.For(layout);
+                style.Resolve(frame, shape, out var drawnFrame, out var drawnShape);
+                return style.WallSize(rows, columns, photoSize, drawnFrame, drawnShape);
+            }
+        }
 
         public static readonly Color StringColor = new Color(0.12f, 0.1f, 0.09f);
 
@@ -123,7 +134,7 @@ namespace BS
 
         public void Describe(PhotoWallGeometry geometry)
         {
-            geometry.Set(layout, frame, shape, size, photoSize, PhotoLimit, Seed, showBoard);
+            geometry.Set(layout, frame, shape, rows, columns, photoSize, Seed, showBoard);
         }
 
         void OnEnable()
@@ -136,11 +147,16 @@ namespace BS
 
         void OnTransformParentChanged() => _derivedId = null;
 
-        void OnValidate() => Bump();
+        void OnValidate()
+        {
+            columns = Mathf.Clamp(columns, 1, PhotoCap);
+            rows = Mathf.Clamp(rows, 1, PhotoCap / columns);
+            Bump();
+        }
 
         void Bump()
         {
-            int hash = HashCode.Combine(layout, frame, shape, size, photoSize, maxPhotos,
+            int hash = HashCode.Combine(layout, frame, shape, rows, columns, photoSize,
                 HashCode.Combine(frameColor, showBoard, boardColor, replaceOldest, adminsOnly));
             if (_version != 0 && hash == _settingsHash)
                 return;
@@ -172,6 +188,7 @@ namespace BS
         {
             Gizmos.matrix = transform.localToWorldMatrix;
             Gizmos.color = new Color(1f, 1f, 1f, 0.004f);
+            var size = Size;
             Gizmos.DrawCube(new Vector3(0f, 0f, -0.01f), new Vector3(size.x, size.y, 0.02f));
         }
 
@@ -179,6 +196,7 @@ namespace BS
         {
             Gizmos.matrix = transform.localToWorldMatrix;
             Gizmos.color = new Color(1f, 0.8f, 0.2f, 0.8f);
+            var size = Size;
             Gizmos.DrawWireCube(Vector3.zero, new Vector3(size.x, size.y, 0f));
             Gizmos.DrawLine(Vector3.zero, Vector3.back * 0.25f);
         }

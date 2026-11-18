@@ -9,7 +9,6 @@ namespace BS
     {
         Grid = 0,
         Corkboard = 1,
-        Gallery = 2,
         Strings = 3,
     }
 
@@ -52,11 +51,10 @@ namespace BS
         public readonly float MaxTilt;
         /// <summary>A row's string dip, a fraction of the card height.</summary>
         public readonly float Sag;
-        public readonly bool OneRow;
         public readonly PhotoWallFrame Frame;
         public readonly PhotoWallShape Shape;
 
-        PhotoWallStyle(PhotoWallLayout layout, string name, float spacing, float jitter, float maxTilt, float sag, bool oneRow,
+        PhotoWallStyle(PhotoWallLayout layout, string name, float spacing, float jitter, float maxTilt, float sag,
             PhotoWallFrame frame, PhotoWallShape shape)
         {
             Layout = layout;
@@ -65,17 +63,15 @@ namespace BS
             Jitter = jitter;
             MaxTilt = maxTilt;
             Sag = sag;
-            OneRow = oneRow;
             Frame = frame;
             Shape = shape;
         }
 
         static readonly PhotoWallStyle[] Styles =
         {
-            new PhotoWallStyle(PhotoWallLayout.Grid, "Grid", 0.12f, 0f, 0f, 0f, false, PhotoWallFrame.Border, PhotoWallShape.Rectangle),
-            new PhotoWallStyle(PhotoWallLayout.Corkboard, "Corkboard", 0.18f, 0.35f, 6f, 0f, false, PhotoWallFrame.Polaroid, PhotoWallShape.Rectangle),
-            new PhotoWallStyle(PhotoWallLayout.Gallery, "Gallery row", 0.2f, 0f, 0f, 0f, true, PhotoWallFrame.Border, PhotoWallShape.Rectangle),
-            new PhotoWallStyle(PhotoWallLayout.Strings, "Strings", 0.16f, 0f, 4f, 0.4f, false, PhotoWallFrame.Polaroid, PhotoWallShape.Rectangle),
+            new PhotoWallStyle(PhotoWallLayout.Grid, "Grid", 0.12f, 0f, 0f, 0f, PhotoWallFrame.Border, PhotoWallShape.Rectangle),
+            new PhotoWallStyle(PhotoWallLayout.Corkboard, "Corkboard", 0.18f, 0.35f, 6f, 0f, PhotoWallFrame.Polaroid, PhotoWallShape.Rectangle),
+            new PhotoWallStyle(PhotoWallLayout.Strings, "Strings", 0.16f, 0f, 4f, 0.4f, PhotoWallFrame.Polaroid, PhotoWallShape.Rectangle),
         };
 
         /// <summary>The layout's rules; an unknown layout is the grid.</summary>
@@ -127,12 +123,16 @@ namespace BS
             return card;
         }
 
+        /// <summary>The wall's width and height in metres: the cards and the space round them.</summary>
+        public Vector2 WallSize(int rows, int columns, float pictureWidth, PhotoWallFrame frame, PhotoWallShape shape) =>
+            Measure(rows, columns, pictureWidth, frame, shape, out var g) ? g.Size : Vector2.zero;
+
         /// <summary>Card places, row by row from the top left. The same seed gives the same wall.</summary>
-        public void Slots(Vector2 wallSize, float pictureWidth, PhotoWallFrame frame, PhotoWallShape shape, int seed,
-            int maxSlots, List<PhotoWallSlot> into)
+        public void Slots(int rows, int columns, float pictureWidth, PhotoWallFrame frame, PhotoWallShape shape, int seed,
+            List<PhotoWallSlot> into)
         {
             into.Clear();
-            if (!Measure(wallSize, pictureWidth, frame, shape, maxSlots, out var g))
+            if (!Measure(rows, columns, pictureWidth, frame, shape, out var g))
                 return;
             var room = (g.Cell - g.Card) * 0.5f;
             for (int i = 0; i < g.Count; i++)
@@ -155,44 +155,44 @@ namespace BS
         }
 
         /// <summary>Points along each row's string, wall edge to wall edge, row after row.</summary>
-        public void StringPoints(Vector2 wallSize, float pictureWidth, PhotoWallFrame frame, PhotoWallShape shape, int maxSlots,
+        public void StringPoints(int rows, int columns, float pictureWidth, PhotoWallFrame frame, PhotoWallShape shape,
             int points, List<Vector2> into)
         {
             into.Clear();
-            if (Sag <= 0f || points < 2 || !Measure(wallSize, pictureWidth, frame, shape, maxSlots, out var g))
+            if (Sag <= 0f || points < 2 || !Measure(rows, columns, pictureWidth, frame, shape, out var g))
                 return;
             for (int row = 0; row < g.Rows; row++)
                 for (int i = 0; i < points; i++)
                 {
-                    float x = (i / (float)(points - 1) - 0.5f) * wallSize.x;
+                    float x = (i / (float)(points - 1) - 0.5f) * g.Size.x;
                     into.Add(new Vector2(x, StringY(g, row, x)));
                 }
         }
 
         struct GridInfo
         {
-            public Vector2 Card, Cell, Origin;
+            public Vector2 Card, Cell, Origin, Size;
             public int Columns, Rows, Count;
             public float Dip, Reach;
         }
 
-        bool Measure(Vector2 wallSize, float pictureWidth, PhotoWallFrame frame, PhotoWallShape shape, int maxSlots, out GridInfo g)
+        /// <summary>Rows and columns each 1 to <see cref="BSPhotoWall.PhotoCap"/>; past the cap the last rows go.</summary>
+        bool Measure(int rows, int columns, float pictureWidth, PhotoWallFrame frame, PhotoWallShape shape, out GridInfo g)
         {
             g = default;
-            if (!(wallSize.x > 0f) || !(wallSize.y > 0f) || !(pictureWidth > 0f) || maxSlots <= 0
-                || float.IsInfinity(wallSize.x) || float.IsInfinity(wallSize.y) || float.IsInfinity(pictureWidth))
+            if (!(pictureWidth > 0f) || float.IsInfinity(pictureWidth))
                 return false;
             g.Card = CardSize(frame, shape, pictureWidth, out _);
             g.Cell = g.Card * (1f + Spacing);
             g.Dip = g.Card.y * Sag;
             g.Cell.y += g.Dip;
-            // The epsilon keeps column counts equal across platforms; the cap keeps the product from overflowing.
-            g.Columns = Mathf.Clamp(Mathf.FloorToInt(Mathf.Min(wallSize.x / g.Cell.x + 1e-4f, maxSlots)), 1, maxSlots);
-            g.Rows = OneRow ? 1 : Mathf.Clamp(Mathf.FloorToInt(Mathf.Min(wallSize.y / g.Cell.y + 1e-4f, maxSlots)), 1, maxSlots);
-            g.Count = Mathf.Min(g.Columns * g.Rows, maxSlots);
-            g.Rows = Mathf.Min(g.Rows, (g.Count + g.Columns - 1) / g.Columns);
+            g.Columns = Mathf.Clamp(columns, 1, BSPhotoWall.PhotoCap);
+            g.Rows = Mathf.Clamp(rows, 1, BSPhotoWall.PhotoCap);
+            g.Count = Mathf.Min(g.Columns * g.Rows, BSPhotoWall.PhotoCap);
+            g.Rows = (g.Count + g.Columns - 1) / g.Columns;
+            g.Size = new Vector2(g.Columns * g.Cell.x, g.Rows * g.Cell.y);
             g.Origin = new Vector2(-(g.Columns - 1) * 0.5f * g.Cell.x, (g.Rows - 1) * 0.5f * g.Cell.y);
-            g.Reach = Mathf.Max(wallSize.x * 0.5f, 1e-3f);
+            g.Reach = g.Size.x * 0.5f;
             return true;
         }
 
