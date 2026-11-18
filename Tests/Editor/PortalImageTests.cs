@@ -21,5 +21,33 @@ namespace BS.SDKEditor.Tests
         [TestCase("not a url")]
         [TestCase("")]
         public void AnythingElse_IsLeftAlone(string url) => Assert.AreEqual(url, BSPortal.Sized(url, 512));
+
+        // World images come back from /v2/worlds/by-url as CDN-relative paths.
+        [Test]
+        public void AWorldImagePath_BecomesACdnUrl() =>
+            Assert.AreEqual("https://cdn.sidequestvr.com/file/4885846/card.png", Get.Cdn("file/4885846/card.png"));
+
+        [Test]
+        public void AWorldImagePath_WithALeadingSlash_BecomesACdnUrl() =>
+            Assert.AreEqual("https://cdn.sidequestvr.com/file/4885846/card.png", Get.Cdn("/file/4885846/card.png"));
+
+        [Test]
+        public void AFullUrl_PassesThrough() => Assert.AreEqual("https://example.com/a.png", Get.Cdn("https://example.com/a.png"));
+
+        // Unity can't decode WebP; the CDN converts to the type the file name asks for.
+        [Test]
+        public void AWebpWorldImage_IsAskedForAsPng() =>
+            Assert.AreEqual("https://cdn.sidequestvr.com/file/1/card.png", Get.Cdn("file/1/card.webp"));
+
+        [TestCase("https://cdn.sidequestvr.com/file/1/a.webp?size=512", "https://cdn.sidequestvr.com/file/1/a.png?size=512")]
+        [TestCase("https://cdn.sidequestvr.com/file/1/a.png?size=512", "https://cdn.sidequestvr.com/file/1/a.png?size=512")]
+        [TestCase("https://example.com/a.webp", "https://example.com/a.webp")]
+        public void TextureDownloads_AskTheCdnForADecodableType(string url, string expected) =>
+            Assert.AreEqual(expected, Get.Decodable(url));
+
+        [TestCase("/assets/images/old.png")]
+        [TestCase("")]
+        [TestCase(null)]
+        public void NoUsableImage_GivesNull(string path) => Assert.IsNull(Get.Cdn(path));
     }
 }

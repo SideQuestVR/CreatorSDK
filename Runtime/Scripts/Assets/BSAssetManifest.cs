@@ -98,21 +98,36 @@ namespace BS
             var dot = path.LastIndexOf('.');
             switch (dot < 0 ? "" : path.Substring(dot + 1).ToLowerInvariant())
             {
-                case "png": case "jpg": case "jpeg": case "tga": case "psd": case "exr": case "bmp": case "tif": case "tiff":
+                case "png":
+                case "jpg":
+                case "jpeg":
+                case "tga":
+                case "psd":
+                case "exr":
+                case "bmp":
+                case "tif":
+                case "tiff":
                     return AssetType.Texture2D;
-                case "mp3": case "ogg": case "wav": case "aif": case "aiff":
+                case "mp3":
+                case "ogg":
+                case "wav":
+                case "aif":
+                case "aiff":
                     return AssetType.AudioClip;
                 case "mat":
                     return AssetType.Material;
                 case "mesh":
                     return AssetType.Mesh;
-                case "prefab": case "fbx": case "obj":
+                case "prefab":
+                case "fbx":
+                case "obj":
                     return AssetType.GameObject;
                 case "anim":
                     return AssetType.AnimationClip;
                 case "shader":
                     return AssetType.Shader;
-                case "ttf": case "otf":
+                case "ttf":
+                case "otf":
                     return AssetType.Font;
                 default:
                     return null;

@@ -369,20 +369,20 @@ namespace BS.Bridge
             switch ((int)item.Opcode)
             {
                 case BridgeOp.Ping:
-                {
-                    long n = BridgeOps.DecodeU32(item.Payload);
-                    if (n >= 0) s.Link.EnqueueOp(BridgeOps.Encode(BridgeOp.Pong, BridgeOps.EncodeU32((uint)n)));
-                    return;
-                }
+                    {
+                        long n = BridgeOps.DecodeU32(item.Payload);
+                        if (n >= 0) s.Link.EnqueueOp(BridgeOps.Encode(BridgeOp.Pong, BridgeOps.EncodeU32((uint)n)));
+                        return;
+                    }
                 case BridgeOp.Accept:
-                {
-                    // Only what WELCOME offered, and only families Unity pushes: from here on they replace the strings.
-                    long families = BridgePush.DecodeAccept(item.Payload);
-                    if (families < 0) return;
-                    Stats.Accepts++;
-                    s.Accepted = (uint)families & s.Offered & BridgeFamily.Pushed;
-                    return;
-                }
+                    {
+                        // Only what WELCOME offered, and only families Unity pushes: from here on they replace the strings.
+                        long families = BridgePush.DecodeAccept(item.Payload);
+                        if (families < 0) return;
+                        Stats.Accepts++;
+                        s.Accepted = (uint)families & s.Offered & BridgeFamily.Pushed;
+                        return;
+                    }
                 default:
                     return; // PONG, and HELLO/WELCOME/HOLDING out of place
             }
@@ -514,10 +514,15 @@ namespace BS.Bridge
 
         WelcomePayload NewWelcome(BridgeSession s, uint families) => new WelcomePayload
         {
-            Epoch = s.Epoch, Mode = WelcomePayload.ModeV2, Lane = WelcomePayload.LaneCarrier,
+            Epoch = s.Epoch,
+            Mode = WelcomePayload.ModeV2,
+            Lane = WelcomePayload.LaneCarrier,
             Families = families,
-            Caps = Options.Caps | (CallHost?.GrantedCaps ?? 0), Features = BridgeFeature.TextForm, RecvWindow = (uint)Options.RecvWindow,
-            MaxFramePayload = BridgeWire.MaxFramePayload, FragmentSize = (uint)Options.FragmentSize,
+            Caps = Options.Caps | (CallHost?.GrantedCaps ?? 0),
+            Features = BridgeFeature.TextForm,
+            RecvWindow = (uint)Options.RecvWindow,
+            MaxFramePayload = BridgeWire.MaxFramePayload,
+            FragmentSize = (uint)Options.FragmentSize,
         };
 
         void PostWelcomeDirect(BridgeSession s)

@@ -295,7 +295,11 @@ namespace BS.Bridge
                     var p = new Pending
                     {
                         Flags = (ushort)((i == 0 ? FrameFlags.FragFirst : 0) | (last ? FrameFlags.FragLast : 0)),
-                        TextSource = entries, TextStart = cursor, Length = len, Cost = 2L * len, Entries = last ? entries : null,
+                        TextSource = entries,
+                        TextStart = cursor,
+                        Length = len,
+                        Cost = 2L * len,
+                        Entries = last ? entries : null,
                     };
                     pending.Enqueue(p);
                     QueuedCost += p.Cost;
@@ -356,7 +360,12 @@ namespace BS.Bridge
                     var p = new Pending
                     {
                         Flags = (ushort)((i == 0 ? FrameFlags.FragFirst : 0) | (i == count - 1 ? FrameFlags.FragLast : 0)),
-                        Bytes = body, Offset = start, Count = len, Length = len, Cost = len, Entries = i == count - 1 ? entries : null,
+                        Bytes = body,
+                        Offset = start,
+                        Count = len,
+                        Length = len,
+                        Cost = len,
+                        Entries = i == count - 1 ? entries : null,
                     };
                     pending.Enqueue(p);
                     QueuedCost += p.Cost;
@@ -390,7 +399,11 @@ namespace BS.Bridge
                 into.Add(new OutFrame
                 {
                     Header = new FrameHeader(FrameKind.Data, p.Flags, Epoch, seq, AckSeq, p.Length),
-                    TextSource = p.TextSource, TextStart = p.TextStart, Bytes = p.Bytes, Offset = p.Offset, Count = p.Count,
+                    TextSource = p.TextSource,
+                    TextStart = p.TextStart,
+                    Bytes = p.Bytes,
+                    Offset = p.Offset,
+                    Count = p.Count,
                 });
                 payload += p.Cost;
                 n++;

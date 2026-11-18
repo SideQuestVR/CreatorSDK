@@ -36,6 +36,10 @@ namespace BS
         public const string EnableBirdFlight = "EnableBirdFlight";
         public const string AvatarSyncMode = "AvatarSyncMode";
         public const string VoiceDistanceMultiplier = "VoiceDistanceMultiplier";
+        public const string EnableRun = "EnableRun";
+        public const string TeleportMaxRange = "TeleportMaxRange";
+        public const string EnableBrowserStreaming = "EnableBrowserStreaming";
+        public const string EnableUserUICollider = "EnableUserUICollider";
         public const string EnableHandHold = "EnableHandHold";
         public const string EnableRadar = "EnableRadar";
         public const string EnableNametags = "EnableNametags";
@@ -440,6 +444,47 @@ namespace BS
             }
             EventBus.Trigger("OnClick", new CustomEventArgs(UnityId(obj).ToString(), new object[] { point, normal }));
             link.OnClick(obj, point, normal);
+        }
+
+        /// <summary>
+        /// One of the local player's pointers moved onto UI (a canvas or UI Toolkit panel, the host's or the world's)
+        /// or off it: Visual Scripting's On Pointer Over UI. Hosts call it on each change, with the mouse as the right
+        /// hand. Lets a world pause its own pointer input, which UI doesn't consume, while the player uses a panel.
+        /// The page gets it as the pointer-over-ui event.
+        /// </summary>
+        public void PointerOverUI(HandSide side, bool isOverUI)
+        {
+            try
+            {
+                EventBus.Trigger("OnPointerOverUI", new CustomEventArgs("", new object[] { isOverUI, (int)side }));
+                if (link != null) link.OnPointerOverUI(isOverUI, side);
+            }
+            catch (Exception e)
+            {
+                // Called from inside the host's pointer processing, which a world's graph must not stop.
+                Debug.LogException(e);
+            }
+        }
+
+        /// <summary>
+        /// The local player has just been teleported: Visual Scripting's On Player Teleported, and the page's
+        /// player-teleported event. Hosts call it once the player has moved, for every teleport: a script, a portal,
+        /// a seat, arriving, respawning from the menu, or the host catching a fall out of the world. isSpawn marks the
+        /// last three (and any teleport a world sends with Is Spawn), so a world can tell a respawn from the rest.
+        /// Rotation is Euler degrees; only y is used today.
+        /// </summary>
+        public void PlayerTeleported(Vector3 position, Vector3 rotation, bool isSpawn)
+        {
+            try
+            {
+                EventBus.Trigger("OnPlayerTeleported", new CustomEventArgs("", new object[] { position, rotation, isSpawn }));
+                if (link != null) link.OnPlayerTeleported(position, rotation, isSpawn);
+            }
+            catch (Exception e)
+            {
+                // Called from inside the host's teleport, which a world's graph must not stop.
+                Debug.LogException(e);
+            }
         }
         #endregion
 
@@ -2128,6 +2173,13 @@ namespace BS
                 {
                     UnityMainThreadTaskScheduler.Default.Enqueue(TaskRunner.Track(() =>
                     {
+                        // Queued: the object can have been destroyed since the check above. The page gets the same
+                        // answer as for an id that was never there.
+                        if (banterObject == null)
+                        {
+                            SendError(reqId, "SET_ACTIVE: Could not find object with id: " + msgParts[0]);
+                            return;
+                        }
                         banterObject.SetActive(int.Parse(msgParts[1]) == 1);
                         SendObjectUpdate(banterObject, reqId);
                     }, $"{nameof(BSScene)}.{nameof(SetJsObjectActive)}"));
@@ -3458,7 +3510,7 @@ namespace BS
             ForgetCreationsMark(); // and the creation watermark: taken at the new page's first check
         }
 
-        public async Task OnLoad(string instanceId)
+        public Task OnLoad(string instanceId)
         {
             // This is fired when the page loads or realods from the browser end, so it can be fired becuase 
             // we have explicitly naviagted the page, but also becuase someone hut f5 in the debugger. 
@@ -3476,12 +3528,10 @@ namespace BS
                  RestoreWorldBrowserSize();
                  events.OnLoad.Invoke();
              }, $"{nameof(BSScene)}.{nameof(OnLoad)}"));
-            // TODO: This wont work with 5 ms, but I tested it hundreds of times at 10ms and it never
-            // failed at that level. Maybe it is because the other thread stuff above? I think so.
-            // Maybe it will fail on android? Or other slower computers? Making it 100 for good measure.
-            // :thumbsup: :worksonmymachine: :sadcat:
-            await new WaitForSeconds(0.1f);
-            FlushAllSceneProps();
+            // The objects Unity already holds are sent when the page's Scene says SCENE_START (ReplaySceneToPage), not
+            // here: nothing on the page listens until then. This used to send them 0.1 s after LoadStarted, which a
+            // page that makes its Scene later (from "bs-loaded", 200 ms after the SDK script runs) never received.
+            return Task.CompletedTask;
         }
 
         // The world browser's size before SetWorldBrowserSize changed it; put back when the next space loads.
@@ -3526,8 +3576,17 @@ namespace BS
             if (view.isActiveAndEnabled) view.StartCoroutine(view.ResizeWindow(view.GetAdjustedSize()));
         }
 
-        void FlushAllSceneProps()
+        /// <summary>
+        /// Send the page everything Unity has registered: each object, its components, their property values, and which
+        /// components have finished loading. Unity announces each of these once, when it happens, and the bridge drops
+        /// what it sends while the page has no session, so whatever existed before the page's Scene did (the objects of
+        /// the scene being played in the editor, anything made before the page asked) reaches it only through this.
+        /// Runs on the Scene's SCENE_START, the first thing a Scene sends, in the same turn that it starts listening.
+        /// Main thread.
+        /// </summary>
+        internal void ReplaySceneToPage()
         {
+            if (link == null) return;
             foreach (var obj in objects.Values)
             {
                 var comps = obj.banterObject.banterComponents.Values;
@@ -3553,6 +3612,13 @@ namespace BS
                         {
                             LogLine.Do(Color.red, "[Banter]", "Unknown property type: " + prop.type);
                         }
+                    }
+                    // After the updates that make the component on the page: its LOADED went out once, when it loaded.
+                    // Asked of the component itself: BSComponent.loaded is also set when the load gate gives up waiting.
+                    var id = obj.id;
+                    if (id != null && id.mainThreadComponentMap.TryGetValue(comp.cid, out var unityComp) && unityComp != null && unityComp.IsLoaded)
+                    {
+                        link.Send(APICommands.EVENT + APICommands.LOADED + MessageDelimiters.PRIMARY + comp.cid);
                     }
                 }
             }
@@ -3801,8 +3867,31 @@ namespace BS
         #endregion
 
         #region Utilities and startup methods
+        // Tick's handlers, as last asked of the delegate in _tickHandlersOf. A delegate never changes once made (each
+        // += or -= makes a new one), so the list is asked for again after a subscription changed, not every tick.
+        EventHandler _tickHandlersOf;
+        Delegate[] _tickHandlers;
+
+        Delegate[] TickHandlers(EventHandler tick)
+        {
+            if (!ReferenceEquals(tick, _tickHandlersOf))
+            {
+                _tickHandlers = tick.GetInvocationList();
+                _tickHandlersOf = tick;
+            }
+            return _tickHandlers;
+        }
+
         public void FixedUpdate()
         {
+            if (Tick == null)
+            {
+                // No handler runs, so nothing is buffered or sent: the tick needs no list. Nor are the last handlers
+                // (destroyed components by now) worth keeping.
+                _tickHandlersOf = null;
+                _tickHandlers = null;
+                return;
+            }
             _tickBuffer = new List<BSComponentPropertyUpdate>();
             try
             {
@@ -3811,7 +3900,7 @@ namespace BS
                 {
                     // One component per handler, each on its own. A throw used to skip every later handler and leave
                     // _tickBuffer set, which silently dropped every Unity->JS update until the next tick (issue 6).
-                    foreach (EventHandler handler in tick.GetInvocationList())
+                    foreach (EventHandler handler in TickHandlers(tick))
                     {
                         try
                         {
@@ -3882,6 +3971,18 @@ namespace BS
                                  break;
                              case SettingsMap.VoiceDistanceMultiplier:
                                  settings.VoiceDistanceMultiplier = NumberFormat.Parse(setting[1]);
+                                 break;
+                             case SettingsMap.EnableRun:
+                                 settings.EnableRun = setting[1] == "1";
+                                 break;
+                             case SettingsMap.TeleportMaxRange:
+                                 settings.TeleportMaxRange = NumberFormat.Parse(setting[1]);
+                                 break;
+                             case SettingsMap.EnableBrowserStreaming:
+                                 settings.EnableBrowserStreaming = setting[1] == "1";
+                                 break;
+                             case SettingsMap.EnableUserUICollider:
+                                 settings.EnableUserUICollider = setting[1] == "1";
                                  break;
                              case SettingsMap.EnableHandHold:
                                  settings.EnableHandHold = setting[1] == "1";

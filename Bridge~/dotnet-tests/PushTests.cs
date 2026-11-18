@@ -488,80 +488,80 @@ static class PushTests
                 switch ((int)opcode)
                 {
                     case BridgeOp.Accept:
-                    {
-                        long f = BridgePush.DecodeAccept(payload);
-                        if (error) { T.Eq(-1L, f, name); break; }
-                        T.Eq((long)c.GetProperty("families").GetInt32(), f, name);
-                        T.Eq(BridgeHex.ToHex(payload), BridgeHex.ToHex(BridgePush.EncodeAccept((uint)f)), name + " re-encoded");
-                        break;
-                    }
+                        {
+                            long f = BridgePush.DecodeAccept(payload);
+                            if (error) { T.Eq(-1L, f, name); break; }
+                            T.Eq((long)c.GetProperty("families").GetInt32(), f, name);
+                            T.Eq(BridgeHex.ToHex(payload), BridgeHex.ToHex(BridgePush.EncodeAccept((uint)f)), name + " re-encoded");
+                            break;
+                        }
                     case BridgeOp.Delta:
-                    {
-                        bool ok = BridgePush.TryDecodeDelta(payload, out uint applied, out var entries);
-                        if (error) { T.True(!ok, name + ": refused"); break; }
-                        T.True(ok, name);
-                        var want = c.GetProperty("delta");
-                        T.Eq(want.GetProperty("applied").GetUInt32(), applied, name + " applied");
-                        var batch = new BridgePushBatch(BridgeFamily.Delta);
-                        int i = 0;
-                        foreach (var e in want.GetProperty("entries").EnumerateArray())
                         {
-                            var x = entries[i++];
-                            T.Eq(e.GetProperty("oid").GetInt32() + "/" + e.GetProperty("cid").GetInt32() + "/" + e.GetProperty("componentType").GetInt32() + "/" + e.GetProperty("prop").GetInt32() + " " + e.GetProperty("text").GetString(),
-                                x.Oid + "/" + x.Cid + "/" + x.ComponentType + "/" + x.Prop + " " + x.Text, name);
-                            batch.AddDelta(x, applied);
+                            bool ok = BridgePush.TryDecodeDelta(payload, out uint applied, out var entries);
+                            if (error) { T.True(!ok, name + ": refused"); break; }
+                            T.True(ok, name);
+                            var want = c.GetProperty("delta");
+                            T.Eq(want.GetProperty("applied").GetUInt32(), applied, name + " applied");
+                            var batch = new BridgePushBatch(BridgeFamily.Delta);
+                            int i = 0;
+                            foreach (var e in want.GetProperty("entries").EnumerateArray())
+                            {
+                                var x = entries[i++];
+                                T.Eq(e.GetProperty("oid").GetInt32() + "/" + e.GetProperty("cid").GetInt32() + "/" + e.GetProperty("componentType").GetInt32() + "/" + e.GetProperty("prop").GetInt32() + " " + e.GetProperty("text").GetString(),
+                                    x.Oid + "/" + x.Cid + "/" + x.ComponentType + "/" + x.Prop + " " + x.Text, name);
+                                batch.AddDelta(x, applied);
+                            }
+                            T.Eq(i, entries.Count, name + " count");
+                            if (entries.Count > 0)
+                                T.Eq(BridgeHex.ToHex(BridgeOps.Encode(opcode, payload)), BridgeHex.ToHex(batch.Encode()), name + " re-encoded");
+                            break;
                         }
-                        T.Eq(i, entries.Count, name + " count");
-                        if (entries.Count > 0)
-                            T.Eq(BridgeHex.ToHex(BridgeOps.Encode(opcode, payload)), BridgeHex.ToHex(batch.Encode()), name + " re-encoded");
-                        break;
-                    }
                     case BridgeOp.Announce:
-                    {
-                        bool ok = BridgePush.TryDecodeAnnounce(payload, out var entries);
-                        if (error) { T.True(!ok, name + ": refused"); break; }
-                        T.True(ok, name);
-                        var batch = new BridgePushBatch(BridgeFamily.Announce);
-                        int i = 0;
-                        foreach (var e in c.GetProperty("announce").EnumerateArray())
                         {
-                            var x = entries[i++];
-                            T.Eq(e.GetProperty("kind").GetInt32(), (int)x.Kind, name + " kind");
-                            T.Eq(e.GetProperty("oid").GetInt32(), x.Oid, name + " oid");
-                            if (x.Kind == BridgePush.AnnounceObject)
+                            bool ok = BridgePush.TryDecodeAnnounce(payload, out var entries);
+                            if (error) { T.True(!ok, name + ": refused"); break; }
+                            T.True(ok, name);
+                            var batch = new BridgePushBatch(BridgeFamily.Announce);
+                            int i = 0;
+                            foreach (var e in c.GetProperty("announce").EnumerateArray())
                             {
-                                T.Eq(e.GetProperty("active").GetBoolean(), x.Active, name + " active");
-                                T.Eq(e.GetProperty("name").GetString(), x.Name, name + " name");
-                                T.Eq(e.GetProperty("layer").GetInt32(), x.Layer, name + " layer");
-                                T.Eq(e.GetProperty("tag").GetString(), x.Tag, name + " tag");
-                                T.Eq(e.GetProperty("parent").GetInt32(), x.Parent, name + " parent");
+                                var x = entries[i++];
+                                T.Eq(e.GetProperty("kind").GetInt32(), (int)x.Kind, name + " kind");
+                                T.Eq(e.GetProperty("oid").GetInt32(), x.Oid, name + " oid");
+                                if (x.Kind == BridgePush.AnnounceObject)
+                                {
+                                    T.Eq(e.GetProperty("active").GetBoolean(), x.Active, name + " active");
+                                    T.Eq(e.GetProperty("name").GetString(), x.Name, name + " name");
+                                    T.Eq(e.GetProperty("layer").GetInt32(), x.Layer, name + " layer");
+                                    T.Eq(e.GetProperty("tag").GetString(), x.Tag, name + " tag");
+                                    T.Eq(e.GetProperty("parent").GetInt32(), x.Parent, name + " parent");
+                                }
+                                else
+                                {
+                                    T.Eq(e.GetProperty("cid").GetInt32(), x.Cid, name + " cid");
+                                    T.Eq(e.GetProperty("componentType").GetInt32(), x.ComponentType, name + " componentType");
+                                }
+                                batch.AddAnnounce(x);
                             }
-                            else
-                            {
-                                T.Eq(e.GetProperty("cid").GetInt32(), x.Cid, name + " cid");
-                                T.Eq(e.GetProperty("componentType").GetInt32(), x.ComponentType, name + " componentType");
-                            }
-                            batch.AddAnnounce(x);
+                            T.Eq(BridgeHex.ToHex(BridgeOps.Encode(opcode, payload)), BridgeHex.ToHex(batch.Encode()), name + " re-encoded");
+                            break;
                         }
-                        T.Eq(BridgeHex.ToHex(BridgeOps.Encode(opcode, payload)), BridgeHex.ToHex(batch.Encode()), name + " re-encoded");
-                        break;
-                    }
                     case BridgeOp.Destroyed:
-                    {
-                        bool ok = BridgePush.TryDecodeDestroyed(payload, out var entries);
-                        if (error) { T.True(!ok, name + ": refused"); break; }
-                        T.True(ok, name);
-                        var batch = new BridgePushBatch(BridgeFamily.Destroyed);
-                        int i = 0;
-                        foreach (var e in c.GetProperty("destroyed").EnumerateArray())
                         {
-                            var x = entries[i++];
-                            T.Eq(e.GetProperty("handle").GetInt32() + ":" + e.GetProperty("reason").GetInt32(), x.handle + ":" + x.reason, name);
-                            batch.AddDestroyed(x.handle, x.reason);
+                            bool ok = BridgePush.TryDecodeDestroyed(payload, out var entries);
+                            if (error) { T.True(!ok, name + ": refused"); break; }
+                            T.True(ok, name);
+                            var batch = new BridgePushBatch(BridgeFamily.Destroyed);
+                            int i = 0;
+                            foreach (var e in c.GetProperty("destroyed").EnumerateArray())
+                            {
+                                var x = entries[i++];
+                                T.Eq(e.GetProperty("handle").GetInt32() + ":" + e.GetProperty("reason").GetInt32(), x.handle + ":" + x.reason, name);
+                                batch.AddDestroyed(x.handle, x.reason);
+                            }
+                            T.Eq(BridgeHex.ToHex(BridgeOps.Encode(opcode, payload)), BridgeHex.ToHex(batch.Encode()), name + " re-encoded");
+                            break;
                         }
-                        T.Eq(BridgeHex.ToHex(BridgeOps.Encode(opcode, payload)), BridgeHex.ToHex(batch.Encode()), name + " re-encoded");
-                        break;
-                    }
                     default:
                         throw new Exception("unknown opcode in " + name);
                 }

@@ -30,7 +30,11 @@ namespace BS.SDKEditor.Tests
 
         static BSPosePresetFile.HandPreset HandPreset(bool separate, float radius) => new BSPosePresetFile.HandPreset
         {
-            name = "Test", separateLeft = separate, sourceGrabRadius = radius, right = Hand(.05f), left = Hand(-.07f)
+            name = "Test",
+            separateLeft = separate,
+            sourceGrabRadius = radius,
+            right = Hand(.05f),
+            left = Hand(-.07f)
         };
 
         static BSPosePresetFile.SeatPreset SeatPreset()
@@ -60,7 +64,8 @@ namespace BS.SDKEditor.Tests
             Assert.That(Quaternion.Angle(loaded.pose.pelvisRotation, saved.pose.pelvisRotation), Is.LessThan(.01f));
         }
 
-        [TestCase(false)] [TestCase(true)]
+        [TestCase(false)]
+        [TestCase(true)]
         public void HandPreset_RoundTripsThroughComponents(bool separate)
         {
             var source = New<BSGrabHandle>();
@@ -89,7 +94,10 @@ namespace BS.SDKEditor.Tests
             Undo.ClearUndo(target);
         }
 
-        [TestCase(false, false)] [TestCase(false, true)] [TestCase(true, false)] [TestCase(true, true)]
+        [TestCase(false, false)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        [TestCase(true, true)]
         public void HandPreset_KeepsTheWristInPlaceOnAnotherGrabRadius(bool separate, bool left)
         {
             const float source = .03f, target = .08f;
@@ -200,7 +208,8 @@ namespace BS.SDKEditor.Tests
             Assert.That(error, Does.Contain("invalid"));
         }
 
-        [TestCase("1e999")] [TestCase("NaN")]
+        [TestCase("1e999")]
+        [TestCase("NaN")]
         public void NonFiniteHandValue_IsRefused(string value)
         {
             var preset = HandPreset(false, .01f);
@@ -252,7 +261,9 @@ namespace BS.SDKEditor.Tests
             finally { Directory.Delete(folder, true); }
         }
 
-        [TestCase("")] [TestCase(null)] [TestCase("Z:/this/folder/does/not/exist")]
+        [TestCase("")]
+        [TestCase(null)]
+        [TestCase("Z:/this/folder/does/not/exist")]
         public void MissingFolder_ListsNothing(string folder)
         {
             Assert.That(BSPosePresetFile.FindPresets(folder, BSPosePresetFile.SeatKind), Is.Empty);

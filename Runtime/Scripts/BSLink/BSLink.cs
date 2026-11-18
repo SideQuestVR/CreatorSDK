@@ -182,6 +182,12 @@ namespace BS
                 }
                 scene.state = SceneState.SCENE_START;
                 scene.RestartEmptySceneGrace();
+                // The page's Scene now listens: tell it what Unity already has. Queued, so it runs on the main thread
+                // behind OnLoad's reset.
+                UnityMainThreadTaskScheduler.Default.Enqueue(TaskRunner.Track(() =>
+                {
+                    if (!shuttingDown) scene.ReplaySceneToPage();
+                }, $"{nameof(BSLink)}.{nameof(ParseCommand)}.SCENE_START ReplaySceneToPage"));
             }
             // else if (msg.StartsWith(APICommands.DOM_READY))
             // {
@@ -983,6 +989,14 @@ namespace BS
         /// <summary>DESTROYED's sweep: entries of each table looked at per frame.</summary>
         internal static int DestroyedSweepPerFrame = 64;
 
+        // The drain in progress, for the one delegate bridge.Drain asks "out of budget?": a lambda over these as
+        // locals was a closure and a delegate made on every call, and the pump calls every frame.
+        long bridgeDrainStartTicks, bridgeDrainUsedTicks, bridgeDrainLimitTicks;
+        Func<bool> bridgeDrainOutOfBudget;
+
+        bool BridgeDrainOutOfBudget() =>
+            bridgeDrainUsedTicks + (System.Diagnostics.Stopwatch.GetTimestamp() - bridgeDrainStartTicks) > bridgeDrainLimitTicks;
+
         /// <summary>Drains while this frame's budget (shared by the inline drains in the Ora callback) lasts.</summary>
         void DrainWithinFrameBudget()
         {
@@ -992,8 +1006,22 @@ namespace BS
             long limit = (long)(budgetMs * System.Diagnostics.Stopwatch.Frequency / 1000);
             if (bridgeBudgetUsedTicks >= limit) return;
             long start = System.Diagnostics.Stopwatch.GetTimestamp();
-            long used = bridgeBudgetUsedTicks;
-            bridge.Drain(int.MaxValue, () => used + (System.Diagnostics.Stopwatch.GetTimestamp() - start) > limit);
+            // Put back afterwards, in case a message handled in this drain starts another (the Ora callback drains
+            // inline): each then keeps its own start and limit, as each lambda did.
+            long outerStart = bridgeDrainStartTicks, outerUsed = bridgeDrainUsedTicks, outerLimit = bridgeDrainLimitTicks;
+            bridgeDrainStartTicks = start;
+            bridgeDrainUsedTicks = bridgeBudgetUsedTicks;
+            bridgeDrainLimitTicks = limit;
+            try
+            {
+                bridge.Drain(int.MaxValue, bridgeDrainOutOfBudget ??= BridgeDrainOutOfBudget);
+            }
+            finally
+            {
+                bridgeDrainStartTicks = outerStart;
+                bridgeDrainUsedTicks = outerUsed;
+                bridgeDrainLimitTicks = outerLimit;
+            }
             bridgeBudgetUsedTicks += System.Diagnostics.Stopwatch.GetTimestamp() - start;
         }
 
@@ -1188,16 +1216,16 @@ namespace BS
                 case PropertyName.eulerAngles:
                 case PropertyName.localEulerAngles:
                 case PropertyName.localScale:
-                {
-                    var v = (Vector3)update.value;
-                    return (int)update.name + t + NumberFormat.Format(v.x) + t + NumberFormat.Format(v.y) + t + NumberFormat.Format(v.z);
-                }
+                    {
+                        var v = (Vector3)update.value;
+                        return (int)update.name + t + NumberFormat.Format(v.x) + t + NumberFormat.Format(v.y) + t + NumberFormat.Format(v.z);
+                    }
                 case PropertyName.rotation:
                 case PropertyName.localRotation:
-                {
-                    var q = (Quaternion)update.value;
-                    return (int)update.name + t + NumberFormat.Format(q.x) + t + NumberFormat.Format(q.y) + t + NumberFormat.Format(q.z) + t + NumberFormat.Format(q.w);
-                }
+                    {
+                        var q = (Quaternion)update.value;
+                        return (int)update.name + t + NumberFormat.Format(q.x) + t + NumberFormat.Format(q.y) + t + NumberFormat.Format(q.z) + t + NumberFormat.Format(q.w);
+                    }
                 default:
                     return null;
             }
@@ -1369,6 +1397,16 @@ namespace BS
         public void OnButtonReleased(ButtonType button, HandSide side)
         {
             Send(APICommands.EVENT + APICommands.BUTTON_RELEASED + MessageDelimiters.PRIMARY + (int)button + MessageDelimiters.SECONDARY + (int)side);
+        }
+
+        public void OnPointerOverUI(bool isOverUI, HandSide side)
+        {
+            Send(APICommands.EVENT + APICommands.POINTER_OVER_UI + MessageDelimiters.PRIMARY + (isOverUI ? "1" : "0") + MessageDelimiters.SECONDARY + (int)side);
+        }
+
+        public void OnPlayerTeleported(Vector3 position, Vector3 rotation, bool isSpawn)
+        {
+            Send(APICommands.EVENT + APICommands.PLAYER_TELEPORTED + MessageDelimiters.PRIMARY + NumberFormat.Format(position.x) + MessageDelimiters.SECONDARY + NumberFormat.Format(position.y) + MessageDelimiters.SECONDARY + NumberFormat.Format(position.z) + MessageDelimiters.SECONDARY + NumberFormat.Format(rotation.x) + MessageDelimiters.SECONDARY + NumberFormat.Format(rotation.y) + MessageDelimiters.SECONDARY + NumberFormat.Format(rotation.z) + MessageDelimiters.SECONDARY + (isSpawn ? "1" : "0"));
         }
 
         public void OnControllerAxisUpdate(HandSide hand, float x, float y)

@@ -4,7 +4,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using BS;
+using BS.VideoStream;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.Video;
 using PropertyName = BS.PropertyName;
 

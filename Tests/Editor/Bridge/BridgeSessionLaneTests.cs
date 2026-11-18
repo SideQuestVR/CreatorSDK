@@ -223,6 +223,55 @@ namespace BS.Bridge.Tests
         }
 
         [Test]
+        public void ObjectsRegisteredBeforeThePagesScene_ReachIt_WhenTheSceneStarts()
+        {
+            // The scene being played in the editor: its BSObjectIds register at Awake, before any page exists, and a
+            // page that makes its Scene from "bs-loaded" says HELLO long after LoadStarted. Unity used to send the
+            // registry once, 0.1 s after LoadStarted, to nobody.
+            Setup();
+            var scene = link.scene;
+            var objects = new ConcurrentDictionary<int, UnityAndBanterObject>();
+            typeof(BSScene).GetField("objects", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(scene, objects);
+            var button = new GameObject("start-btn");
+            try
+            {
+                int oid = BSScene.UnityId(button);
+                var obj = (BSObject)FormatterServices.GetUninitializedObject(typeof(BSObject));
+                obj.oid = oid;
+                obj.scene = scene;
+                obj.banterComponents = new ConcurrentDictionary<int, BSComponent>();
+                var entry = new UnityAndBanterObject { gameObject = button, banterObject = obj };
+                obj.unityAndBanterObject = entry;
+                objects.TryAdd(oid, entry);
+                string marker = APICommands.UPDATE + oid + MessageDelimiters.PRIMARY + 0 + MessageDelimiters.PRIMARY + 0 + MessageDelimiters.PRIMARY
+                    + (int)PropertyName.hasUnity + MessageDelimiters.SECONDARY + (int)PropertyType.Bool + MessageDelimiters.SECONDARY + 1;
+
+                link.bridge.NotifyLoadStarted("http://localhost:42068/");
+                link.bridge.NotifyOnLoad();
+
+                // What BSObjectId.Awake sends: there is no page session, so it goes nowhere.
+                scene.FlushObjectToChanges(oid);
+                Assert.AreEqual(0, Pump().Count);
+                Assert.AreEqual(1L, link.bridge.Stats.DroppedNoSession);
+
+                // The page arrives late. HELLO alone brings nothing: its Scene does not exist yet.
+                var page = new Page("doc-1");
+                FromPage(page.Hello("http://localhost:42068/"));
+                CollectionAssert.IsEmpty(page.Receive(Pump()));
+
+                // Its Scene starts: the registry follows.
+                FromPage(page.Text(APICommands.SCENE_START));
+                Pump();
+                RunQueued();
+                CollectionAssert.AreEqual(new[] { marker }, page.Receive(Pump()));
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(button);
+            }
+        }
+
+        [Test]
         public void TheSpaceView_GetsItsLinkProfile_OnBothOfTheStartersPaths()
         {
             // Before the view's Awake, which opens its channel: a view BSStarterUpper builds, and one that came with the

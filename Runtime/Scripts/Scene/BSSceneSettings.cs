@@ -26,7 +26,9 @@ namespace BS
         public bool EnableDevTools { get { return _EnableDevTools; } set { _EnableDevTools = value; scene.events.OnEnableDevToolsChanged.Invoke(value); } }
         private bool _EnableTeleport = true;
         public bool EnableTeleport { get { return _EnableTeleport; } set { _EnableTeleport = value; scene.events.OnEnableTeleportChanged.Invoke(value); } }
-        private bool _EnableForceGrab = false;
+        // On unless the space turns it off (it was off unless the space turned it on until Nov 2026). Each player can
+        // still switch their own distance grab off in Controls.
+        private bool _EnableForceGrab = true;
         public bool EnableForceGrab { get { return _EnableForceGrab; } set { _EnableForceGrab = value; scene.events.OnEnableForceGrabChanged.Invoke(value); } }
         private bool _EnableSpiderMan = false;
         public bool EnableSpiderMan { get { return _EnableSpiderMan; } set { _EnableSpiderMan = value; scene.events.OnEnableSpiderManChanged.Invoke(value); } }
@@ -41,6 +43,25 @@ namespace BS
         /// Stored as given; the app clamps it when it applies it.</summary>
         private float _VoiceDistanceMultiplier = 1f;
         public float VoiceDistanceMultiplier { get { return _VoiceDistanceMultiplier; } set { _VoiceDistanceMultiplier = value; scene.events.OnVoiceDistanceMultiplierChanged.Invoke(value); } }
+        /// <summary>Players can run (hold Shift on desktop, click the left stick in VR). On unless the space turns it off;
+        /// off, everyone moves at the space's walking speed only.</summary>
+        private bool _EnableRun = true;
+        public bool EnableRun { get { return _EnableRun; } set { _EnableRun = value; scene.events.OnEnableRunChanged.Invoke(value); } }
+        /// <summary>The furthest players can teleport in this space, in metres along the ground. 0 = the space sets no
+        /// limit and each player's own Teleport Range applies (8 m unless they change it, up to 100 m). Above 0 it
+        /// caps every player's range; it never lengthens one. Stored as given; the app ignores negative values.</summary>
+        private float _TeleportMaxRange = 0f;
+        public float TeleportMaxRange { get { return _TeleportMaxRange; } set { _TeleportMaxRange = value; scene.events.OnTeleportMaxRangeChanged.Invoke(value); } }
+        /// <summary>Players can stream their menu browser into the space for everyone to see and hear. On unless the
+        /// space turns it off; off, the menu browser's stream controls are hidden, a running stream is stopped, and
+        /// streams shared by other players are not shown. Browsers placed in the scene are not affected.</summary>
+        private bool _EnableBrowserStreaming = true;
+        public bool EnableBrowserStreaming { get { return _EnableBrowserStreaming; } set { _EnableBrowserStreaming = value; scene.events.OnEnableBrowserStreamingChanged.Invoke(value); } }
+        /// <summary>Players can point at other players: the pointer lands on them and clicking one opens their profile.
+        /// On unless the space turns it off; off, pointers pass through players (for a world that aims at them itself,
+        /// such as with a gun), and their profiles open only from the People list.</summary>
+        private bool _EnableUserUICollider = true;
+        public bool EnableUserUICollider { get { return _EnableUserUICollider; } set { _EnableUserUICollider = value; scene.events.OnEnableUserUIColliderChanged.Invoke(value); } }
         // TODO(not wired up in the app yet): let players grab and hold other players' hands (remote players' hands get
         // grabbable colliders, also gated by the player's own Hand Holding comfort option). Remote players have no hand
         // colliders in the client yet.
@@ -223,11 +244,15 @@ namespace BS
 
             EnableDevTools = true;
             EnableTeleport = true;
-            EnableForceGrab = false;
+            EnableForceGrab = true;
             EnableSpiderMan = false;
             EnableBirdFlight = true;
             AvatarSyncMode = AvatarSyncModes.Social;
             VoiceDistanceMultiplier = 1f;
+            EnableRun = true;
+            TeleportMaxRange = 0f;
+            EnableBrowserStreaming = true;
+            EnableUserUICollider = true;
             EnableHandHold = true;
             EnableRadar = true;
             EnableNametags = true;

@@ -19,7 +19,7 @@ namespace BS
     **Code Example**
     ```js
         const gameObject = new BS.GameObject("MyAvatarMirror");
-        const mirror = await gameObject.AddComponent(new BS.BSAvatarMirror(false, 0, 3));
+        const mirror = await gameObject.AddComponent(new BS.AvatarMirror(false, 0, 3));
     ```
     */
     /// <summary>

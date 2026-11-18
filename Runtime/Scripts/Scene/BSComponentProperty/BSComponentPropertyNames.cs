@@ -307,5 +307,15 @@ namespace BS
         shared,
         heightOffset,
         loadDistance,
+        enableRun,
+        teleportMaxRange,
+        enableBrowserStreaming,
+        enableUserUICollider,
+        photoSize,
+        maxPhotos,
+        replaceOldest,
+        adminsOnly,
+        rows,
+        columns,
     }
 }

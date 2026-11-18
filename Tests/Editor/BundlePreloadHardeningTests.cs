@@ -186,7 +186,11 @@ namespace BS.SDKEditor.Tests
             options.Externals.Add(external);
             var behaviour = new Obj
             {
-                PathId = 3, ClassId = 114, Tree = buttonTree, Script = 0, Data = w =>
+                PathId = 3,
+                ClassId = 114,
+                Tree = buttonTree,
+                Script = 0,
+                Data = w =>
                 {
                     w.I32(0); w.I64(1); w.U8(1); w.Align(4);
                     w.I32(1); w.I64(4242); // m_Script in external file 1
@@ -207,7 +211,11 @@ namespace BS.SDKEditor.Tests
             // The writer's table holds this file's scripts only; patch its single entry's file id in place.
             var bytes = SerializedFile(objects.Select(o => o.ClassId == 114 ? new Obj
             {
-                PathId = o.PathId, ClassId = 114, Tree = o.Tree, Data = o.Data, Script = entry.pathId,
+                PathId = o.PathId,
+                ClassId = 114,
+                Tree = o.Tree,
+                Data = o.Data,
+                Script = entry.pathId,
             } : o).ToList(), options);
             var marker = BitConverter.GetBytes(entry.pathId);
             for (var i = 48; i + 12 <= bytes.Length; i++)

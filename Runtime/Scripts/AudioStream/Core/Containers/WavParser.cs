@@ -71,52 +71,52 @@ namespace BS.AudioStream
                     case Stage.Riff:
                     case Stage.ChunkHeader:
                     case Stage.Format:
-                    {
-                        var take = Math.Min(count, _need - _have);
-                        Buffer.BlockCopy(data, offset, _small, _have, take);
-                        _have += take;
-                        offset += take;
-                        count -= take;
-                        if (_have == _need)
                         {
-                            Advance();
-                        }
-                        break;
-                    }
-                    case Stage.Skip:
-                    {
-                        var take = (int)Math.Min(count, _left);
-                        offset += take;
-                        count -= take;
-                        _left -= take;
-                        if (_left == 0)
-                        {
-                            NextChunk();
-                        }
-                        break;
-                    }
-                    case Stage.Data:
-                    {
-                        var take = _unknownLength ? count : (int)Math.Min(count, _left);
-                        Emit(data, offset, take);
-                        offset += take;
-                        count -= take;
-                        _left -= take;
-                        if (!_unknownLength && _left == 0)
-                        {
-                            _carried = 0;
-                            _left = _pad ? 1 : 0;
-                            if (_left > 0)
+                            var take = Math.Min(count, _need - _have);
+                            Buffer.BlockCopy(data, offset, _small, _have, take);
+                            _have += take;
+                            offset += take;
+                            count -= take;
+                            if (_have == _need)
                             {
-                                _stage = Stage.Skip;
+                                Advance();
                             }
-                            else
+                            break;
+                        }
+                    case Stage.Skip:
+                        {
+                            var take = (int)Math.Min(count, _left);
+                            offset += take;
+                            count -= take;
+                            _left -= take;
+                            if (_left == 0)
                             {
                                 NextChunk();
                             }
+                            break;
                         }
-                        break;
-                    }
+                    case Stage.Data:
+                        {
+                            var take = _unknownLength ? count : (int)Math.Min(count, _left);
+                            Emit(data, offset, take);
+                            offset += take;
+                            count -= take;
+                            _left -= take;
+                            if (!_unknownLength && _left == 0)
+                            {
+                                _carried = 0;
+                                _left = _pad ? 1 : 0;
+                                if (_left > 0)
+                                {
+                                    _stage = Stage.Skip;
+                                }
+                                else
+                                {
+                                    NextChunk();
+                                }
+                            }
+                            break;
+                        }
                 }
             }
         }

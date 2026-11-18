@@ -242,6 +242,12 @@ namespace BS
                     root.styleSheets.Add(panelClasses);
                 }
 
+                // The UI kit's sheet (com.sidequest.creator-sdk.ui-kit), on every panel: kit controls add
+                // it themselves, but a page that only puts kit classes on plain elements with AddClass
+                // has no kit control to do that. Every rule in it needs an "alt-" class, so a panel
+                // that uses none looks exactly as it did.
+                if (root != null) BS.UIKit.KitStyles.Ensure(root);
+
                 // Configure panel settings
                 uiDocument.panelSettings.scaleMode = PanelScaleMode.ConstantPixelSize;
 
@@ -275,10 +281,13 @@ namespace BS
 
                 // Auto-register UXML elements if the UIDocument has a visual tree asset. For a disabled document the
                 // bridge keeps the request and LateUpdate has it registered once the document is enabled.
+                // The prefix carries this panel's id: the ids it generates are counted per panel, so with a shared
+                // prefix two live panels both had uxml_VisualElement and the rest, and a node addressing an element
+                // by name reached whichever panel was found first.
                 if (uiDocument.visualTreeAsset != null)
                 {
                     LogVerbose($"Auto-registering UXML elements from visual tree asset");
-                    var elementMap = uiElementBridge.ProcessUXMLTree(uiDocument, "uxml");
+                    var elementMap = uiElementBridge.ProcessUXMLTree(uiDocument, "uxml_" + registrationId);
                     LogVerbose($"Auto-registered {elementMap.Count} elements from UXML");
                 }
 
@@ -325,11 +334,12 @@ namespace BS
                 var panelClasses = Resources.Load<StyleSheet>("UI/PanelClasses");
                 if (panelClasses != null)
                     root.styleSheets.Add(panelClasses);
+                BS.UIKit.KitStyles.Ensure(root);
                 if (enableHaptics || enableSounds)
                     RegisterUIEventHandlers(root);
             }
 
-            // UXML asked for while its document was disabled (InitializePanel's "uxml" pass, then Process UXML
+            // UXML asked for while its document was disabled (InitializePanel's pass, then Process UXML
             // Tree's own prefix), registered in that order once the document has a root.
             if (uiElementBridge != null && uiElementBridge.HasPendingUXML)
                 uiElementBridge.ProcessPendingUXML();

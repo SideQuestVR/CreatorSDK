@@ -62,7 +62,8 @@ namespace BS.SDKEditor.Tests
                 }
                 var download = new Download
                 {
-                    url = url, token = token,
+                    url = url,
+                    token = token,
                     // As Get's loops do, a cancel lands later, never inside Cancel() itself.
                     done = new TaskCompletionSource<AssetBundle>(TaskCreationOptions.RunContinuationsAsynchronously),
                 };

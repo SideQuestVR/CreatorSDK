@@ -31,6 +31,42 @@ namespace BS.UI.Bridge
             return instance;
         }
 
+        /// <summary>
+        /// Sets one property of a UI kit control by its name, and does nothing else: an element that is
+        /// not a kit control, or a name the control does not list, is refused with a warning. The Visual
+        /// Scripting node for kit properties comes through here.
+        /// </summary>
+        /// <returns>True when the control took the property.</returns>
+        public static bool SetKitProperty(string panelId, string elementIdOrName, string propertyName, string value)
+        {
+            var bridge = GetPanelInstance(panelId);
+            if (bridge == null)
+            {
+                Debug.LogWarning($"[UIElementBridge] No panel found with ID: {panelId}");
+                return false;
+            }
+            var elementId = bridge.ResolveElementIdOrName(elementIdOrName);
+            if (string.IsNullOrEmpty(elementId) || !bridge._elements.TryGetValue(elementId, out var element))
+            {
+                Debug.LogWarning($"[UIElementBridge] No element found with ID: {elementIdOrName} to set UI Kit property '{propertyName}'");
+                return false;
+            }
+            if (!(element is BS.UIKit.IKitControl kitControl))
+            {
+                Debug.LogWarning($"[UIElementBridge] '{elementIdOrName}' is a {element.GetType().Name}, not a UI Kit control: '{propertyName}' was not set");
+                return false;
+            }
+            if (kitControl.SetKitProperty(propertyName, value ?? ""))
+                return true;
+            if (element is BS.UIKit.IKitImageTarget kitImage && kitImage.HasImage(propertyName))
+            {
+                SetKitImage(element, propertyName, value ?? "");
+                return true;
+            }
+            Debug.LogWarning($"[UIElementBridge] '{propertyName}' is not a property of the UI Kit control {element.GetType().Name}");
+            return false;
+        }
+
         public static bool IsWorldSpaceUIPanel(IPanel panel)
         {
             foreach (var instance in _panelInstances.Values)
@@ -331,6 +367,14 @@ namespace BS.UI.Bridge
                     Debug.LogWarning($"{LogPrefix} The factory for element type {typeValue} returned null; falling back.");
                 }
 
+                // The UI kit's block of ids (com.sidequest.creator-sdk.ui-kit). An id in the block
+                // that this build's kit does not know yet falls through to a plain element.
+                if (typeValue >= BS.UIKit.KitCatalog.FirstElementTypeId && typeValue <= BS.UIKit.KitCatalog.LastElementTypeId)
+                {
+                    var kitElement = BS.UI.Elements.BSUIKitFactory.Create(typeValue);
+                    if (kitElement != null) return kitElement;
+                }
+
                 return typeValue switch
                 {
                     // BSUIElement rather than a bare VisualElement: it IS a VisualElement, and it is
@@ -454,6 +498,20 @@ namespace BS.UI.Bridge
                     return; // Property was handled by the generated method
             }
 
+            // A UI kit control takes every one of its properties by name and text. This is what a
+            // kit control made from a creator's UXML goes through (it is the kit's own type, with no
+            // generated setter), and what the other spellings of a property ("lowValue") go through.
+            if (element is BS.UIKit.IKitControl kitControl)
+            {
+                if (kitControl.SetKitProperty(propertyName, value))
+                    return;
+                if (element is BS.UIKit.IKitImageTarget kitImage && kitImage.HasImage(propertyName))
+                {
+                    SetKitImage(element, propertyName, value);
+                    return;
+                }
+            }
+
             // Fallback: Handle common UI element types and properties directly
             try
             {
@@ -534,6 +592,26 @@ namespace BS.UI.Bridge
                     return;
                 }
 
+                // A UI kit control takes the properties it lists and the common ones, and no others:
+                // the list is its contract. A control made from a creator's UXML has no generated
+                // setter for the two common text properties, so they are set here, cut to the same
+                // lengths.
+                if (element is BS.UIKit.IKitControl)
+                {
+                    if (propertyName == "tooltip")
+                    {
+                        element.tooltip = BS.UI.Elements.BSUIKitFactory.Capped(value, BS.UI.Elements.BSUIKitFactory.MaxTooltip);
+                        return;
+                    }
+                    if (propertyName == "name")
+                    {
+                        element.name = BS.UI.Elements.BSUIKitFactory.Capped(value, BS.UI.Elements.BSUIKitFactory.MaxName);
+                        return;
+                    }
+                    Debug.LogWarning($"[UIElementBridge] '{propertyName}' is not a property of the UI Kit control {element.GetType().Name}");
+                    return;
+                }
+
                 // Generic reflection fallback for properties not handled above
                 var propertyInfo = element.GetType().GetProperty(propertyName);
                 if (propertyInfo != null && propertyInfo.CanWrite)
@@ -583,6 +661,14 @@ namespace BS.UI.Bridge
 
         private object GetElementProperty(VisualElement element, string propertyName)
         {
+            // A UI kit control answers for its own properties first, each in the kit's one spelling
+            // (true/false, words in lower case). The names it does not list go on below.
+            if (element is BS.UIKit.IKitControl kitFirst)
+            {
+                var kitOwn = kitFirst.GetKitProperty(propertyName);
+                if (kitOwn != null) return kitOwn;
+            }
+
             // Handle common UI properties
             switch (propertyName.ToLowerInvariant())
             {
@@ -628,9 +714,19 @@ namespace BS.UI.Bridge
 
                 // Add more properties as needed
                 default:
+                    // A UI kit control reports any of its own properties by name ("variant", "choices").
+                    if (element is BS.UIKit.IKitControl kitByName)
+                    {
+                        var kitValue = kitByName.GetKitProperty(propertyName);
+                        if (kitValue != null) return kitValue;
+                    }
                     Debug.LogWarning($"[UIElementBridge] Unhandled get property '{propertyName}' for element type '{element.GetType().Name}'");
                     return null;
             }
+
+            // A standard name the element's Unity type does not answer for (a kit dropdown's "value").
+            if (element is BS.UIKit.IKitControl kitControl)
+                return kitControl.GetKitProperty(propertyName);
 
             return null;
         }
@@ -1438,6 +1534,65 @@ namespace BS.UI.Bridge
             }
         }
 
+        /// <summary>The newest picture request per property of a UI kit control, so a slow download cannot land over a newer one.</summary>
+        private sealed class KitImageRequests
+        {
+            public readonly Dictionary<string, int> Latest = new Dictionary<string, int>(StringComparer.Ordinal);
+        }
+
+        private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<VisualElement, KitImageRequests> _kitImageRequests =
+            new System.Runtime.CompilerServices.ConditionalWeakTable<VisualElement, KitImageRequests>();
+
+        /// <summary>
+        /// Shows a picture on a UI kit control (com.sidequest.creator-sdk.ui-kit). The kit never loads
+        /// anything itself, so its picture properties come through here: <paramref name="source"/> is
+        /// whatever <c>background-image</c> accepts (a URL, <c>url("...")</c>, a <c>data:</c> URI,
+        /// <c>res:</c> or a registered scheme), and empty or <c>none</c> clears the picture.
+        /// </summary>
+        internal static async void SetKitImage(VisualElement element, string property, string source)
+        {
+            if (!(element is BS.UIKit.IKitImageTarget target) || !target.HasImage(property)) return;
+
+            var requests = _kitImageRequests.GetOrCreateValue(element);
+            requests.Latest.TryGetValue(property, out var previous);
+            var request = previous + 1;
+            requests.Latest[property] = request;
+
+            var trimmed = source?.Trim();
+            if (string.IsNullOrEmpty(trimmed) || trimmed.Equals("none", StringComparison.OrdinalIgnoreCase))
+            {
+                target.SetImage(property, default);
+                return;
+            }
+
+            var imageUrl = ParseBackgroundImageUrl(trimmed);
+            if (string.IsNullOrEmpty(imageUrl))
+            {
+                Debug.LogWarning($"{LogPrefix} Invalid picture for '{property}': {source}");
+                return;
+            }
+
+            // Local sources resolve before any await, for the same last-write-wins reason as
+            // SetBackgroundImage.
+            if (TryResolveLocalImage(imageUrl, out var local))
+            {
+                target.SetImage(property, local.value);
+                return;
+            }
+
+            try
+            {
+                var texture = await GetOrDownloadTexture(imageUrl);
+                // A newer request for the same property has been made while this one was loading.
+                if (!requests.Latest.TryGetValue(property, out var latest) || latest != request) return;
+                if (texture != null) target.SetImage(property, Background.FromTexture2D(texture));
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"{LogPrefix} Failed to load the picture for '{property}' from {imageUrl}: {e.Message}");
+            }
+        }
+
         /// <summary>
         /// Resolve an image that is already on the Unity side: <c>res:</c> for anything under a
         /// Resources folder, plus whatever schemes have been registered through
@@ -1545,7 +1700,7 @@ namespace BS.UI.Bridge
         /// <summary>
         /// Parses background-image CSS value to extract URL
         /// </summary>
-        private string ParseBackgroundImageUrl(string value)
+        private static string ParseBackgroundImageUrl(string value)
         {
             if (string.IsNullOrEmpty(value)) return null;
 
@@ -1911,6 +2066,25 @@ namespace BS.UI.Bridge
                     Debug.LogError($"[UIElementBridge] Error dispatching method {methodName} on {elementId}: {e.Message}");
                     return;
                 }
+            }
+
+            // The methods every element understands, for elements with no generated dispatcher of
+            // their own: a control made from a creator's UXML, a DropdownField, a Box. Without this
+            // AddClass did nothing on them, so a class from the UI kit's sheet could not be used.
+            switch (methodName)
+            {
+                case "AddClass":
+                    if (args.Length == 1 && !string.IsNullOrEmpty(args[0])) element.AddToClassList(args[0]);
+                    break;
+                case "RemoveClass":
+                    if (args.Length == 1 && !string.IsNullOrEmpty(args[0])) element.RemoveFromClassList(args[0]);
+                    break;
+                case "Focus":
+                    element.Focus();
+                    break;
+                case "Blur":
+                    element.Blur();
+                    break;
             }
         }
 

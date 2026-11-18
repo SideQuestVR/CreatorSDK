@@ -16,11 +16,15 @@ namespace BS
 
     **Properties**
     - `enableTeleport` - Players can teleport.
-    - `enableForceGrab` - Players can grab objects from a distance.
+    - `enableForceGrab` - Players can grab objects from a distance. On by default; turn it off to forbid it here.
     - `enableSpiderMan` - Players can use the grapple (spider-man) ability.
     - `enableBirdFlight` - Allow controller-driven wing flight, also gated by each player's preference.
     - `avatarSyncMode` - How often players far from each other see each other move: `social` (the default) or `action`.
     - `voiceDistanceMultiplier` - Scales how far voices carry here, on top of each player's own Voice Distance: 2 = twice as far, 0.5 = half (default 1).
+    - `enableRun` - Players can run (hold Shift on desktop, click the left stick in VR). On by default; turn it off to keep everyone at walking speed.
+    - `teleportMaxRange` - The furthest players can teleport here, in metres. 0 (the default) leaves it to each player's own Teleport Range.
+    - `enableBrowserStreaming` - Players can stream their menu browser into the space for everyone to see. On by default; turn it off to forbid it here.
+    - `enableUserUICollider` - Pointers land on other players, and clicking one opens their profile. On by default; turn it off so pointers pass through players, e.g. when the world aims at them itself.
     - `enableHandHold` - Players can hold hands.
     - `enableRadar` - Show the radar.
     - `enableNametags` - Show name tags above players.
@@ -63,8 +67,12 @@ namespace BS
         [Header("Abilities")]
         [Tooltip("Players can teleport.")]
         [See(initial = "true")][SerializeField] internal bool enableTeleport = true;
-        [Tooltip("Players can grab objects from a distance.")]
-        [See(initial = "false")][SerializeField] internal bool enableForceGrab = false;
+        // On by default here and in a space with no settings at all (BSSceneSettings, scene.ts SceneSettings). The
+        // [See] initial stays "false": it is the default of the page-side `new BS.BSSettings(...)` constructor
+        // parameter, which the bridge lock pins for good, so a page that builds this component in script without
+        // naming it keeps the distance grab it always had (off).
+        [Tooltip("Players can grab objects from a distance. On by default; turn it off to forbid it in this space. Players can also turn it off in Controls.")]
+        [See(initial = "false")][SerializeField] internal bool enableForceGrab = true;
         [Tooltip("Players can use the grapple (spider-man) ability.")]
         [See(initial = "false")][SerializeField] internal bool enableSpiderMan = false;
         [Tooltip("Players can hold hands.")]
@@ -140,6 +148,29 @@ namespace BS
                  "multiplier in a crowded space costs players bandwidth.")]
         [See(initial = "1")][SerializeField] internal float voiceDistanceMultiplier = 1f;
 
+        // New fields go here, after everything else (see the note above voiceDistanceMultiplier).
+        [Header("Running")]
+        [Tooltip("Players can run: hold Shift on desktop, click the left stick in VR. On by default; turn it off " +
+                 "to keep everyone at this space's walking speed.")]
+        [See(initial = "true")][SerializeField] internal bool enableRun = true;
+
+        [Header("Teleport range")]
+        [Tooltip("The furthest players can teleport in this space, in metres along the ground. 0 = no limit from the " +
+                 "space: each player's own Teleport Range applies (8 m unless they change it, up to 100 m). Set it to " +
+                 "cap everyone's teleports at that distance. It only ever shortens a player's range.")]
+        [See(initial = "0")][SerializeField] internal float teleportMaxRange = 0f;
+
+        [Header("Browser")]
+        [Tooltip("Players can stream their menu browser into this space, for everyone to see and hear. On by default; " +
+                 "turn it off to forbid it here. Browsers you place in the scene yourself are not affected.")]
+        [See(initial = "true")][SerializeField] internal bool enableBrowserStreaming = true;
+
+        [Header("Players")]
+        [Tooltip("Pointers land on other players, and clicking one opens their profile. On by default; turn it off so " +
+                 "pointers pass through players, for a world that aims at them itself (a gun, a tagger). Their " +
+                 "profiles still open from the People list.")]
+        [See(initial = "true")][SerializeField] internal bool enableUserUICollider = true;
+
         bool started;
         // The settings object (it is recreated on every page load) that this component locked, if any.
         // Its own locks don't stop it; locks set by anything else do.
@@ -199,6 +230,10 @@ namespace BS
                 if (Has(PropertyName.enableBirdFlight)) settings.EnableBirdFlight = enableBirdFlight;
                 if (Has(PropertyName.avatarSyncMode)) settings.AvatarSyncMode = avatarSyncMode;
                 if (Has(PropertyName.voiceDistanceMultiplier)) settings.VoiceDistanceMultiplier = voiceDistanceMultiplier;
+                if (Has(PropertyName.enableRun)) settings.EnableRun = enableRun;
+                if (Has(PropertyName.teleportMaxRange)) settings.TeleportMaxRange = teleportMaxRange;
+                if (Has(PropertyName.enableBrowserStreaming)) settings.EnableBrowserStreaming = enableBrowserStreaming;
+                if (Has(PropertyName.enableUserUICollider)) settings.EnableUserUICollider = enableUserUICollider;
                 if (Has(PropertyName.enableHandHold)) settings.EnableHandHold = enableHandHold;
                 if (Has(PropertyName.enableRadar)) settings.EnableRadar = enableRadar;
                 if (Has(PropertyName.enableNametags)) settings.EnableNametags = enableNametags;

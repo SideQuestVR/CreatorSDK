@@ -33,7 +33,11 @@ window.addEventListener("bs-loaded", async () => {
 | `EnableBirdFlight` | boolean | true | Space permission for bird flight with tracked controllers. Missing values allow flight; explicitly set `false` to forbid it. The player's **Controls > Bird Flight** preference must also be enabled. Draw both hands forward from beside the shoulders while holding both triggers to deploy wings, then release the triggers and flap or glide. In A-Frame, use `sq-enablebirdflight="false"` or `sq-disablebirdflight` to forbid flight. |
 | `AvatarSyncMode` | string | "social" | How often players far from each other see each other move. `"social"`: full rate within 15 m, thinning to once a second past 70 m, which keeps big gatherings cheap. `"action"`: full rate within 10 m, then 24, 15 and 8 updates a second out to 150 m, and 2 past that, for games and flight where distant players must move smoothly; it costs more bandwidth per distant player. Any other value acts as `"social"`. |
 | `VoiceDistanceMultiplier` | number | 1 | Scales how far voices carry in this space, on top of each player's own Voice Distance setting (default 30 m, 1-50 m): 2 = twice as far, 0.5 = half. The app clamps it to 0.1-10. The fade applies at once; how far away voices are received at all follows on the next join. A large multiplier in a crowded space costs players bandwidth. |
-| `EnableForceGrab` | boolean | false | Players can grab objects from a distance. |
+| `EnableForceGrab` | boolean | true | Players can grab objects from a distance. On unless you set `false` (it was off unless set until November 2026). Each player can also switch their own distance grab off in **Controls > Distance Grab**. A-Frame pages: `sq-disableforcegrab` on the scene. |
+| `EnableRun` | boolean | true | Players can run: hold Shift on desktop, or click the left stick while moving in VR (it lasts until the stick is let go). Running is 1.4 times `PhysicsMoveSpeed`. Set `false` to keep everyone at walking speed. A-Frame pages: `sq-disablerun` on the scene. |
+| `TeleportMaxRange` | number | 0 | The furthest players can teleport in this space, in metres along the ground. `0` sets no limit: each player's own **Controls > Teleport Range** applies (8 m unless they change it, 1 to 100 m). Above `0` it caps every player's range at that distance; it never lengthens one. The teleport arc is thrown slower for a shorter range and stops at the limit; a straight teleport line reaches the same distance along the ground. A-Frame pages: `sq-teleportmaxrange="3"` on the scene. |
+| `EnableBrowserStreaming` | boolean | true | Players can stream their menu browser into the space for everyone to see and hear. Set `false` to forbid it: the stream controls are hidden, a running stream stops, and streams shared by other players are not shown. Browsers you place in the space yourself are not affected. A-Frame pages: `sq-disablebrowserstreaming` on the scene. |
+| `EnableUserUICollider` | boolean | true | Pointers land on other players, and clicking one opens their profile. Set `false` so pointers pass through players, for a world that aims at them itself (a gun, a game of tag): no laser or hover on them, and their profiles open only from the People list. A-Frame pages: `sq-disableuseruicollider` on the scene. |
 | `EnableNametags` | boolean | true | The name tags over other players. `false` hides them, whatever each player's own Nametags option says. |
 | `EnableAvatars` | boolean | true | Other players' avatars. `false` shows everyone else as a plain placeholder body, and their avatars aren't downloaded. Your own avatar isn't affected. |
 | `EnableGuests` | boolean | true | `false` turns away players who aren't signed in: their load is stopped with a message asking them to sign in. Signed-in players are never turned away. See the note below. |
@@ -137,9 +141,26 @@ await scene.AddPlayerForce(new BS.Vector3(0, 5, 0), BS.ForceMode.VelocityChange)
 await scene.SendHapticImpulse(0.5, 0.1, BS.HandSide.LEFT);
 ```
 
-- **`TeleportTo`** works in the app and in SDK Play Mode. It takes a fourth argument, `isSpawn`, which has no effect. In the app, if your space has no `SpawnPoint`, the first `TeleportTo` while it's still loading becomes its spawn point.
+- **`TeleportTo`** works in the app and in SDK Play Mode. It takes a fourth argument, `isSpawn`, which marks the teleport as a respawn for the `player-teleported` event. In the app, if your space has no `SpawnPoint`, the first `TeleportTo` while it's still loading becomes its spawn point.
 - **`AddPlayerForce`** only moves players in the app. With `VelocityChange` or `Acceleration` every part of the player gets the same push. `Impulse` and `Force` are shared out over the whole player by weight, 76 kg in all, so they need much bigger values.
 - **`SendHapticImpulse`** buzzes a VR controller. Nothing happens on desktop or in SDK Play Mode.
+
+### Teleport Event
+
+Your page hears every time the local player is teleported, once they have moved: by `TeleportTo`, a portal or BS Teleporter, a seat, arriving, respawning from the menu, or the app catching a fall out of the world. It fires in the app and in SDK Play Mode.
+
+```js
+scene.On("player-teleported", (e) => {
+    if (e.detail.isSpawn) resetGame(); // arrived, respawned, or caught falling
+    console.log(e.detail.position, e.detail.rotation);
+});
+```
+
+| `detail` | |
+|---|---|
+| `position` | Where they landed, a `BS.Vector3`. |
+| `rotation` | Which way they face, Euler degrees as a `BS.Vector3`; only `y` is used. |
+| `isSpawn` | True when they arrived, respawned from the menu or were caught falling out of the world, and for a `TeleportTo` with `isSpawn`. |
 
 ## Input Blocking & Controller Events
 
@@ -190,3 +211,18 @@ scene.On("trigger-axis-update", (e) => {
 | `button-pressed`, `button-released` | `button`: a `BS.ButtonType` (`TRIGGER`, `GRIP`, `PRIMARY` (A or X), `SECONDARY` (B or Y), `THUMBSTICKCLICK`). `side`: a `BS.HandSide` (`LEFT`, `RIGHT`). |
 | `controller-axis-update` | `hand`: a `BS.HandSide`. `x` and `y`: the thumbstick, -1 to 1 (left/right, down/up). Sent when the stick moves by more than 0.01. |
 | `trigger-axis-update` | `hand`: a `BS.HandSide`. `value`: how far the trigger is pressed, 0 to 1. Sent when it changes by more than 0.01. |
+
+### Pointer Over UI
+
+Unlike the controller events, this one fires on desktop and in SDK Play Mode too. It tells your page when one of the local player's pointers moves onto UI (a canvas or UI Toolkit panel, the app's or your space's, the radial menu included) or off it. UI doesn't stop your own input, so use it to pause a tool that reads the trigger or mouse while the player uses a panel.
+
+```js
+scene.On("pointer-over-ui", (e) => {
+    console.log(e.detail.isOverUI, e.detail.side);
+});
+```
+
+| `detail` | |
+|---|---|
+| `isOverUI` | True when the pointer moved onto UI, false when it left. |
+| `side` | A `BS.HandSide`. The mouse is `RIGHT`. |

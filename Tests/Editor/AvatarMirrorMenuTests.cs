@@ -44,14 +44,19 @@ namespace BS.SDKEditor.Tests
                 var firstId = Id(mirror);
                 Assert.IsNotEmpty(firstId);
 
+                // A second click on the menu is its own undo step. In the editor the click starts it; two calls in one
+                // test run share a step unless the test starts one, and what the last step then is depends on what
+                // else got recorded (the selection, the new id), so undo back to here rather than count steps.
+                Undo.IncrementCurrentGroup();
+                int beforeSecond = Undo.GetCurrentGroup();
                 var second = Create(parent);
                 Assert.AreNotEqual(firstId, Id(second.GetComponent<BSAvatarMirror>()), "each mirror its own id");
                 Assert.AreEqual(firstId, mirror.MirrorId, "the mirror is known by its object's id");
 
                 Undo.FlushUndoRecordObjects();
-                Undo.PerformUndo();
-                Assert.IsTrue(second == null, "one Undo removes the last mirror");
-                Assert.IsTrue(first != null);
+                Undo.RevertAllDownToGroup(beforeSecond);
+                Assert.IsTrue(second == null, "undoing the second click removes that mirror");
+                Assert.IsTrue(first != null, "and leaves the first");
             }
             finally
             {

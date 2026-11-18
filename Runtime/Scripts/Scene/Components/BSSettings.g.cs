@@ -37,6 +37,10 @@ namespace BS
         public System.Boolean EnableBirdFlight { get { return enableBirdFlight; } set { enableBirdFlight = value; UpdateCallback(new List<PropertyName> { PropertyName.enableBirdFlight }); } }
         public System.String AvatarSyncMode { get { return avatarSyncMode; } set { avatarSyncMode = value; UpdateCallback(new List<PropertyName> { PropertyName.avatarSyncMode }); } }
         public System.Single VoiceDistanceMultiplier { get { return voiceDistanceMultiplier; } set { voiceDistanceMultiplier = value; UpdateCallback(new List<PropertyName> { PropertyName.voiceDistanceMultiplier }); } }
+        public System.Boolean EnableRun { get { return enableRun; } set { enableRun = value; UpdateCallback(new List<PropertyName> { PropertyName.enableRun }); } }
+        public System.Single TeleportMaxRange { get { return teleportMaxRange; } set { teleportMaxRange = value; UpdateCallback(new List<PropertyName> { PropertyName.teleportMaxRange }); } }
+        public System.Boolean EnableBrowserStreaming { get { return enableBrowserStreaming; } set { enableBrowserStreaming = value; UpdateCallback(new List<PropertyName> { PropertyName.enableBrowserStreaming }); } }
+        public System.Boolean EnableUserUICollider { get { return enableUserUICollider; } set { enableUserUICollider = value; UpdateCallback(new List<PropertyName> { PropertyName.enableUserUICollider }); } }
 
         BSScene _scene;
         public BSScene scene
@@ -59,12 +63,12 @@ namespace BS
 
         internal override void ReSetup()
         {
-            List<PropertyName> changedProperties = new List<PropertyName>() { PropertyName.enableTeleport, PropertyName.enableForceGrab, PropertyName.enableSpiderMan, PropertyName.enableHandHold, PropertyName.enableRadar, PropertyName.enableNametags, PropertyName.enablePortals, PropertyName.enableGuests, PropertyName.refreshRate, PropertyName.clippingPlane, PropertyName.physicsMoveSpeed, PropertyName.physicsMoveAcceleration, PropertyName.physicsAirControlSpeed, PropertyName.physicsAirControlAcceleration, PropertyName.physicsDrag, PropertyName.physicsFreeFallAngularDrag, PropertyName.physicsJumpStrength, PropertyName.physicsHandPositionStrength, PropertyName.physicsHandRotationStrength, PropertyName.physicsHandSpringiness, PropertyName.physicsGrappleRange, PropertyName.physicsGrappleReelSpeed, PropertyName.physicsGrappleSpringiness, PropertyName.physicsGorillaMode, PropertyName.isSettingsLocked, PropertyName.isPhysicsSettingsLocked, PropertyName.enableBirdFlight, PropertyName.avatarSyncMode, PropertyName.voiceDistanceMultiplier, };
+            List<PropertyName> changedProperties = new List<PropertyName>() { PropertyName.enableTeleport, PropertyName.enableForceGrab, PropertyName.enableSpiderMan, PropertyName.enableHandHold, PropertyName.enableRadar, PropertyName.enableNametags, PropertyName.enablePortals, PropertyName.enableGuests, PropertyName.refreshRate, PropertyName.clippingPlane, PropertyName.physicsMoveSpeed, PropertyName.physicsMoveAcceleration, PropertyName.physicsAirControlSpeed, PropertyName.physicsAirControlAcceleration, PropertyName.physicsDrag, PropertyName.physicsFreeFallAngularDrag, PropertyName.physicsJumpStrength, PropertyName.physicsHandPositionStrength, PropertyName.physicsHandRotationStrength, PropertyName.physicsHandSpringiness, PropertyName.physicsGrappleRange, PropertyName.physicsGrappleReelSpeed, PropertyName.physicsGrappleSpringiness, PropertyName.physicsGorillaMode, PropertyName.isSettingsLocked, PropertyName.isPhysicsSettingsLocked, PropertyName.enableBirdFlight, PropertyName.avatarSyncMode, PropertyName.voiceDistanceMultiplier, PropertyName.enableRun, PropertyName.teleportMaxRange, PropertyName.enableBrowserStreaming, PropertyName.enableUserUICollider, };
             UpdateCallback(changedProperties);
         }
         internal override string GetSignature()
         {
-            return "Settings" +  PropertyName.enableTeleport + enableTeleport + PropertyName.enableForceGrab + enableForceGrab + PropertyName.enableSpiderMan + enableSpiderMan + PropertyName.enableHandHold + enableHandHold + PropertyName.enableRadar + enableRadar + PropertyName.enableNametags + enableNametags + PropertyName.enablePortals + enablePortals + PropertyName.enableGuests + enableGuests + PropertyName.refreshRate + refreshRate + PropertyName.clippingPlane + clippingPlane + PropertyName.physicsMoveSpeed + physicsMoveSpeed + PropertyName.physicsMoveAcceleration + physicsMoveAcceleration + PropertyName.physicsAirControlSpeed + physicsAirControlSpeed + PropertyName.physicsAirControlAcceleration + physicsAirControlAcceleration + PropertyName.physicsDrag + physicsDrag + PropertyName.physicsFreeFallAngularDrag + physicsFreeFallAngularDrag + PropertyName.physicsJumpStrength + physicsJumpStrength + PropertyName.physicsHandPositionStrength + physicsHandPositionStrength + PropertyName.physicsHandRotationStrength + physicsHandRotationStrength + PropertyName.physicsHandSpringiness + physicsHandSpringiness + PropertyName.physicsGrappleRange + physicsGrappleRange + PropertyName.physicsGrappleReelSpeed + physicsGrappleReelSpeed + PropertyName.physicsGrappleSpringiness + physicsGrappleSpringiness + PropertyName.physicsGorillaMode + physicsGorillaMode + PropertyName.isSettingsLocked + isSettingsLocked + PropertyName.isPhysicsSettingsLocked + isPhysicsSettingsLocked + PropertyName.enableBirdFlight + enableBirdFlight + PropertyName.avatarSyncMode + avatarSyncMode + PropertyName.voiceDistanceMultiplier + voiceDistanceMultiplier;
+            return "Settings" +  PropertyName.enableTeleport + enableTeleport + PropertyName.enableForceGrab + enableForceGrab + PropertyName.enableSpiderMan + enableSpiderMan + PropertyName.enableHandHold + enableHandHold + PropertyName.enableRadar + enableRadar + PropertyName.enableNametags + enableNametags + PropertyName.enablePortals + enablePortals + PropertyName.enableGuests + enableGuests + PropertyName.refreshRate + refreshRate + PropertyName.clippingPlane + clippingPlane + PropertyName.physicsMoveSpeed + physicsMoveSpeed + PropertyName.physicsMoveAcceleration + physicsMoveAcceleration + PropertyName.physicsAirControlSpeed + physicsAirControlSpeed + PropertyName.physicsAirControlAcceleration + physicsAirControlAcceleration + PropertyName.physicsDrag + physicsDrag + PropertyName.physicsFreeFallAngularDrag + physicsFreeFallAngularDrag + PropertyName.physicsJumpStrength + physicsJumpStrength + PropertyName.physicsHandPositionStrength + physicsHandPositionStrength + PropertyName.physicsHandRotationStrength + physicsHandRotationStrength + PropertyName.physicsHandSpringiness + physicsHandSpringiness + PropertyName.physicsGrappleRange + physicsGrappleRange + PropertyName.physicsGrappleReelSpeed + physicsGrappleReelSpeed + PropertyName.physicsGrappleSpringiness + physicsGrappleSpringiness + PropertyName.physicsGorillaMode + physicsGorillaMode + PropertyName.isSettingsLocked + isSettingsLocked + PropertyName.isPhysicsSettingsLocked + isPhysicsSettingsLocked + PropertyName.enableBirdFlight + enableBirdFlight + PropertyName.avatarSyncMode + avatarSyncMode + PropertyName.voiceDistanceMultiplier + voiceDistanceMultiplier + PropertyName.enableRun + enableRun + PropertyName.teleportMaxRange + teleportMaxRange + PropertyName.enableBrowserStreaming + enableBrowserStreaming + PropertyName.enableUserUICollider + enableUserUICollider;
         }
 
         internal override void Init(List<object> constructorProperties = null)
@@ -367,6 +371,42 @@ namespace BS
                     {
                         voiceDistanceMultiplier = valvoiceDistanceMultiplier.x;
                         changedProperties.Add(PropertyName.voiceDistanceMultiplier);
+                    }
+                }
+                if (values[i] is BSBool)
+                {
+                    var valenableRun = (BSBool)values[i];
+                    if (valenableRun.n == PropertyName.enableRun)
+                    {
+                        enableRun = valenableRun.x;
+                        changedProperties.Add(PropertyName.enableRun);
+                    }
+                }
+                if (values[i] is BSFloat)
+                {
+                    var valteleportMaxRange = (BSFloat)values[i];
+                    if (valteleportMaxRange.n == PropertyName.teleportMaxRange)
+                    {
+                        teleportMaxRange = valteleportMaxRange.x;
+                        changedProperties.Add(PropertyName.teleportMaxRange);
+                    }
+                }
+                if (values[i] is BSBool)
+                {
+                    var valenableBrowserStreaming = (BSBool)values[i];
+                    if (valenableBrowserStreaming.n == PropertyName.enableBrowserStreaming)
+                    {
+                        enableBrowserStreaming = valenableBrowserStreaming.x;
+                        changedProperties.Add(PropertyName.enableBrowserStreaming);
+                    }
+                }
+                if (values[i] is BSBool)
+                {
+                    var valenableUserUICollider = (BSBool)values[i];
+                    if (valenableUserUICollider.n == PropertyName.enableUserUICollider)
+                    {
+                        enableUserUICollider = valenableUserUICollider.x;
+                        changedProperties.Add(PropertyName.enableUserUICollider);
                     }
                 }
             }
@@ -719,6 +759,54 @@ namespace BS
                     name = PropertyName.voiceDistanceMultiplier,
                     type = PropertyType.Float,
                     value = voiceDistanceMultiplier,
+                    componentType = ComponentType.Settings,
+                    oid = oid,
+                    cid = cid
+                });
+            }
+            if (force)
+            {
+                updates.Add(new BSComponentPropertyUpdate()
+                {
+                    name = PropertyName.enableRun,
+                    type = PropertyType.Bool,
+                    value = enableRun,
+                    componentType = ComponentType.Settings,
+                    oid = oid,
+                    cid = cid
+                });
+            }
+            if (force)
+            {
+                updates.Add(new BSComponentPropertyUpdate()
+                {
+                    name = PropertyName.teleportMaxRange,
+                    type = PropertyType.Float,
+                    value = teleportMaxRange,
+                    componentType = ComponentType.Settings,
+                    oid = oid,
+                    cid = cid
+                });
+            }
+            if (force)
+            {
+                updates.Add(new BSComponentPropertyUpdate()
+                {
+                    name = PropertyName.enableBrowserStreaming,
+                    type = PropertyType.Bool,
+                    value = enableBrowserStreaming,
+                    componentType = ComponentType.Settings,
+                    oid = oid,
+                    cid = cid
+                });
+            }
+            if (force)
+            {
+                updates.Add(new BSComponentPropertyUpdate()
+                {
+                    name = PropertyName.enableUserUICollider,
+                    type = PropertyType.Bool,
+                    value = enableUserUICollider,
                     componentType = ComponentType.Settings,
                     oid = oid,
                     cid = cid

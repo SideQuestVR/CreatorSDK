@@ -40,6 +40,46 @@ namespace BS
             right = IsValid ? robot.rightLowerLeg.position : Vector3.zero;
             return IsValid;
         }
+
+        /// <summary>One robot leg for this pose, in the seat's metre frame: hip joint, thigh and shin lengths, the ankle-to-sole
+        /// offset and the foot's rest rotation (a pose foot rotation applies on top of it).</summary>
+        internal bool TryGetLegSegments(SeatPose pose, bool left, out Vector3 hip, out float upper, out float lower,
+            out Vector3 soleOffset, out Quaternion restFoot)
+        {
+            Evaluate(pose);
+            hip = soleOffset = Vector3.zero;
+            upper = lower = 0f;
+            restFoot = Quaternion.identity;
+            if (!IsValid) return false;
+            var thigh = left ? robot.leftUpperLeg : robot.rightUpperLeg;
+            var knee = left ? robot.leftLowerLeg : robot.rightLowerLeg;
+            var foot = left ? robot.leftFoot : robot.rightFoot;
+            hip = thigh.position;
+            upper = Vector3.Distance(thigh.position, knee.position);
+            lower = Vector3.Distance(knee.position, foot.position);
+            soleOffset = left ? robot.leftSoleOffset : robot.rightSoleOffset;
+            restFoot = left ? leftFootRotation : rightFootRotation;
+            return upper > .0001f && lower > .0001f;
+        }
+
+        /// <summary>One robot leg for this pose, in the seat's metre frame: hip joint, full reach to the ankle, the
+        /// ankle-to-sole offset and the foot's rest rotation (a pose foot rotation applies on top of it).</summary>
+        internal bool TryGetLeg(SeatPose pose, bool left, out Vector3 hip, out float reach, out Vector3 soleOffset, out Quaternion restFoot)
+        {
+            Evaluate(pose);
+            hip = soleOffset = Vector3.zero;
+            reach = 0f;
+            restFoot = Quaternion.identity;
+            if (!IsValid) return false;
+            var upper = left ? robot.leftUpperLeg : robot.rightUpperLeg;
+            var knee = left ? robot.leftLowerLeg : robot.rightLowerLeg;
+            var foot = left ? robot.leftFoot : robot.rightFoot;
+            hip = upper.position;
+            reach = Vector3.Distance(upper.position, knee.position) + Vector3.Distance(knee.position, foot.position);
+            soleOffset = left ? robot.leftSoleOffset : robot.rightSoleOffset;
+            restFoot = left ? leftFootRotation : rightFootRotation;
+            return reach > .0001f;
+        }
 #endif
 
         public SeatPosePreview() : this(Resources.Load<GameObject>(ResourcePath)) { }
@@ -98,10 +138,12 @@ namespace BS
                 bones[i].localRotation = restRotations[i];
             }
             robot.hips.SetPositionAndRotation(pose.pelvisPosition, pose.pelvisRotation * hipRotation);
+            var forward = pose.pelvisRotation * Vector3.forward;
+            var up = pose.pelvisRotation * Vector3.up;
             SolveLeg(robot.leftUpperLeg, robot.leftLowerLeg, robot.leftFoot,
-                pose.leftFootPosition, pose.leftFootRotation * leftFootRotation, robot.leftSoleOffset, pose.leftKneeHint);
+                pose.leftFootPosition, pose.leftFootRotation * leftFootRotation, robot.leftSoleOffset, pose.leftKneeHint, forward, up);
             SolveLeg(robot.rightUpperLeg, robot.rightLowerLeg, robot.rightFoot,
-                pose.rightFootPosition, pose.rightFootRotation * rightFootRotation, robot.rightSoleOffset, pose.rightKneeHint);
+                pose.rightFootPosition, pose.rightFootRotation * rightFootRotation, robot.rightSoleOffset, pose.rightKneeHint, forward, up);
             Bake(lowerMesh, robot.lowerRenderers);
             var renderers = new List<Renderer>(robot.lowerRenderers);
             renderers.AddRange(robot.upperRenderers);
@@ -111,14 +153,14 @@ namespace BS
         }
 
         internal static void SolveLeg(Transform upper, Transform knee, Transform foot, Vector3 sole,
-            Quaternion rotation, Vector3 soleOffset, Vector3 hint)
+            Quaternion rotation, Vector3 soleOffset, Vector3 hint, Vector3 forward = default, Vector3 up = default)
         {
             var start = upper.position;
             var firstLength = Vector3.Distance(start, knee.position);
             var secondLength = Vector3.Distance(knee.position, foot.position);
             if (firstLength < .0001f || secondLength < .0001f) return;
             var target = sole - rotation * soleOffset;
-            SeatPose.SolveLeg(start, hint, target, firstLength, secondLength, out var kneeTarget, out var end);
+            SeatPose.SolveLeg(start, hint, target, firstLength, secondLength, forward, up, out var kneeTarget, out var end);
             upper.rotation = Quaternion.FromToRotation(knee.position - start, kneeTarget - start) * upper.rotation;
             knee.rotation = Quaternion.FromToRotation(foot.position - knee.position, end - knee.position) * knee.rotation;
             foot.rotation = rotation;
@@ -167,8 +209,13 @@ namespace BS
             properties.SetFloat("_Opacity", opacity);
             var parameters = new RenderParams(material)
             {
-                layer = 0, camera = camera, matProps = properties, shadowCastingMode = ShadowCastingMode.Off,
-                receiveShadows = false, lightProbeUsage = LightProbeUsage.Off, reflectionProbeUsage = ReflectionProbeUsage.Off
+                layer = 0,
+                camera = camera,
+                matProps = properties,
+                shadowCastingMode = ShadowCastingMode.Off,
+                receiveShadows = false,
+                lightProbeUsage = LightProbeUsage.Off,
+                reflectionProbeUsage = ReflectionProbeUsage.Off
             };
 #if UNITY_EDITOR
             if (camera != null)
@@ -192,7 +239,7 @@ namespace BS
             if (scene.IsValid()) EditorSceneManager.ClosePreviewScene(scene);
             else
 #endif
-                Destroy(instance);
+            Destroy(instance);
         }
 
         static void Destroy(UnityEngine.Object value)
