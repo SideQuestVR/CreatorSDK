@@ -461,10 +461,6 @@ namespace BS.SDKEditor
 #endif
 
             typeof(AudioMixerGroup),
-            // Temporary, pending review: a world's audio-path latency probe (AudioListener.GetOutputData,
-            // AudioSettings.outputSampleRate).
-            typeof(AudioListener),
-            typeof(AudioSettings),
             typeof(AnimatorStateInfo),
             typeof(Keyframe),
             typeof(BaseEventData),
