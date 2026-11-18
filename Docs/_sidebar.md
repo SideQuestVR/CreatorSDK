@@ -37,6 +37,7 @@
   - [Spawn, Seats & Settings](/components/player-setup.md)
   - [Special](/components/special.md)
   - [UI System](/components/ui-system.md)
+  - [UI Kit](/components/ui-kit.md)
 - Browser
   - [Overview](/browser/overview.md)
   - [The BS Browser](/browser/bs-browser.md)
