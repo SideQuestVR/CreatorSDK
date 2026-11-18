@@ -183,7 +183,7 @@ When it starts, it applies all of its values, so anything you don't set goes bac
 | `voiceDistanceMultiplier` | number | 1 | `VoiceDistanceMultiplier`: scales how far voices carry here, on top of each player's own Voice Distance setting: 2 = twice as far (a stage or auditorium), 0.5 = half. Clamped to 0.1-10. Voices beyond that distance aren't received at all, so a large multiplier in a crowded space costs players bandwidth |
 | `enableHandHold` | boolean | true | `EnableHandHold`: players can hold hands |
 | `enableRadar` | boolean | true | `EnableRadar`: the radar is shown |
-| `enableNametags` | boolean | true | `EnableNametags`: name tags show above players |
+| `enableNametags` | boolean | true | `EnableNametags`: name tags show above players, and pointers can land on players (off: neither) |
 | `enablePortals` | boolean | true | `EnablePortals`: portals to other spaces are shown |
 | `enableGuests` | boolean | true | `EnableGuests`: `false` turns away players who aren't signed in as the space loads |
 | `refreshRate` | number | 72 | `RefreshRate`: the display refresh rate on Quest, e.g. 72, 90 or 120 |
