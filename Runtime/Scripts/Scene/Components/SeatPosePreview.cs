@@ -21,6 +21,12 @@ namespace BS
         readonly Vector3[] restPositions;
         readonly Quaternion[] restRotations;
         readonly Quaternion hipRotation, leftFootRotation, rightFootRotation;
+        // The spine bones, hips outwards, and the neck they lead to (Mixamo names on the SDK robot).
+        readonly Transform[] spine;
+        readonly Transform neck;
+        // Arms: shoulder joint, elbow, wrist per side, and each hand's rest turned to point along the seat's forward.
+        readonly Transform leftUpperArm, leftForeArm, leftHand, rightUpperArm, rightForeArm, rightHand;
+        readonly Quaternion leftHandReference, rightHandReference;
         readonly Mesh fullMesh, lowerMesh;
         readonly MaterialPropertyBlock properties = new MaterialPropertyBlock();
         SeatPose lastPose;
@@ -121,6 +127,28 @@ namespace BS
             }
             if (!IsValid) return;
             hipRotation = robot.hips.rotation;
+            var spineBones = new List<Transform>();
+            var bone = robot.hips.Find("Spine");
+            while (bone != null)
+            {
+                spineBones.Add(bone);
+                var next = bone.Find("Spine" + spineBones.Count);
+                if (next == null) { neck = bone.Find("Neck"); break; }
+                bone = next;
+            }
+            spine = spineBones.ToArray();
+            foreach (var transform in robot.hips.GetComponentsInChildren<Transform>(true))
+                switch (transform.name)
+                {
+                    case "LeftArm": leftUpperArm = transform; break;
+                    case "LeftForeArm": leftForeArm = transform; break;
+                    case "LeftHand": leftHand = transform; break;
+                    case "RightArm": rightUpperArm = transform; break;
+                    case "RightForeArm": rightForeArm = transform; break;
+                    case "RightHand": rightHand = transform; break;
+                }
+            if (leftForeArm && leftHand) leftHandReference = HandReference(leftForeArm, leftHand);
+            if (rightForeArm && rightHand) rightHandReference = HandReference(rightForeArm, rightHand);
             leftFootRotation = robot.leftFoot.rotation;
             rightFootRotation = robot.rightFoot.rotation;
             fullMesh = new Mesh { name = "Seat Robot hologram", hideFlags = HideFlags.HideAndDontSave, indexFormat = IndexFormat.UInt32 };
@@ -138,6 +166,13 @@ namespace BS
                 bones[i].localRotation = restRotations[i];
             }
             robot.hips.SetPositionAndRotation(pose.pelvisPosition, pose.pelvisRotation * hipRotation);
+            BendSpine(pose.SpineDirection);
+            if (pose.HasLeftHand && leftUpperArm && leftForeArm && leftHand)
+                SolveLeg(leftUpperArm, leftForeArm, leftHand, pose.leftHandPosition, pose.LeftHandRotation * leftHandReference, Vector3.zero,
+                    pose.leftElbowHint != Vector3.zero ? pose.leftElbowHint : DefaultElbow(leftUpperArm, -1f));
+            if (pose.HasRightHand && rightUpperArm && rightForeArm && rightHand)
+                SolveLeg(rightUpperArm, rightForeArm, rightHand, pose.rightHandPosition, pose.RightHandRotation * rightHandReference, Vector3.zero,
+                    pose.rightElbowHint != Vector3.zero ? pose.rightElbowHint : DefaultElbow(rightUpperArm, 1f));
             var forward = pose.pelvisRotation * Vector3.forward;
             var up = pose.pelvisRotation * Vector3.up;
             SolveLeg(robot.leftUpperLeg, robot.leftLowerLeg, robot.leftFoot,
@@ -150,6 +185,33 @@ namespace BS
             Bake(fullMesh, renderers);
             lastPose = pose;
             evaluated = true;
+        }
+
+        /// <summary>
+        /// The hand's world rotation for a seat hand rotation of identity: its rest rotation turned so the forearm-to-hand
+        /// line points along +Z, the seat's forward (runtime hands use the same convention).
+        /// </summary>
+        internal static Quaternion HandReference(Transform foreArm, Transform hand)
+        {
+            var pointing = hand.position - foreArm.position;
+            return pointing.sqrMagnitude > 1e-8f ? Quaternion.FromToRotation(pointing, Vector3.forward) * hand.rotation : hand.rotation;
+        }
+
+        // Without an elbow point the elbow hangs out, down and a little back from the shoulder.
+        static Vector3 DefaultElbow(Transform upperArm, float side) => upperArm.position + new Vector3(.25f * side, -.3f, -.15f);
+
+        // Turns the spine bones, a share each, until the neck rises from the hips along the seat pose's spine direction.
+        void BendSpine(Vector3 direction)
+        {
+            if (spine == null || spine.Length == 0 || neck == null) return;
+            for (var pass = 0; pass < 5; pass++)
+                for (var i = 0; i < spine.Length; i++)
+                {
+                    var current = neck.position - robot.hips.position;
+                    if (current.sqrMagnitude < 1e-8f) return;
+                    var turn = Quaternion.FromToRotation(current, direction);
+                    spine[i].rotation = Quaternion.Slerp(Quaternion.identity, turn, 1f / (spine.Length - i)) * spine[i].rotation;
+                }
         }
 
         internal static void SolveLeg(Transform upper, Transform knee, Transform foot, Vector3 sole,
