@@ -4,7 +4,7 @@ Ready-made objects for common space features, under `GameObject > BS` (also the 
 
 - **Player**: Spawn Point, Spawn Range, Seat, Teleporter, Scene Settings.
 - **Grab**: one preset per grab type (Point, Point as a gun, Cylinder, Ball, Soft) and a climbable handhold.
-- **Objects**: Mirror, Avatar Mirror, Browser, Video Player, Text, Audio Source, Portal, GLTF Model, Synced Object, UI Panel, Billboard, Collider Events, Verify Host.
+- **Objects**: Mirror, Avatar Mirror, Photo Wall, Browser, Video Player, Text, Audio Source, Portal, GLTF Model, Synced Object, UI Panel, Billboard, Collider Events, Verify Host.
 
 New objects land where Unity's own `GameObject` menu puts them: under the object you right-clicked, otherwise at the Scene view's centre (or the world origin, if **Preferences > Scene View > Create Objects at Origin** is on).
 
@@ -136,6 +136,7 @@ Each object is one SDK component, set up for the usual case:
 |---|---|
 | Mirror | `BSMirror`: a 2.5 × 2.5 m mirror, seen from the object's back (−Z). |
 | Avatar Mirror | `BSAvatarMirror` on an empty object on the floor: a still copy of the player's avatar that mirrors their movements and faces them; see [Avatar Mirror](#avatar-mirror-bsavatarmirror). |
+| Photo Wall | `BSPhotoWall` on one object, its middle 1.5 m up: a 2 × 1.2 m corkboard players pin their photos to; see [Photo Wall](#photo-wall-bsphotowall). |
 | Browser | `BSBrowser` showing `https://sidequestvr.com`; see [Browser](#browser-bsbrowser). |
 | Video Player | A 1.6 × 0.9 m quad with `BSVideoPlayer`; the video plays on it. |
 | Text | `BSText` saying "Hello World" at font size 2, wrapping inside a 20 × 5 m area, read from −Z. |
@@ -158,9 +159,35 @@ It is one object with no meshes: put it on the floor the players stand on. While
 - **Shared**: off (default): everyone near sees their own copy, on their own screen only, so any number of people can use it at once. On: one person at a time is mirrored, and everyone near sees that copy; the next person can step up once they leave.
 - **Height Offset**: raises (or, negative, lowers) the copy, in metres.
 - **Load Distance**: how close a player must be to be mirrored (default 3 m, across the floor, on the same floor). The copy is only loaded for viewers that close.
-- Turn the component off to switch the mirror off. Scripts can add it too: `await gameObject.AddComponent(new BS.BSAvatarMirror(false, 0, 3))`.
+- Turn the component off to switch the mirror off. Scripts can add it too: `await gameObject.AddComponent(new BS.AvatarMirror(false, 0, 3))`.
 
 Shared mirrors are told apart by the object's `BSObjectId`, so there is nothing to set. Copies only appear in the client, not in SDK Play Mode, and at most two are drawn at once (the nearest).
+
+### Photo Wall (`BSPhotoWall`)
+
+A wall players pin their photos to. In the Scene view it shows filled with placeholder photos in its real layout, frames
+and shape, and the selected wall says how many photos it holds, so you see the result without pressing Play. It faces
+the way the mirror does: photos are seen from the object's back (−Z), the opposite of the blue axis.
+
+- **Layout**: Grid (tidy rows), Corkboard (each photo a little off its place and tilted, as if pinned by hand) or
+  Strings (polaroids hung on strings that dip in the middle). One row of a grid is a gallery row.
+- **Rows** and **Columns**: how many photos, row by row; rows × columns is at most 35.
+- **Photo Size**: how wide each photo is, in metres (its frame adds to it). The wall's size follows from the rows,
+  columns and photo size; its middle is the object.
+- **Frame**: Layout Default (polaroids on the corkboard and strings, a border otherwise), None, Border or Polaroid.
+- **Shape**: Layout Default, Rectangle, Rounded or Circle (a round photo shows the middle of the picture).
+- **Frame Colour**, **Show Board** and **Board Colour**: the photo paper, and the board behind the photos (off: they
+  hang on whatever is behind the wall).
+- **Replace Oldest**: on a full wall, the oldest photo makes room for a new one. Off: it stays full until photos are
+  taken down.
+- **Admins Only**: only the world's admins can pin photos, for a hall of fame. Off: anyone signed in.
+
+Each wall gets its own tilt pattern from its `BSObjectId`, the same for every player. Photos are drawn small into one
+texture per wall, so a full wall is a single draw. Scripts can add a wall and set its rows, columns, photo size,
+Replace Oldest and Admins Only: `await gameObject.AddComponent(new BS.PhotoWall(3, 6, 0.24, true, false))`;
+the layout and look are set in the inspector. A wall made by a script is known by its object's id, which differs from
+player to player until the object has a network id: give it one (`SetNetworkId`) so everyone sees the same wall. Photos
+only appear in the client, not in SDK Play Mode.
 
 ### Browser (`BSBrowser`)
 

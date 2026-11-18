@@ -21,6 +21,7 @@ internal static class CreatorConveniencesMenu
     private const string SpawnRangeGuid = "12b6892e0a2744c28aa7f7ad3a98e401";
     private const string SeatGuid = "fb1c6d01b9804fa9a77c30532a802802";
     private const string TeleporterGuid = "f0fb9ff341064868a90e08695bd41a58";
+    private const string PhotoWallGuid = "6b4fd83cb35b0a04ab3a35bbb3d0493b";
 
     // ------------------------------------------------------------------ Player
     [MenuItem("GameObject/BS/Objects/BSStarterUpper", false, 10)]
@@ -164,6 +165,9 @@ internal static class CreatorConveniencesMenu
     [MenuItem(Root + "Objects/Avatar Mirror", false, 30)]
     private static void CreateAvatarMirror(MenuCommand command) => CreateComponentObject<BSAvatarMirror>("Avatar Mirror", command);
 
+    [MenuItem(Root + "Objects/Photo Wall", false, 30)]
+    private static void CreatePhotoWall(MenuCommand command) => CreatePrefab(PhotoWallGuid, "Photo Wall", command);
+
     [MenuItem(Root + "Objects/Browser", false, 31)]
     private static void CreateBrowser(MenuCommand command) =>
         CreateComponentObject<BSBrowser>("Browser", command, so => so.FindProperty("url").stringValue = "https://sidequestvr.com");
@@ -298,12 +302,15 @@ internal static class CreatorConveniencesMenu
         {
             var instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab, scene);
             Undo.RegisterCreatedObjectUndo(instance, $"Create {displayName}");
+            // Its height is applied after Place; start from zero so it is applied once.
+            if (guid == PhotoWallGuid)
+                instance.transform.localPosition = Vector3.zero;
             Place(instance, command);
             // Reparenting records its world pose before Place resets the local pose. Record the complete
             // placed state so Redo also restores axes that the cushion offset itself does not change.
             Undo.RegisterCompleteObjectUndo(new Object[] { instance, instance.transform }, $"Place {displayName}");
             // The flattened seat's root retains the former cushion-height child offset.
-            if (guid == SeatGuid)
+            if (guid == SeatGuid || guid == PhotoWallGuid)
                 instance.transform.position = instance.transform.TransformPoint(prefab.transform.localPosition);
             instance.name = $"BS {displayName}";
             PrefabUtility.RecordPrefabInstancePropertyModifications(instance.transform);

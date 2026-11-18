@@ -311,5 +311,11 @@ namespace BS
         teleportMaxRange,
         enableBrowserStreaming,
         enableUserUICollider,
+        photoSize,
+        maxPhotos,
+        replaceOldest,
+        adminsOnly,
+        rows,
+        columns,
     }
 }

@@ -23,6 +23,58 @@ namespace BS
         public Quaternion rightFootRotation;
         public Vector3 leftKneeHint;
         public Vector3 rightKneeHint;
+        /// <summary>
+        /// Where the upper back points from the pelvis, in seat metres; zero is unset, which keeps the torso upright
+        /// (seat up) whatever the pelvis tilt. Older poses and presets have it unset.
+        /// </summary>
+        public Vector3 chestHint;
+
+        public bool HasChestHint => chestHint != Vector3.zero;
+
+        /// <summary>
+        /// Desktop and mobile players' resting hands, seat metres; zero is unset (the hand rests as usual). VR hands always
+        /// follow the controllers. Rotations: identity points the hand along the seat's forward; zero means identity.
+        /// </summary>
+        public Vector3 leftHandPosition;
+        public Quaternion leftHandRotation;
+        public Vector3 rightHandPosition;
+        public Quaternion rightHandRotation;
+        /// <summary>Where each elbow points (seat metres); zero is unset.</summary>
+        public Vector3 leftElbowHint;
+        public Vector3 rightElbowHint;
+
+        public bool HasLeftHand => leftHandPosition != Vector3.zero;
+        public bool HasRightHand => rightHandPosition != Vector3.zero;
+        public Quaternion LeftHandRotation => HandRotation(leftHandRotation);
+        public Quaternion RightHandRotation => HandRotation(rightHandRotation);
+
+        static Quaternion HandRotation(Quaternion value)
+        {
+            var length = value.x * value.x + value.y * value.y + value.z * value.z + value.w * value.w;
+            return length > 1e-8f && !float.IsNaN(length) && !float.IsInfinity(length) ? Quaternion.Normalize(value) : Quaternion.identity;
+        }
+
+        /// <summary>The pose with its upper body (chest, hands, elbows) moved by <paramref name="delta"/>; unset points stay unset.</summary>
+        public SeatPose WithUpperBodyMoved(Vector3 delta)
+        {
+            var pose = this;
+            if (HasChestHint) pose.chestHint += delta;
+            if (HasLeftHand) pose.leftHandPosition += delta;
+            if (HasRightHand) pose.rightHandPosition += delta;
+            if (leftElbowHint != Vector3.zero) pose.leftElbowHint += delta;
+            if (rightElbowHint != Vector3.zero) pose.rightElbowHint += delta;
+            return pose;
+        }
+
+        /// <summary>The direction the torso rises from the pelvis: towards <see cref="chestHint"/>, else straight up.</summary>
+        public Vector3 SpineDirection
+        {
+            get
+            {
+                var direction = chestHint - pelvisPosition;
+                return HasChestHint && Finite(direction) && direction.sqrMagnitude > 1e-6f ? direction.normalized : Vector3.up;
+            }
+        }
 
         public static SeatPose Default => new SeatPose
         {
@@ -37,13 +89,45 @@ namespace BS
         };
 
         public bool IsValid => Finite(pelvisPosition) && Finite(leftFootPosition) && Finite(rightFootPosition)
-            && Finite(leftKneeHint) && Finite(rightKneeHint)
+            && Finite(leftKneeHint) && Finite(rightKneeHint) && Finite(chestHint)
+            && Finite(leftHandPosition) && Finite(rightHandPosition) && Finite(leftElbowHint) && Finite(rightElbowHint)
+            && FiniteRotation(leftHandRotation) && FiniteRotation(rightHandRotation)
             && Valid(pelvisRotation) && Valid(leftFootRotation) && Valid(rightFootRotation);
 
         public bool Equals(SeatPose other) => pelvisPosition.Equals(other.pelvisPosition) && pelvisRotation.Equals(other.pelvisRotation)
             && leftFootPosition.Equals(other.leftFootPosition) && leftFootRotation.Equals(other.leftFootRotation)
             && rightFootPosition.Equals(other.rightFootPosition) && rightFootRotation.Equals(other.rightFootRotation)
-            && leftKneeHint.Equals(other.leftKneeHint) && rightKneeHint.Equals(other.rightKneeHint);
+            && leftKneeHint.Equals(other.leftKneeHint) && rightKneeHint.Equals(other.rightKneeHint)
+            && chestHint.Equals(other.chestHint)
+            && leftHandPosition.Equals(other.leftHandPosition) && leftHandRotation.Equals(other.leftHandRotation)
+            && rightHandPosition.Equals(other.rightHandPosition) && rightHandRotation.Equals(other.rightHandRotation)
+            && leftElbowHint.Equals(other.leftElbowHint) && rightElbowHint.Equals(other.rightElbowHint);
+
+        /// <summary>Blends two poses: positions linearly, rotations spherically.</summary>
+        public static SeatPose Lerp(SeatPose a, SeatPose b, float t) => new SeatPose
+        {
+            pelvisPosition = Vector3.Lerp(a.pelvisPosition, b.pelvisPosition, t),
+            pelvisRotation = Quaternion.Slerp(a.pelvisRotation, b.pelvisRotation, t),
+            leftFootPosition = Vector3.Lerp(a.leftFootPosition, b.leftFootPosition, t),
+            leftFootRotation = Quaternion.Slerp(a.leftFootRotation, b.leftFootRotation, t),
+            rightFootPosition = Vector3.Lerp(a.rightFootPosition, b.rightFootPosition, t),
+            rightFootRotation = Quaternion.Slerp(a.rightFootRotation, b.rightFootRotation, t),
+            leftKneeHint = Vector3.Lerp(a.leftKneeHint, b.leftKneeHint, t),
+            rightKneeHint = Vector3.Lerp(a.rightKneeHint, b.rightKneeHint, t),
+            chestHint = Optional(a.chestHint, b.chestHint, t),
+            leftHandPosition = Optional(a.leftHandPosition, b.leftHandPosition, t),
+            rightHandPosition = Optional(a.rightHandPosition, b.rightHandPosition, t),
+            leftHandRotation = !a.HasLeftHand ? b.leftHandRotation : !b.HasLeftHand ? a.leftHandRotation
+                : Quaternion.Slerp(a.LeftHandRotation, b.LeftHandRotation, t),
+            rightHandRotation = !a.HasRightHand ? b.rightHandRotation : !b.HasRightHand ? a.rightHandRotation
+                : Quaternion.Slerp(a.RightHandRotation, b.RightHandRotation, t),
+            leftElbowHint = Optional(a.leftElbowHint, b.leftElbowHint, t),
+            rightElbowHint = Optional(a.rightElbowHint, b.rightElbowHint, t)
+        };
+
+        // An unset (zero) point blends as the other one, so a half-set pair never drifts towards the seat's origin.
+        static Vector3 Optional(Vector3 a, Vector3 b, float t) =>
+            a == Vector3.zero ? b : b == Vector3.zero ? a : Vector3.Lerp(a, b, t);
 
         public SeatPose Validated()
         {
@@ -52,6 +136,8 @@ namespace BS
             value.pelvisRotation = pelvisRotation.normalized;
             value.leftFootRotation = leftFootRotation.normalized;
             value.rightFootRotation = rightFootRotation.normalized;
+            if (HasLeftHand) value.leftHandRotation = LeftHandRotation;
+            if (HasRightHand) value.rightHandRotation = RightHandRotation;
             return value;
         }
 
@@ -139,6 +225,7 @@ namespace BS
             ? Mathf.Sqrt(lowerLength * lowerLength - upperLength * upperLength) : upperLength - lowerLength;
 
         static bool Finite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
+        static bool FiniteRotation(Quaternion value) => Finite(value.x) && Finite(value.y) && Finite(value.z) && Finite(value.w);
         static bool Finite(Vector3 value) => Finite(value.x) && Finite(value.y) && Finite(value.z);
         static bool Valid(Quaternion value)
         {

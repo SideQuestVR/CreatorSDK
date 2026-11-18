@@ -284,6 +284,8 @@ The action-side BS nodes, grouped as they appear in the fuzzy finder.
 | Get UI Text / Set UI Text | Read/write an element's text |
 | Get UI Value / Set UI Value | Read/write an element's value |
 | Get UI Property / Set UI Property | Read/write a named property |
+| Set UI Kit Property | Set any property of a [UI Kit](../components/ui-kit.md) control: type its name in **Property** |
+| Add UI Class / Remove UI Class | Put a style class on an element, or take it off (see [UI Kit](../components/ui-kit.md#layout-classes-on-plain-elements)) |
 | Set UI Enabled | Enable/disable an element |
 | Set UI Visible | Show/hide an element |
 | Get UI Style / Set UI Style | Read/write a named style |

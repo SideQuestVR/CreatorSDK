@@ -227,13 +227,25 @@ namespace BS.SDKEditor
 
         internal static void Load(BSSeat seat)
         {
-            var path = ChooseOpenPath(SeatTitle, SeatKind);
-            if (!string.IsNullOrEmpty(path)) Load(seat, path);
+            // A seat also takes a humanoid animation file: set the filter to All files and pick a .anim or a model.
+            var path = EditorUtility.OpenFilePanelWithFilters(SeatTitle, StartDirectory(SeatKind),
+                new[] { "Seat pose preset", "json", "Animation", "anim,fbx", "All files", "*" });
+            if (string.IsNullOrEmpty(path)) return;
+            Remember(SeatKind, path);
+            Load(seat, path);
         }
 
         internal static void Load(BSSeat seat, string path)
         {
-            if (seat == null || !TryRead(SeatTitle, path, out var json)) return;
+            if (seat == null) return;
+            if (!path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                var clip = BSSeatPoseAnimationBaker.FindClip(path, out var animationError);
+                if (clip != null) BSSeatPoseAnimationBaker.Apply(seat, clip);
+                else EditorUtility.DisplayDialog(SeatTitle, animationError, "OK");
+                return;
+            }
+            if (!TryRead(SeatTitle, path, out var json)) return;
             if (TryParse(json, out SeatPreset preset, out var error)) Apply(seat, preset);
             else EditorUtility.DisplayDialog(SeatTitle, error, "OK");
         }

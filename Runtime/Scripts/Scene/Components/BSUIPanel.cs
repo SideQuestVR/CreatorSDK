@@ -242,6 +242,12 @@ namespace BS
                     root.styleSheets.Add(panelClasses);
                 }
 
+                // The UI kit's sheet (com.sidequest.creator-sdk.ui-kit), on every panel: kit controls add
+                // it themselves, but a page that only puts kit classes on plain elements with AddClass
+                // has no kit control to do that. Every rule in it needs an "alt-" class, so a panel
+                // that uses none looks exactly as it did.
+                if (root != null) BS.UIKit.KitStyles.Ensure(root);
+
                 // Configure panel settings
                 uiDocument.panelSettings.scaleMode = PanelScaleMode.ConstantPixelSize;
 
@@ -328,6 +334,7 @@ namespace BS
                 var panelClasses = Resources.Load<StyleSheet>("UI/PanelClasses");
                 if (panelClasses != null)
                     root.styleSheets.Add(panelClasses);
+                BS.UIKit.KitStyles.Ensure(root);
                 if (enableHaptics || enableSounds)
                     RegisterUIEventHandlers(root);
             }

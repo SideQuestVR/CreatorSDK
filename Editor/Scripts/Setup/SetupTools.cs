@@ -40,6 +40,23 @@ namespace BS.SDKEditor.Setup
         }
     }
 
+    // The gallery belongs to the UI Kit's own package (com.sidequest.creator-sdk.ui-kit). It is opened by its menu item, so
+    // this assembly needs no reference to that package's editor code.
+    sealed class UiKitGallerySetupTool : SetupTool
+    {
+        const string MenuItem = "Window/UI Toolkit/Altspace UI Kit Gallery";
+
+        public override string Title => "UI Kit gallery";
+        public override string Description =>
+            "Every control in the Altspace UI Kit with its variants and properties, to browse and try before you build a panel.";
+        public override int Order => 35;
+        public override void Run()
+        {
+            if (!EditorApplication.ExecuteMenuItem(MenuItem))
+                Debug.LogWarning("[Creator SDK] The UI Kit gallery could not be opened. Is the package com.sidequest.creator-sdk.ui-kit installed?");
+        }
+    }
+
     sealed class RecoverSnippetsSetupTool : SetupTool
     {
         public override string Title => "Recover orphaned snippets";

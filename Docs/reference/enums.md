@@ -25,7 +25,7 @@ numbers are Unity's own.
 | [`BS.AvatarAttachmentType`](#attachment-enums), [`BS.AvatarBoneName`](#attachment-enums), [`BS.AttachmentType`](#attachment-enums) | Attached objects |
 | [`BS.PlayerTag`](global-functions.md#global-functions) | The tags on the local player (strings) |
 | `BS.LegacyAttachmentPosition` | [Legacy APIs](legacy-apis.md) |
-| `BS.UIElementType`, `BS.UIPropertyName` | The [UI system](../components/ui-system.md) |
+| `BS.UIElementType`, `BS.UIPropertyName` | The [UI system](../components/ui-system.md). Element types 200 to 399 are the [UI Kit](../components/ui-kit.md#reference)'s controls |
 
 `BS.UICommands` is exported too, but it's the UI system's own plumbing.
 
