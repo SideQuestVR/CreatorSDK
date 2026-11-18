@@ -2173,6 +2173,13 @@ namespace BS
                 {
                     UnityMainThreadTaskScheduler.Default.Enqueue(TaskRunner.Track(() =>
                     {
+                        // Queued: the object can have been destroyed since the check above. The page gets the same
+                        // answer as for an id that was never there.
+                        if (banterObject == null)
+                        {
+                            SendError(reqId, "SET_ACTIVE: Could not find object with id: " + msgParts[0]);
+                            return;
+                        }
                         banterObject.SetActive(int.Parse(msgParts[1]) == 1);
                         SendObjectUpdate(banterObject, reqId);
                     }, $"{nameof(BSScene)}.{nameof(SetJsObjectActive)}"));
