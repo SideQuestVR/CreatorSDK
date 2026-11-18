@@ -72,6 +72,11 @@ namespace BS
         /// streams shared by other players are not shown. Browsers placed in the scene are not affected.</summary>
         private bool _EnableBrowserStreaming = true;
         public bool EnableBrowserStreaming { get { return _EnableBrowserStreaming; } set { _EnableBrowserStreaming = value; scene.events.OnEnableBrowserStreamingChanged.Invoke(value); } }
+        /// <summary>Players can point at other players: the pointer lands on them and clicking one opens their profile.
+        /// On unless the space turns it off; off, pointers pass through players (for a world that aims at them itself,
+        /// such as with a gun), and their profiles open only from the People list.</summary>
+        private bool _EnableUserUICollider = true;
+        public bool EnableUserUICollider { get { return _EnableUserUICollider; } set { _EnableUserUICollider = value; scene.events.OnEnableUserUIColliderChanged.Invoke(value); } }
         // TODO(not wired up in the app yet): let players grab and hold other players' hands (remote players' hands get
         // grabbable colliders, also gated by the player's own Hand Holding comfort option). Remote players have no hand
         // colliders in the client yet.
@@ -300,6 +305,7 @@ namespace BS
             EnableRun = true;
             TeleportMaxRange = 0f;
             EnableBrowserStreaming = true;
+            EnableUserUICollider = true;
             EnableHandHold = true;
             EnableRadar = true;
             EnableNametags = true;

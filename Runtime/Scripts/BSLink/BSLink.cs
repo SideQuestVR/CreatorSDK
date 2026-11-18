@@ -992,6 +992,14 @@ namespace BS
         /// <summary>DESTROYED's sweep: entries of each table looked at per frame.</summary>
         internal static int DestroyedSweepPerFrame = 64;
 
+        // The drain in progress, for the one delegate bridge.Drain asks "out of budget?": a lambda over these as
+        // locals was a closure and a delegate made on every call, and the pump calls every frame.
+        long bridgeDrainStartTicks, bridgeDrainUsedTicks, bridgeDrainLimitTicks;
+        Func<bool> bridgeDrainOutOfBudget;
+
+        bool BridgeDrainOutOfBudget() =>
+            bridgeDrainUsedTicks + (System.Diagnostics.Stopwatch.GetTimestamp() - bridgeDrainStartTicks) > bridgeDrainLimitTicks;
+
         /// <summary>Drains while this frame's budget (shared by the inline drains in the Ora callback) lasts.</summary>
         void DrainWithinFrameBudget()
         {
@@ -1001,8 +1009,22 @@ namespace BS
             long limit = (long)(budgetMs * System.Diagnostics.Stopwatch.Frequency / 1000);
             if (bridgeBudgetUsedTicks >= limit) return;
             long start = System.Diagnostics.Stopwatch.GetTimestamp();
-            long used = bridgeBudgetUsedTicks;
-            bridge.Drain(int.MaxValue, () => used + (System.Diagnostics.Stopwatch.GetTimestamp() - start) > limit);
+            // Put back afterwards, in case a message handled in this drain starts another (the Ora callback drains
+            // inline): each then keeps its own start and limit, as each lambda did.
+            long outerStart = bridgeDrainStartTicks, outerUsed = bridgeDrainUsedTicks, outerLimit = bridgeDrainLimitTicks;
+            bridgeDrainStartTicks = start;
+            bridgeDrainUsedTicks = bridgeBudgetUsedTicks;
+            bridgeDrainLimitTicks = limit;
+            try
+            {
+                bridge.Drain(int.MaxValue, bridgeDrainOutOfBudget ??= BridgeDrainOutOfBudget);
+            }
+            finally
+            {
+                bridgeDrainStartTicks = outerStart;
+                bridgeDrainUsedTicks = outerUsed;
+                bridgeDrainLimitTicks = outerLimit;
+            }
             bridgeBudgetUsedTicks += System.Diagnostics.Stopwatch.GetTimestamp() - start;
         }
 

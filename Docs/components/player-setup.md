@@ -180,6 +180,7 @@ When it starts, it applies all of its values, so anything you don't set goes bac
 | `enableRun` | boolean | true | `EnableRun`: players can run (hold Shift on desktop, click the left stick while moving in VR). Untick it to keep everyone at this space's walking speed |
 | `teleportMaxRange` | number | 0 | `TeleportMaxRange`: the furthest players can teleport here, in metres. 0 leaves it to each player's own Teleport Range (8 m unless they change it, up to 100 m); any other value caps everyone's teleports at that distance |
 | `enableBrowserStreaming` | boolean | true | `EnableBrowserStreaming`: players can stream their menu browser into the space. Untick it to forbid that here; browsers placed in the scene are not affected |
+| `enableUserUICollider` | boolean | true | `EnableUserUICollider`: pointers land on other players, and clicking one opens their profile. Untick it so pointers pass through players, for a world that aims at them itself |
 | `voiceDistanceMultiplier` | number | 1 | `VoiceDistanceMultiplier`: scales how far voices carry here, on top of each player's own Voice Distance setting: 2 = twice as far (a stage or auditorium), 0.5 = half. Clamped to 0.1-10. Voices beyond that distance aren't received at all, so a large multiplier in a crowded space costs players bandwidth |
 | `enableHandHold` | boolean | true | `EnableHandHold`: players can hold hands |
 | `enableRadar` | boolean | true | `EnableRadar`: the radar is shown |

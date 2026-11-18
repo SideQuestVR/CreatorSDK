@@ -154,12 +154,11 @@ namespace BS
         }
         public void SyncProperties(bool force = false)
         {
-            // BS (perf): every BSObjectId runs this every frame; without a change to report it allocated a list for nothing.
-            if (SdkPerf.ObjectIdIdleFastPath && !force && (!transform.hasChanged
-                || !(watchPosition || watchLocalPosition || watchRotation || watchLocalRotation || watchLocalScale || watchEuler || watchLocalEuler)))
-            {
+            // Update calls this for every object every frame and nearly always has nothing to send: leave before
+            // the list is made.
+            if (!force && !(transform.hasChanged && (watchPosition || watchLocalPosition || watchRotation
+                || watchLocalRotation || watchLocalScale || watchEuler || watchLocalEuler)))
                 return;
-            }
             var updates = new List<BSComponentPropertyUpdate>();
             if ((transform.hasChanged && watchPosition) || force)
             {

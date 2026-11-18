@@ -394,7 +394,8 @@
     {"id": 304, "name": "loadDistance"},
     {"id": 305, "name": "enableRun"},
     {"id": 306, "name": "teleportMaxRange"},
-    {"id": 307, "name": "enableBrowserStreaming"}
+    {"id": 307, "name": "enableBrowserStreaming"},
+    {"id": 308, "name": "enableUserUICollider"}
   ],
   "tags": [
     {"index": 0, "name": "UserTag1"},
@@ -3129,10 +3130,11 @@
         {"name": "voiceDistanceMultiplier", "attr": "See", "type": "System.Single", "wire": "Float", "propId": 301, "initial": "1"},
         {"name": "enableRun", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 305, "initial": "true"},
         {"name": "teleportMaxRange", "attr": "See", "type": "System.Single", "wire": "Float", "propId": 306, "initial": "0"},
-        {"name": "enableBrowserStreaming", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 307, "initial": "true"}
+        {"name": "enableBrowserStreaming", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 307, "initial": "true"},
+        {"name": "enableUserUICollider", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 308, "initial": "true"}
       ],
       "methods": [],
-      "tsConstructor": ["enableTeleport: boolean | any = true", "enableForceGrab: boolean = false", "enableSpiderMan: boolean = false", "enableHandHold: boolean = true", "enableRadar: boolean = true", "enableNametags: boolean = true", "enablePortals: boolean = true", "enableGuests: boolean = true", "refreshRate: number = 72", "clippingPlane: Vector2 = new Vector2(0.02,1500)", "physicsMoveSpeed: number = 3.25", "physicsMoveAcceleration: number = 4.6", "physicsAirControlSpeed: number = 2.4", "physicsAirControlAcceleration: number = 6", "physicsDrag: number = 0", "physicsFreeFallAngularDrag: number = 6", "physicsJumpStrength: number = 1", "physicsHandPositionStrength: number = 1", "physicsHandRotationStrength: number = 1", "physicsHandSpringiness: number = 10", "physicsGrappleRange: number = 512", "physicsGrappleReelSpeed: number = 1", "physicsGrappleSpringiness: number = 10", "physicsGorillaMode: boolean = false", "isSettingsLocked: boolean = false", "isPhysicsSettingsLocked: boolean = false", "enableBirdFlight: boolean = true", "avatarSyncMode: String = new String(\"social\")", "voiceDistanceMultiplier: number = 1", "enableRun: boolean = true", "teleportMaxRange: number = 0", "enableBrowserStreaming: boolean = true"]
+      "tsConstructor": ["enableTeleport: boolean | any = true", "enableForceGrab: boolean = false", "enableSpiderMan: boolean = false", "enableHandHold: boolean = true", "enableRadar: boolean = true", "enableNametags: boolean = true", "enablePortals: boolean = true", "enableGuests: boolean = true", "refreshRate: number = 72", "clippingPlane: Vector2 = new Vector2(0.02,1500)", "physicsMoveSpeed: number = 3.25", "physicsMoveAcceleration: number = 4.6", "physicsAirControlSpeed: number = 2.4", "physicsAirControlAcceleration: number = 6", "physicsDrag: number = 0", "physicsFreeFallAngularDrag: number = 6", "physicsJumpStrength: number = 1", "physicsHandPositionStrength: number = 1", "physicsHandRotationStrength: number = 1", "physicsHandSpringiness: number = 10", "physicsGrappleRange: number = 512", "physicsGrappleReelSpeed: number = 1", "physicsGrappleSpringiness: number = 10", "physicsGorillaMode: boolean = false", "isSettingsLocked: boolean = false", "isPhysicsSettingsLocked: boolean = false", "enableBirdFlight: boolean = true", "avatarSyncMode: String = new String(\"social\")", "voiceDistanceMultiplier: number = 1", "enableRun: boolean = true", "teleportMaxRange: number = 0", "enableBrowserStreaming: boolean = true", "enableUserUICollider: boolean = true"]
     },
     {
       "name": "Spawn",
