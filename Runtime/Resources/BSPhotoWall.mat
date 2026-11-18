@@ -33,6 +33,7 @@ Material:
     - _Corner: 0.06
     - _DevelopSeconds: 1.5
     - _MinLight: 0
+    - _PhotoUnlit: 0.8
     - _SelfLight: 0.35
     - _Shape: 0
     m_Colors:
