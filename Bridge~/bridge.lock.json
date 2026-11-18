@@ -396,10 +396,11 @@
     {"id": 305, "name": "enableRun"},
     {"id": 306, "name": "teleportMaxRange"},
     {"id": 307, "name": "enableBrowserStreaming"},
-    {"id": 308, "name": "photoSize"},
-    {"id": 309, "name": "maxPhotos"},
-    {"id": 310, "name": "replaceOldest"},
-    {"id": 311, "name": "adminsOnly"}
+    {"id": 308, "name": "enableUserUICollider"},
+    {"id": 309, "name": "photoSize"},
+    {"id": 310, "name": "maxPhotos"},
+    {"id": 311, "name": "replaceOldest"},
+    {"id": 312, "name": "adminsOnly"}
   ],
   "tags": [
     {"index": 0, "name": "UserTag1"},
@@ -3134,10 +3135,11 @@
         {"name": "voiceDistanceMultiplier", "attr": "See", "type": "System.Single", "wire": "Float", "propId": 301, "initial": "1"},
         {"name": "enableRun", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 305, "initial": "true"},
         {"name": "teleportMaxRange", "attr": "See", "type": "System.Single", "wire": "Float", "propId": 306, "initial": "0"},
-        {"name": "enableBrowserStreaming", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 307, "initial": "true"}
+        {"name": "enableBrowserStreaming", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 307, "initial": "true"},
+        {"name": "enableUserUICollider", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 308, "initial": "true"}
       ],
       "methods": [],
-      "tsConstructor": ["enableTeleport: boolean | any = true", "enableForceGrab: boolean = false", "enableSpiderMan: boolean = false", "enableHandHold: boolean = true", "enableRadar: boolean = true", "enableNametags: boolean = true", "enablePortals: boolean = true", "enableGuests: boolean = true", "refreshRate: number = 72", "clippingPlane: Vector2 = new Vector2(0.02,1500)", "physicsMoveSpeed: number = 3.25", "physicsMoveAcceleration: number = 4.6", "physicsAirControlSpeed: number = 2.4", "physicsAirControlAcceleration: number = 6", "physicsDrag: number = 0", "physicsFreeFallAngularDrag: number = 6", "physicsJumpStrength: number = 1", "physicsHandPositionStrength: number = 1", "physicsHandRotationStrength: number = 1", "physicsHandSpringiness: number = 10", "physicsGrappleRange: number = 512", "physicsGrappleReelSpeed: number = 1", "physicsGrappleSpringiness: number = 10", "physicsGorillaMode: boolean = false", "isSettingsLocked: boolean = false", "isPhysicsSettingsLocked: boolean = false", "enableBirdFlight: boolean = true", "avatarSyncMode: String = new String(\"social\")", "voiceDistanceMultiplier: number = 1", "enableRun: boolean = true", "teleportMaxRange: number = 0", "enableBrowserStreaming: boolean = true"]
+      "tsConstructor": ["enableTeleport: boolean | any = true", "enableForceGrab: boolean = false", "enableSpiderMan: boolean = false", "enableHandHold: boolean = true", "enableRadar: boolean = true", "enableNametags: boolean = true", "enablePortals: boolean = true", "enableGuests: boolean = true", "refreshRate: number = 72", "clippingPlane: Vector2 = new Vector2(0.02,1500)", "physicsMoveSpeed: number = 3.25", "physicsMoveAcceleration: number = 4.6", "physicsAirControlSpeed: number = 2.4", "physicsAirControlAcceleration: number = 6", "physicsDrag: number = 0", "physicsFreeFallAngularDrag: number = 6", "physicsJumpStrength: number = 1", "physicsHandPositionStrength: number = 1", "physicsHandRotationStrength: number = 1", "physicsHandSpringiness: number = 10", "physicsGrappleRange: number = 512", "physicsGrappleReelSpeed: number = 1", "physicsGrappleSpringiness: number = 10", "physicsGorillaMode: boolean = false", "isSettingsLocked: boolean = false", "isPhysicsSettingsLocked: boolean = false", "enableBirdFlight: boolean = true", "avatarSyncMode: String = new String(\"social\")", "voiceDistanceMultiplier: number = 1", "enableRun: boolean = true", "teleportMaxRange: number = 0", "enableBrowserStreaming: boolean = true", "enableUserUICollider: boolean = true"]
     },
     {
       "name": "Spawn",
@@ -3217,10 +3219,10 @@
       "base": "BS.BSComponentBase",
       "fields": [
         {"name": "size", "attr": "See", "type": "UnityEngine.Vector2", "wire": "Vector2", "propId": 60, "initial": "2,1.2"},
-        {"name": "photoSize", "attr": "See", "type": "System.Single", "wire": "Float", "propId": 308, "initial": "0.24"},
-        {"name": "maxPhotos", "attr": "See", "type": "System.Int32", "wire": "Int", "propId": 309, "initial": "35"},
-        {"name": "replaceOldest", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 310, "initial": "true"},
-        {"name": "adminsOnly", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 311, "initial": "false"}
+        {"name": "photoSize", "attr": "See", "type": "System.Single", "wire": "Float", "propId": 309, "initial": "0.24"},
+        {"name": "maxPhotos", "attr": "See", "type": "System.Int32", "wire": "Int", "propId": 310, "initial": "35"},
+        {"name": "replaceOldest", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 311, "initial": "true"},
+        {"name": "adminsOnly", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 312, "initial": "false"}
       ],
       "methods": [],
       "tsConstructor": ["size: Vector2 | any = new Vector2(2,1.2)", "photoSize: number = 0.24", "maxPhotos: number = 35", "replaceOldest: boolean = true", "adminsOnly: boolean = false"]

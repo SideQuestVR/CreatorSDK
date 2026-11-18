@@ -27,6 +27,7 @@ public class BSSceneEvents
     public UnityEvent<bool> OnEnableRunChanged = new UnityEvent<bool>();
     public UnityEvent<float> OnTeleportMaxRangeChanged = new UnityEvent<float>();
     public UnityEvent<bool> OnEnableBrowserStreamingChanged = new UnityEvent<bool>();
+    public UnityEvent<bool> OnEnableUserUIColliderChanged = new UnityEvent<bool>();
     public UnityEvent<bool> OnEnableHandHoldChanged = new UnityEvent<bool>();
     public UnityEvent<bool> OnEnableRadarChanged = new UnityEvent<bool>();
     public UnityEvent<bool> OnEnableNametagsChanged = new UnityEvent<bool>();
@@ -190,6 +191,7 @@ public class BSSceneEvents
         OnEnableRunChanged.RemoveAllListeners();
         OnTeleportMaxRangeChanged.RemoveAllListeners();
         OnEnableBrowserStreamingChanged.RemoveAllListeners();
+        OnEnableUserUIColliderChanged.RemoveAllListeners();
         OnEnableHandHoldChanged.RemoveAllListeners();
         OnEnableRadarChanged.RemoveAllListeners();
         OnEnableNametagsChanged.RemoveAllListeners();

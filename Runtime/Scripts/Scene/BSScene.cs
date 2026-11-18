@@ -39,6 +39,7 @@ namespace BS
         public const string EnableRun = "EnableRun";
         public const string TeleportMaxRange = "TeleportMaxRange";
         public const string EnableBrowserStreaming = "EnableBrowserStreaming";
+        public const string EnableUserUICollider = "EnableUserUICollider";
         public const string EnableHandHold = "EnableHandHold";
         public const string EnableRadar = "EnableRadar";
         public const string EnableNametags = "EnableNametags";
@@ -3972,6 +3973,9 @@ namespace BS
                                  break;
                              case SettingsMap.EnableBrowserStreaming:
                                  settings.EnableBrowserStreaming = setting[1] == "1";
+                                 break;
+                             case SettingsMap.EnableUserUICollider:
+                                 settings.EnableUserUICollider = setting[1] == "1";
                                  break;
                              case SettingsMap.EnableHandHold:
                                  settings.EnableHandHold = setting[1] == "1";

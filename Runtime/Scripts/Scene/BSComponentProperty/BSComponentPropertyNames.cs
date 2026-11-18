@@ -310,6 +310,7 @@ namespace BS
         enableRun,
         teleportMaxRange,
         enableBrowserStreaming,
+        enableUserUICollider,
         photoSize,
         maxPhotos,
         replaceOldest,
