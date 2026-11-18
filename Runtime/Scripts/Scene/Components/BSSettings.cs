@@ -24,6 +24,7 @@ namespace BS
     - `enableRun` - Players can run (hold Shift on desktop, click the left stick in VR). On by default; turn it off to keep everyone at walking speed.
     - `teleportMaxRange` - The furthest players can teleport here, in metres. 0 (the default) leaves it to each player's own Teleport Range.
     - `enableBrowserStreaming` - Players can stream their menu browser into the space for everyone to see. On by default; turn it off to forbid it here.
+    - `enableUserUICollider` - Pointers land on other players, and clicking one opens their profile. On by default; turn it off so pointers pass through players, e.g. when the world aims at them itself.
     - `enableHandHold` - Players can hold hands.
     - `enableRadar` - Show the radar.
     - `enableNametags` - Show name tags above players.
@@ -164,6 +165,12 @@ namespace BS
                  "turn it off to forbid it here. Browsers you place in the scene yourself are not affected.")]
         [See(initial = "true")][SerializeField] internal bool enableBrowserStreaming = true;
 
+        [Header("Players")]
+        [Tooltip("Pointers land on other players, and clicking one opens their profile. On by default; turn it off so " +
+                 "pointers pass through players, for a world that aims at them itself (a gun, a tagger). Their " +
+                 "profiles still open from the People list.")]
+        [See(initial = "true")][SerializeField] internal bool enableUserUICollider = true;
+
         bool started;
         // The settings object (it is recreated on every page load) that this component locked, if any.
         // Its own locks don't stop it; locks set by anything else do.
@@ -226,6 +233,7 @@ namespace BS
                 if (Has(PropertyName.enableRun)) settings.EnableRun = enableRun;
                 if (Has(PropertyName.teleportMaxRange)) settings.TeleportMaxRange = teleportMaxRange;
                 if (Has(PropertyName.enableBrowserStreaming)) settings.EnableBrowserStreaming = enableBrowserStreaming;
+                if (Has(PropertyName.enableUserUICollider)) settings.EnableUserUICollider = enableUserUICollider;
                 if (Has(PropertyName.enableHandHold)) settings.EnableHandHold = enableHandHold;
                 if (Has(PropertyName.enableRadar)) settings.EnableRadar = enableRadar;
                 if (Has(PropertyName.enableNametags)) settings.EnableNametags = enableNametags;

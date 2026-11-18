@@ -310,5 +310,6 @@ namespace BS
         enableRun,
         teleportMaxRange,
         enableBrowserStreaming,
+        enableUserUICollider,
     }
 }
