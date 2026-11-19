@@ -144,9 +144,16 @@ namespace BS.SDKEditor
                     skeleton.Add(new SkeletonBone { name = bone.name, position = bone.localPosition, rotation = bone.localRotation, scale = bone.localScale });
                 avatar = AvatarBuilder.BuildHumanAvatar(instance, new HumanDescription
                 {
-                    human = human.ToArray(), skeleton = skeleton.ToArray(),
-                    upperArmTwist = .5f, lowerArmTwist = .5f, upperLegTwist = .5f, lowerLegTwist = .5f,
-                    armStretch = .05f, legStretch = .05f, feetSpacing = 0f, hasTranslationDoF = false
+                    human = human.ToArray(),
+                    skeleton = skeleton.ToArray(),
+                    upperArmTwist = .5f,
+                    lowerArmTwist = .5f,
+                    upperLegTwist = .5f,
+                    lowerLegTwist = .5f,
+                    armStretch = .05f,
+                    legStretch = .05f,
+                    feetSpacing = 0f,
+                    hasTranslationDoF = false
                 });
                 if (avatar == null || !avatar.isValid || !avatar.isHuman) { error = "Could not build a humanoid avatar for the seat robot."; return null; }
                 avatar.hideFlags = HideFlags.HideAndDontSave;
