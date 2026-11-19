@@ -17,6 +17,21 @@ namespace BS
         public const string Action = "action";
     }
 
+    /// <summary>
+    /// What a world asks for the app's Visual Scripting acceleration (<see cref="BSSceneSettings.VisualScriptingAcceleration"/>).
+    /// It covers the whole set of switches the app exposes; there is no per-switch request. The numbers are sent
+    /// over the bridge and must not change.
+    /// </summary>
+    public enum VisualScriptingAcceleration
+    {
+        /// <summary>No preference: the app uses the player's own default.</summary>
+        Default = 0,
+        /// <summary>The world asks for acceleration on.</summary>
+        ForceOn = 1,
+        /// <summary>The world asks for acceleration off.</summary>
+        ForceOff = 2,
+    }
+
     [RenamedFrom("Banter.SDK.BanterSceneSettings")]
     public class BSSceneSettings
     {
@@ -87,6 +102,44 @@ namespace BS
         public int MaxOccupancy { get { return _MaxOccupancy; } set { _MaxOccupancy = value; scene.events.OnMaxOccupancyChanged.Invoke(value); } }
         private float _RefreshRate = 72.0f;
         public float RefreshRate { get { return _RefreshRate; } set { _RefreshRate = value; scene.events.OnRefreshRateChanged.Invoke(value); } }
+        /// <summary>The world's request for the app's Visual Scripting acceleration; Default (no preference) unless the
+        /// page sets it (SetSettings key "VisualScriptingAcceleration", see <see cref="TryParseVisualScriptingAcceleration"/>).
+        /// The SDK only stores it and raises OnVisualScriptingAccelerationChanged: the app decides what is in force (the
+        /// player's choice for this world, then this request, then their default) and writes the switches
+        /// (<see cref="SdkPerf"/> and the Visual Scripting package's). Not covered by SettingsLocked, so a snippet can ask
+        /// in a world that locked its settings. Back to Default when the player leaves.</summary>
+        private VisualScriptingAcceleration _VisualScriptingAcceleration = global::BS.VisualScriptingAcceleration.Default;
+        public VisualScriptingAcceleration VisualScriptingAcceleration { get { return _VisualScriptingAcceleration; } set { _VisualScriptingAcceleration = value; scene.events.OnVisualScriptingAccelerationChanged.Invoke(value); } }
+
+        /// <summary>
+        /// Reads the value a page sent for "VisualScriptingAcceleration": "default", "on" or "off", the enum names
+        /// ("ForceOn", "ForceOff"), or the numbers 0, 1 and 2; case and surrounding spaces are ignored. False for
+        /// anything else, and the setting is then left as it was.
+        /// </summary>
+        public static bool TryParseVisualScriptingAcceleration(string text, out VisualScriptingAcceleration value)
+        {
+            value = global::BS.VisualScriptingAcceleration.Default;
+            if (text == null) return false;
+            switch (text.Trim().ToLowerInvariant())
+            {
+                case "0":
+                case "default":
+                    value = global::BS.VisualScriptingAcceleration.Default;
+                    return true;
+                case "1":
+                case "on":
+                case "forceon":
+                    value = global::BS.VisualScriptingAcceleration.ForceOn;
+                    return true;
+                case "2":
+                case "off":
+                case "forceoff":
+                    value = global::BS.VisualScriptingAcceleration.ForceOff;
+                    return true;
+            }
+            return false;
+        }
+
         private Vector2 _ClippingPlane = new Vector2(0.02f, 1500.0f);
         public Vector2 ClippingPlane { get { return _ClippingPlane; } set { _ClippingPlane = value; scene.events.OnClippingPlaneChanged.Invoke(value); } }
         private Vector4 _SpawnPoint = Vector4.zero;
@@ -261,6 +314,7 @@ namespace BS
             EnableAvatars = true;
             MaxOccupancy = 20;
             RefreshRate = 72.0f;
+            VisualScriptingAcceleration = global::BS.VisualScriptingAcceleration.Default;
             ClippingPlane = new Vector2(0.02f, 1500.0f);
             SpawnPoint = Vector4.zero;
 

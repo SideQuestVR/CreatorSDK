@@ -69,6 +69,28 @@ How the local player moves. Each player's app applies them to that player.
 | `PhysicsGorillaMode` | boolean | false | VR only: players get about by pushing their hands against the floor and walls, Gorilla Tag style. Their hands collide with the world, the sticks no longer walk or steer them in the air (turning still works), and a push carries them a short way before they stop. Jumping and teleporting still work unless you turn them off. Desktop and mobile players move as usual. |
 | `PhysicsSettingsLocked` | boolean | false | Locks the settings in this table. See [Locks](#how-settings-are-applied). |
 
+## Visual Scripting acceleration
+
+The app can run Visual Scripting graphs through faster paths. Each player chooses whether that is on by default, and can change it for the world they are in. Your space can ask for it on or off; a player's own choice for your world still wins over your request.
+
+```js
+await scene.SetVisualScriptingAcceleration("on");   // "on", "off", or "default" for no preference
+```
+
+- **It is a request for the whole set.** There is no per-feature request.
+- **Ask early**, before your graphs start. Some of the switches only take effect the next time the world loads, so a request made late may not fully apply until then.
+- **It isn't one of the settings `SetSettings` resets.** `new BS.SceneSettings()` has no `VisualScriptingAcceleration`, so sending your other settings leaves the request alone, and `SettingsLocked` doesn't block it. The last request made wins. It goes back to no preference when the player leaves.
+- **Older apps** have no `scene.SetVisualScriptingAcceleration`. This form works there too (an app that doesn't know the setting ignores it), and sends nothing else:
+
+```js
+const request = new BS.SceneSettings();
+for (const key of Object.keys(request)) delete request[key];
+request.VisualScriptingAcceleration = { Serialize: () => "on" };
+await scene.SetSettings(request);
+```
+
+Don't set `VisualScriptingAcceleration` to a plain string on an older app: it sends it as a yes/no, so `"off"` would arrive as on.
+
 ## Player count
 
 How many players share an instance of your world isn't a page setting: `MaxOccupancy` does nothing. The server decides it when someone joins, from:

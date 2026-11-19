@@ -38,6 +38,8 @@ public class BSSceneEvents
     public UnityEvent<Vector4> OnSpawnPointChanged = new UnityEvent<Vector4>();
     public UnityEvent<float> OnRefreshRateChanged = new UnityEvent<float>();
     public UnityEvent<Vector2> OnClippingPlaneChanged = new UnityEvent<Vector2>();
+    /// <summary>BSSceneSettings.VisualScriptingAcceleration was set (by the page, or back to Default on leaving).</summary>
+    public UnityEvent<VisualScriptingAcceleration> OnVisualScriptingAccelerationChanged = new UnityEvent<VisualScriptingAcceleration>();
     public UnityEvent<string> OnPageOpened = new UnityEvent<string>();
     public UnityEvent<string, bool> OnOneShot = new UnityEvent<string, bool>();
     public UnityEvent<BSSynced, BSSyncedObject> OnSyncedObject = new UnityEvent<BSSynced, BSSyncedObject>();
@@ -202,6 +204,7 @@ public class BSSceneEvents
         OnSpawnPointChanged.RemoveAllListeners();
         OnRefreshRateChanged.RemoveAllListeners();
         OnClippingPlaneChanged.RemoveAllListeners();
+        OnVisualScriptingAccelerationChanged.RemoveAllListeners();
         OnPageOpened.RemoveAllListeners();
         OnOneShot.RemoveAllListeners();
         OnPublicSpaceStateChanged.RemoveAllListeners();
