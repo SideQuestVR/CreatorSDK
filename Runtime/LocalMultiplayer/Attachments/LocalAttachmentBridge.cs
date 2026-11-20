@@ -1,4 +1,4 @@
-// <mirror source="Assets/Systems/Attachments/AttachmentNetworkBridge.cs" sha256="5e1e451efe01a98d1414f1fe228ebe8142120631915a2ae1f7265c12fdb9df00" mode="port" />
+// <mirror source="Assets/Systems/Attachments/AttachmentNetworkBridge.cs" sha256="783cbcb03f638dc38525c285204483f9be2d62cf7697fc48b66a320deeab1b9d" mode="port" />
 // AttachmentNetworkBridge (:27-391) with PacketParty swapped for the relay session, line by line. Substitutions:
 //   NetworkService.SetLocalUserState(key, value)        -> ILocalSession.SetEngineUserState (EditableOwnUserState)
 //   NetworkService.TryGetLocalHipBone                   -> ILocalRig.HipPosition / HipRotation, the desktop rig's hip
@@ -21,6 +21,9 @@
 // waiting diagnostics read the object first) and the profiler markers.
 // Added, diagnostics only (behaviour unchanged): instructions pending over 3 s for an object or seat this scene
 // lacks, and Ids that make user-state paths the room refuses.
+// Reviewed 2026-11-20 and not ported: production now publishes the pilot offset from LateUpdate, against the seat pose
+// its avatar was posed on (PilotOffset), and skips the frame of sitting. Those correct a posed avatar's hip read a
+// frame late; the desktop rig here works its hip out from the seat when it is read, so the offset is already constant.
 using System;
 using System.Collections.Generic;
 using BS;

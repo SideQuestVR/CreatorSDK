@@ -110,7 +110,19 @@ A [Spawner Object](../components/special.md#spawnerobject) hands out synced copi
 
 ### Attachments and seats
 
-A [BS Attached Object](../components/vr-interaction.md#attachedobject) attached to your avatar with **Auto Sync** on is shown on your avatar to the other players, and players sitting on a [seat](../building-in-unity/easy-prefabs.md#seat-bsseat) are shown seated. Each player attaches their own copy of the object, so it must be in the scene with a stable [BSObjectId](#bsobjectid), and it shouldn't also be a synced object.
+A [BS Attached Object](../components/vr-interaction.md#attachedobject) attached to your avatar with **Auto Sync** on is shown on your avatar to the other players, and players sitting on a [seat](../building-in-unity/seats.md) are shown seated. Each player attaches their own copy of the object, so it must be in the scene with a stable [BSObjectId](#bsobjectid), and it shouldn't also be a synced object.
+
+#### Vehicles with several seats
+
+Put the seats under one object that has the Rigidbody and the Synced Object: a car, a boat, a plane. The first player to sit drives it (they become its owner); everyone who sits after rides as a passenger. Each player keeps every rider exactly on their seat on their own copy of the vehicle, so riders stay with the vehicle and with each other at any speed, upside down included.
+
+- **A vehicle that tilts or flips:** set its seats' **View Rotation** to **Follow Seat**, so each rider's view and whole body turn over with it. The default, Upright Follow Yaw, keeps the head upright, which is right for a car and wrong for a loop.
+- **Move it in Update or FixedUpdate:** physics, a kinematic Rigidbody with `MovePosition`, an animation, a script's `SetTransform`, a Visual Scripting **On Update** all carry their riders in the same frame. A vehicle moved in **Late Update** is seen a moment late by the player driving it (they sit well behind their seat at speed).
+- **Don't teleport it with riders on it.** A jump of tens of metres in one frame throws the riders' bodies and they are put back on the ground, off the seat. Stand them up first (each player's own `seat.Stand()`), or fly it there rather than jumping it.
+- **Hands** are physical bodies and lag a fast vehicle: a passenger's arms reach back behind them at speed (about a third of a metre at 10 m/s, a full arm's length by 20 m/s). Bodies, heads and name tags do not lag.
+- A seat needs nothing of its own for this: no Rigidbody, and its click collider can be on the seat or on a child.
+
+Setting the seats up, the Scene view gizmos and what was measured are on the [Seats](../building-in-unity/seats.md#vehicles) page.
 
 ## BSObjectId
 

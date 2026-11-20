@@ -20,7 +20,7 @@ Common problems, what causes them, and how to fix them. Many are caught before y
 
 ### A seat can't be sat on
 
-A seat is sat on by clicking a collider on it, so the same rules apply: a collider on the seat or its children, on the UI layer. The checklist's **Seats** check finds seats with nothing to click and moves their colliders to the UI layer.
+A seat is sat on by clicking a collider on it, so the same rules apply: a collider on the seat or its children, on the UI layer. The checklist's **Seats** check finds seats with nothing to click and moves their colliders to the UI layer. For everything else about a seat (reach, feet, the view, vehicles), see [Seats: Troubleshooting](../building-in-unity/seats.md#troubleshooting).
 
 ## Scripts
 

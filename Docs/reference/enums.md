@@ -69,7 +69,7 @@ BS.SeatViewMode.UprightFollowYaw   // 1: follow position/yaw, remove seat pitch/
 BS.SeatViewMode.UprightIndependent // 2: follow position, ignore seat rotation for the view
 ```
 
-All three modes keep the authored pelvis and legs attached to the seat's complete rotation while real head/hand tracking remains free. See [Robot pose authoring and comfort limits](../building-in-unity/easy-prefabs.md#seat-bsseat).
+All three modes keep the authored pelvis and legs attached to the seat's complete rotation while real head/hand tracking remains free. See [View Rotation](../building-in-unity/seats.md#view-rotation) for when to use each, and [posing the sitter](../building-in-unity/seats.md#pose-the-sitter).
 
 ## HandSide
 

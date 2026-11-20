@@ -49,7 +49,7 @@ Only spawns that are in the scene while the space loads take part in the arrival
 
 ## Seat
 
-Clicking a seat sits the local player on it, and moving or jumping stands them up; see [Seat authoring](../building-in-unity/easy-prefabs.md#seat-bsseat) for placement, Robot pose handles, and holograms. All modes face the seat on entry and use its authored pelvis and leg pose. Legacy carries the full seat rotation; the two upright modes keep seat tilt out of the view. New seats default to Upright Follow Yaw.
+Clicking a seat sits the local player on it, and moving or jumping stands them up; see [Seats](../building-in-unity/seats.md) for placement, the Scene view gizmos, posing and vehicles. All modes face the seat on entry and use its authored pelvis and leg pose. Follow Seat carries the full seat rotation; the two upright modes keep seat tilt out of the view. New seats default to Upright Follow Yaw.
 
 The seat's shared [Pointer Range](ui-system.md#pointer-range) component defaults to **2 metres**; change its **Distance** to choose the seat's reach. Clicking, the hover marker, the sit hint and the VR targeting ray use this same head-to-seat-origin distance. Scaling its visual or enlarging its trigger does not extend reach. Moving out of range before releasing the click cancels seating. Editor placement previews and scripted `Sit()` remain available at any distance.
 
@@ -113,7 +113,7 @@ seat._Sit();
 
 In Visual Scripting, use the member setter for **BSSeat.ViewMode** with a `BS.SeatViewMode` value before invoking the seat's **Sit** member (`BSSeat._Sit`). **Stand** uses `BSSeat._Stand`. The supported **ShowRuntimeVisual** and **ShowLegHologram** setters control the two previews independently. Author the detailed pose in the seat Inspector; it is not a graph-driven pose editor. Validate the graph with the SDK's normal allow-list checks.
 
-Keep occupied-seat mode/pose edits out of local multiplayer comparisons: SDK late joins or recreated preview avatars can use the current settings rather than the occupant's earlier snapshot. See the [authoring notes and validation limits](../building-in-unity/easy-prefabs.md#seat-bsseat). Real headset comfort and real two-client behavior have **not yet been validated**.
+Keep occupied-seat mode/pose edits out of local multiplayer comparisons: SDK late joins or recreated preview avatars can use the current settings rather than the occupant's earlier snapshot. See [what has been tested and what has not](../building-in-unity/seats.md#tested-and-not-tested): riders on a moving vehicle were measured between two players, and headset comfort has not been judged.
 
 ## Teleporter
 

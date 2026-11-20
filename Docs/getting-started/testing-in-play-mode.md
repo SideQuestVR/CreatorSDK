@@ -52,7 +52,7 @@ While you hold an object, these keys are the right controller's buttons, for the
 
 **Typing:** once a text field in a web page has focus, type on your keyboard. Keys don't reach pages while you hold the right mouse button, so flying never types into a page.
 
-**Seats:** click a seat to sit on it. **Space** stands you up (unless you're holding something: then Space is its primary button), and so does flying with W, A, S, D, Q or E, unless the seat turns those off. See [Seat](../building-in-unity/easy-prefabs.md#seat-bsseat).
+**Seats:** click a seat to sit on it. **Space** stands you up (unless you're holding something: then Space is its primary button), and so does flying with W, A, S, D, Q or E, unless the seat turns those off. See [Seats](../building-in-unity/seats.md).
 
 **Triggers, teleporters and portals:** the desktop player carries a trigger collider tagged `BSLocalCharacter`, so spawn points, teleporters, trigger volumes and portals notice it. It has none of the head, hand and feet tags; only the app's player carries those. A portal doesn't take you anywhere in Play mode: the Console says where it would go.
 
