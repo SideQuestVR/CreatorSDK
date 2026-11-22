@@ -1,4 +1,4 @@
-// <mirror source="Assets/Systems/Attachments/AttachmentsSystem.cs" sha256="548b5a4e1e011610ce98efbc5f65d6ca37eae658ee97ded74d47f69bf9e773d2" mode="port" />
+// <mirror source="Assets/Systems/Attachments/AttachmentsSystem.cs" sha256="09150bde1e0c4a8f4ac82f215becd7a949851d4a534d413b576488b344aa36ae" mode="port" />
 // AttachmentsSystem (:66-939) on the SDK desktop player, line by line. Substitutions:
 //   _flexaBall (torso Rigidbody)      -> ILocalRig.TorsoBody / Torso, the desktop rig's hip anchor
 //   _physicsHands.PhysHands[0/1].RB   -> ILocalRig.LeftHand / RightHand
@@ -22,6 +22,10 @@
 // only reads it in the client), RemoteAttachmentDestroyed (the bridge only queues again what ReleaseRemoteAttachment
 // says it released, which a destroyed object never is), and the safety-bubble scale.
 // SyncedObjectSystem.ReleaseAfterRiding -> SyncedObjectsModule.ReleaseAfterRiding.
+// Not ported: the hold on getting off a seat (HoldSeatCollisionsUntilClear, SeatExitClearance: the seat's body and
+// the player collide again only once the player is clear of it) and the measuring switch SeatIgnoresHands. Here
+// ILocalRig.LocalPlayerColliders switch back on against the seat's body at once, as production did before; whether
+// the desktop player throws a light vehicle that way has not been measured.
 // Deviations (plan parity ledger): RestoreRemoteReproductions on the player's own leave, and the host teardown.
 using System;
 using System.Collections.Generic;

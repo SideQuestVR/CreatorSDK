@@ -1,4 +1,4 @@
-// <mirror source="Assets/Systems/Attachments/AttachmentNetworkBridge.cs" sha256="783cbcb03f638dc38525c285204483f9be2d62cf7697fc48b66a320deeab1b9d" mode="port" />
+// <mirror source="Assets/Systems/Attachments/AttachmentNetworkBridge.cs" sha256="cec4e24ba73a2ab9ec5b50300c924342ff03b0b829511e8a9627888aa62f84fc" mode="port" />
 // AttachmentNetworkBridge (:27-391) with PacketParty swapped for the relay session, line by line. Substitutions:
 //   NetworkService.SetLocalUserState(key, value)        -> ILocalSession.SetEngineUserState (EditableOwnUserState)
 //   NetworkService.TryGetLocalHipBone                   -> ILocalRig.HipPosition / HipRotation, the desktop rig's hip
@@ -8,6 +8,10 @@
 //   RemoteAvatarService.TryGetRemoteBone / SetPilotSeat -> IRemoteBoneSource, the orb avatars
 //   BSSeat / SyncedObjectSystem rider resolvers         -> IsOccupiedByOther, from the pilots received (the synced-object
 //                                                          module asks BSSeat)
+//                                                          (production's RemoteRiderOf asks first whether anyone else
+//                                                          publishes a seat at all; nothing to port in this bridge. The
+//                                                          port's own seat walk is SyncedObjectsModule.HasOtherRider,
+//                                                          once per take, not periodic)
 //   Start / OnDestroy / Update                          -> Start / Stop / Update, driven by AttachmentModule
 //   RemoteAvatarTearingDown                             -> PeerLeft: an orb is never reloaded, but it goes with a peer
 //                                                          whose socket closed. The relay keeps their user state for
@@ -73,6 +77,8 @@ namespace BS.LocalMultiplayer.Attachments
         // race, so no mid-air freeze.
         private string _localPilotSeatId;
         private Transform _localSeatTf;
+        // The seat's object was found once: if it is gone afterwards, it was destroyed under the player.
+        private bool _localSeatResolved;
         private readonly PilotBroadcastGate _gate = new PilotBroadcastGate();
 
         // Diagnostics only: since when each instruction waits.
@@ -184,12 +190,14 @@ namespace BS.LocalMultiplayer.Attachments
                 CheckSeatId(seatObjId);
                 _localPilotSeatId = seatObjId;
                 _localSeatTf = null; // resolved lazily (the object may not exist the frame we sit)
+                _localSeatResolved = false;
                 _gate.ForceNextSend(); // force the first publish
             }
             else
             {
                 _localPilotSeatId = null;
                 _localSeatTf = null;
+                _localSeatResolved = false;
                 SetLocalUserState(PilotKey, string.Empty);
             }
         }
@@ -201,9 +209,18 @@ namespace BS.LocalMultiplayer.Attachments
         {
             if (_localSeatTf == null)
             {
+                // Found before and gone now: the seat was destroyed under the player (its scene unloaded). Nothing
+                // unseats them through the attachment then, so every other player kept them on that seat (as the
+                // client's BroadcastLocalPilot).
+                if (_localSeatResolved)
+                {
+                    OnLocalPilotChanged(null, false);
+                    return;
+                }
                 var seat = _scene != null ? _scene.GetObjectByBid(_localPilotSeatId) : default;
                 if (seat.gameObject == null) return; // seat object not present yet
                 _localSeatTf = seat.gameObject.transform;
+                _localSeatResolved = true;
             }
             var rig = Rig;
             if (rig == null) return; // no local rig (production: avatar not loaded yet)

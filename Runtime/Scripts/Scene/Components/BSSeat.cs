@@ -94,6 +94,9 @@ namespace BS
             }
         }
 
+        /// <summary>Whether the local player is sitting on this seat.</summary>
+        public bool IsOccupiedByLocalPlayer => seated;
+
         /// <summary>
         /// Set by the client: the up the player stands on when they get off a seat. World up unless Comfort's Gravity
         /// Tilting stands them against the world's gravity. The SDK itself has no such setting.

@@ -1,4 +1,4 @@
-// <mirror source="Assets/Systems/Networking/SyncedObjectPhysicsHandoff.cs" sha256="01d7bd3b8d23a514605c8ec21248cdd3be5bf1ef5c8f359118b6028ca106d5b4" mode="port" />
+// <mirror source="Assets/Systems/Networking/SyncedObjectPhysicsHandoff.cs" sha256="a1764994e54ab842eb5a197d172ba59c49b2a5d5a91b4d42e94d7a60b75dc426" mode="port" />
 // SyncedObjectPhysicsHandoff line for line (PacketParty types replaced by LocalNetworkObject / LocalSyncedTransform).
 // The proximity trigger sits on a child GameObject on layer 2 (Ignore Raycast), as in production, where the child's
 // trigger messages reach this component through the object's Rigidbody; here HandoffTriggerForwarder passes them on,
@@ -7,7 +7,9 @@
 // seat-push handling; the GREENFIELD_PHYSICS_DEBUG diagnostics; FlexaBody's ThrowFlight exception to the
 // collision-detection switch; and the tag handles in IsLocalPlayer (they spare the seat's range trigger a string per
 // overlap per step, and that trigger belongs to the seat push). Teardown gives the body back its authored spin limit,
-// collision detection and colliders.
+// collision detection and colliders. The take rule itself is SyncedObjectClaims.BodyMayTake without its ridden-seat
+// part, and the driver's reclaim (with who it lost the object to) belongs to the seat push, as does the hand-back and
+// its slower retry after a failure.
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

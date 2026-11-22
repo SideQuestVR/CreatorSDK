@@ -104,6 +104,8 @@ There is no event when ownership changes.
 
 !> Turn `takeOwnershipOnCollision` and `takeOwnershipOnProximity` off on kinematic objects such as vehicles and moving platforms. Walking into or near one claims it and turns its Rigidbody dynamic, so it starts to fall and be pushed around.
 
+The same two settings decide what happens to an object while someone sits on it. With `takeOwnershipOnCollision` on, another player who touches it takes it for as long as they touch it, so they can push it (a swing with someone on it), and it goes back to its rider a second after the last touch. With it off, nobody takes a ridden object by touching it or standing on it: turn it off on anything that is driven, such as a car or an aircraft. Coming close never takes a ridden object.
+
 ### Spawned copies
 
 A [Spawner Object](../components/special.md#spawnerobject) hands out synced copies of itself. They behave like any synced object above, with three differences: each copy's id comes from the server, so you don't set one; a copy is removed when its owner leaves rather than passed on; and the number of copies per spawner is capped (`maxSpawned`). Grabbing the spawner puts the copy in your hand at once; the other players see it after one round trip to the server.
@@ -114,7 +116,7 @@ A [BS Attached Object](../components/vr-interaction.md#attachedobject) attached 
 
 #### Vehicles with several seats
 
-Put the seats under one object that has the Rigidbody and the Synced Object: a car, a boat, a plane. The first player to sit drives it (they become its owner); everyone who sits after rides as a passenger. Each player keeps every rider exactly on their seat on their own copy of the vehicle, so riders stay with the vehicle and with each other at any speed, upside down included.
+Put the seats under one object that has the Rigidbody and the Synced Object: a car, a boat, a plane. The first player to sit drives it (they become its owner); everyone who sits after rides as a passenger. A vehicle with a driver's seat says who drives it itself: call `TakeOwnership()` on the vehicle from the player who took that seat (in the seat's click handler or a Visual Scripting **On Click**). That player then drives it whoever sat first, and a rider who was driving it becomes a passenger a few seconds later. Each player keeps every rider exactly on their seat on their own copy of the vehicle, so riders stay with the vehicle and with each other at any speed, upside down included.
 
 - **A vehicle that tilts or flips:** set its seats' **View Rotation** to **Follow Seat**, so each rider's view and whole body turn over with it. The default, Upright Follow Yaw, keeps the head upright, which is right for a car and wrong for a loop.
 - **Move it in Update or FixedUpdate:** physics, a kinematic Rigidbody with `MovePosition`, an animation, a script's `SetTransform`, a Visual Scripting **On Update** all carry their riders in the same frame. A vehicle moved in **Late Update** is seen a moment late by the player driving it (they sit well behind their seat at speed).
