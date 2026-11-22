@@ -85,7 +85,8 @@
     {"id": 80, "name": "PlatformFilter"},
     {"id": 81, "name": "WorldOption"},
     {"id": 82, "name": "AvatarMirror"},
-    {"id": 83, "name": "PhotoWall"}
+    {"id": 83, "name": "PhotoWall"},
+    {"id": 84, "name": "GaussianSplat"}
   ],
   "propertyNames": [
     {"id": 0, "name": "hasUnity"},
@@ -402,7 +403,16 @@
     {"id": 311, "name": "replaceOldest"},
     {"id": 312, "name": "adminsOnly"},
     {"id": 313, "name": "rows"},
-    {"id": 314, "name": "columns"}
+    {"id": 314, "name": "columns"},
+    {"id": 315, "name": "includeOnLowEndMobile"},
+    {"id": 316, "name": "includeOnHighEndMobile"},
+    {"id": 317, "name": "maxSplats"},
+    {"id": 318, "name": "autoQuality"},
+    {"id": 319, "name": "occludeByWorld"},
+    {"id": 320, "name": "shDegree"},
+    {"id": 321, "name": "loadState"},
+    {"id": 322, "name": "loadError"},
+    {"id": 323, "name": "splatCount"}
   ],
   "tags": [
     {"index": 0, "name": "UserTag1"},
@@ -3307,10 +3317,12 @@
         {"name": "includeOnMobile", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 288, "initial": "true"},
         {"name": "includeOnDesktop", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 289, "initial": "true"},
         {"name": "includeInVR", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 290, "initial": "true"},
-        {"name": "includeInNonVR", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 291, "initial": "true"}
+        {"name": "includeInNonVR", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 291, "initial": "true"},
+        {"name": "includeOnLowEndMobile", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 315, "initial": "true"},
+        {"name": "includeOnHighEndMobile", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 316, "initial": "true"}
       ],
       "methods": [],
-      "tsConstructor": ["includeOnMobile: boolean | any = true", "includeOnDesktop: boolean = true", "includeInVR: boolean = true", "includeInNonVR: boolean = true"]
+      "tsConstructor": ["includeOnMobile: boolean | any = true", "includeOnDesktop: boolean = true", "includeInVR: boolean = true", "includeInNonVR: boolean = true", "includeOnLowEndMobile: boolean = true", "includeOnHighEndMobile: boolean = true"]
     },
     {
       "name": "WorldOption",
@@ -3350,6 +3362,24 @@
       ],
       "methods": [],
       "tsConstructor": ["rows: number | any = 3", "columns: number = 6", "photoSize: number = 0.24", "replaceOldest: boolean = true", "adminsOnly: boolean = false"]
+    },
+    {
+      "name": "GaussianSplat",
+      "cs": "BS.BSGaussianSplat",
+      "base": "BS.BSComponentBase",
+      "fields": [
+        {"name": "url", "attr": "See", "type": "System.String", "wire": "String", "propId": 61},
+        {"name": "maxSplats", "attr": "See", "type": "System.Int32", "wire": "Int", "propId": 317, "initial": "0"},
+        {"name": "resolution", "attr": "See", "type": "System.Single", "wire": "Float", "propId": 225, "initial": "0"},
+        {"name": "autoQuality", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 318, "initial": "true"},
+        {"name": "occludeByWorld", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 319, "initial": "true"},
+        {"name": "shDegree", "attr": "See", "type": "System.Int32", "wire": "Int", "propId": 320, "initial": "-1"},
+        {"name": "loadState", "attr": "See", "type": "System.String", "wire": "String", "propId": 321, "initial": "\"none\""},
+        {"name": "loadError", "attr": "See", "type": "System.String", "wire": "String", "propId": 322},
+        {"name": "splatCount", "attr": "See", "type": "System.Int32", "wire": "Int", "propId": 323, "initial": "0"}
+      ],
+      "methods": [],
+      "tsConstructor": ["url: String | any = new String()", "maxSplats: number = 0", "resolution: number = 0", "autoQuality: boolean = true", "occludeByWorld: boolean = true", "shDegree: number = -1", "loadState: String = new String(\"none\")", "loadError: String = new String()", "splatCount: number = 0"]
     }
   ],
   "jsAliases": [

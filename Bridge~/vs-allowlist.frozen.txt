@@ -1935,8 +1935,11 @@ BS.BSPlatformFilter.GetReferenceObject
 BS.BSPlatformFilter.IncludeInNonVR
 BS.BSPlatformFilter.IncludeInVR
 BS.BSPlatformFilter.IncludeOnDesktop
+BS.BSPlatformFilter.IncludeOnHighEndMobile
+BS.BSPlatformFilter.IncludeOnLowEndMobile
 BS.BSPlatformFilter.IncludeOnMobile
 BS.BSPlatformFilter.Instantiate
+BS.BSPlatformFilter.IsHeadsetIncluded
 BS.BSPlatformFilter.IsLoaded
 BS.BSPlatformFilter.IsModeIncluded
 BS.BSPlatformFilter.IsPlatformIncluded
@@ -1944,6 +1947,7 @@ BS.BSPlatformFilter.NeedsRuntimeCheck
 BS.BSPlatformFilter.ReferenceEquals
 BS.BSPlatformFilter.Refresh
 BS.BSPlatformFilter.ShouldShow
+BS.BSPlatformFilter.ShouldShowOnDevice
 BS.BSPlatformFilter.ToString
 BS.BSPlatformFilter.TryGetComponent
 BS.BSPlatformFilter.destroyCancellationToken
@@ -1955,6 +1959,8 @@ BS.BSPlatformFilter.hideFlags
 BS.BSPlatformFilter.includeInNonVR
 BS.BSPlatformFilter.includeInVR
 BS.BSPlatformFilter.includeOnDesktop
+BS.BSPlatformFilter.includeOnHighEndMobile
+BS.BSPlatformFilter.includeOnLowEndMobile
 BS.BSPlatformFilter.includeOnMobile
 BS.BSPlatformFilter.isActiveAndEnabled
 BS.BSPlatformFilter.jsId
@@ -2210,6 +2216,7 @@ BS.BSSeat.IsHovered
 BS.BSSeat.IsInInteractionRange
 BS.BSSeat.IsLegHologramVisible
 BS.BSSeat.IsLoaded
+BS.BSSeat.IsOccupiedByLocalPlayer
 BS.BSSeat.IsOccupiedByOther
 BS.BSSeat.IsVisible
 BS.BSSeat.OccupiedByOtherResolver
@@ -5027,8 +5034,11 @@ BS.BanterPlatformFilter.GetReferenceObject
 BS.BanterPlatformFilter.IncludeInNonVR
 BS.BanterPlatformFilter.IncludeInVR
 BS.BanterPlatformFilter.IncludeOnDesktop
+BS.BanterPlatformFilter.IncludeOnHighEndMobile
+BS.BanterPlatformFilter.IncludeOnLowEndMobile
 BS.BanterPlatformFilter.IncludeOnMobile
 BS.BanterPlatformFilter.Instantiate
+BS.BanterPlatformFilter.IsHeadsetIncluded
 BS.BanterPlatformFilter.IsLoaded
 BS.BanterPlatformFilter.IsModeIncluded
 BS.BanterPlatformFilter.IsPlatformIncluded
@@ -5036,6 +5046,7 @@ BS.BanterPlatformFilter.NeedsRuntimeCheck
 BS.BanterPlatformFilter.ReferenceEquals
 BS.BanterPlatformFilter.Refresh
 BS.BanterPlatformFilter.ShouldShow
+BS.BanterPlatformFilter.ShouldShowOnDevice
 BS.BanterPlatformFilter.ToString
 BS.BanterPlatformFilter.TryGetComponent
 BS.BanterPlatformFilter.destroyCancellationToken
@@ -5047,6 +5058,8 @@ BS.BanterPlatformFilter.hideFlags
 BS.BanterPlatformFilter.includeInNonVR
 BS.BanterPlatformFilter.includeInVR
 BS.BanterPlatformFilter.includeOnDesktop
+BS.BanterPlatformFilter.includeOnHighEndMobile
+BS.BanterPlatformFilter.includeOnLowEndMobile
 BS.BanterPlatformFilter.includeOnMobile
 BS.BanterPlatformFilter.isActiveAndEnabled
 BS.BanterPlatformFilter.jsId
@@ -5302,6 +5315,7 @@ BS.BanterSeat.IsHovered
 BS.BanterSeat.IsInInteractionRange
 BS.BanterSeat.IsLegHologramVisible
 BS.BanterSeat.IsLoaded
+BS.BanterSeat.IsOccupiedByLocalPlayer
 BS.BanterSeat.IsOccupiedByOther
 BS.BanterSeat.IsVisible
 BS.BanterSeat.OccupiedByOtherResolver
@@ -8249,8 +8263,11 @@ Banter.SDK.BSPlatformFilter.GetReferenceObject
 Banter.SDK.BSPlatformFilter.IncludeInNonVR
 Banter.SDK.BSPlatformFilter.IncludeInVR
 Banter.SDK.BSPlatformFilter.IncludeOnDesktop
+Banter.SDK.BSPlatformFilter.IncludeOnHighEndMobile
+Banter.SDK.BSPlatformFilter.IncludeOnLowEndMobile
 Banter.SDK.BSPlatformFilter.IncludeOnMobile
 Banter.SDK.BSPlatformFilter.Instantiate
+Banter.SDK.BSPlatformFilter.IsHeadsetIncluded
 Banter.SDK.BSPlatformFilter.IsLoaded
 Banter.SDK.BSPlatformFilter.IsModeIncluded
 Banter.SDK.BSPlatformFilter.IsPlatformIncluded
@@ -8258,6 +8275,7 @@ Banter.SDK.BSPlatformFilter.NeedsRuntimeCheck
 Banter.SDK.BSPlatformFilter.ReferenceEquals
 Banter.SDK.BSPlatformFilter.Refresh
 Banter.SDK.BSPlatformFilter.ShouldShow
+Banter.SDK.BSPlatformFilter.ShouldShowOnDevice
 Banter.SDK.BSPlatformFilter.ToString
 Banter.SDK.BSPlatformFilter.TryGetComponent
 Banter.SDK.BSPlatformFilter.destroyCancellationToken
@@ -8269,6 +8287,8 @@ Banter.SDK.BSPlatformFilter.hideFlags
 Banter.SDK.BSPlatformFilter.includeInNonVR
 Banter.SDK.BSPlatformFilter.includeInVR
 Banter.SDK.BSPlatformFilter.includeOnDesktop
+Banter.SDK.BSPlatformFilter.includeOnHighEndMobile
+Banter.SDK.BSPlatformFilter.includeOnLowEndMobile
 Banter.SDK.BSPlatformFilter.includeOnMobile
 Banter.SDK.BSPlatformFilter.isActiveAndEnabled
 Banter.SDK.BSPlatformFilter.jsId
@@ -8524,6 +8544,7 @@ Banter.SDK.BSSeat.IsHovered
 Banter.SDK.BSSeat.IsInInteractionRange
 Banter.SDK.BSSeat.IsLegHologramVisible
 Banter.SDK.BSSeat.IsLoaded
+Banter.SDK.BSSeat.IsOccupiedByLocalPlayer
 Banter.SDK.BSSeat.IsOccupiedByOther
 Banter.SDK.BSSeat.IsVisible
 Banter.SDK.BSSeat.OccupiedByOtherResolver
@@ -11341,8 +11362,11 @@ Banter.SDK.BanterPlatformFilter.GetReferenceObject
 Banter.SDK.BanterPlatformFilter.IncludeInNonVR
 Banter.SDK.BanterPlatformFilter.IncludeInVR
 Banter.SDK.BanterPlatformFilter.IncludeOnDesktop
+Banter.SDK.BanterPlatformFilter.IncludeOnHighEndMobile
+Banter.SDK.BanterPlatformFilter.IncludeOnLowEndMobile
 Banter.SDK.BanterPlatformFilter.IncludeOnMobile
 Banter.SDK.BanterPlatformFilter.Instantiate
+Banter.SDK.BanterPlatformFilter.IsHeadsetIncluded
 Banter.SDK.BanterPlatformFilter.IsLoaded
 Banter.SDK.BanterPlatformFilter.IsModeIncluded
 Banter.SDK.BanterPlatformFilter.IsPlatformIncluded
@@ -11350,6 +11374,7 @@ Banter.SDK.BanterPlatformFilter.NeedsRuntimeCheck
 Banter.SDK.BanterPlatformFilter.ReferenceEquals
 Banter.SDK.BanterPlatformFilter.Refresh
 Banter.SDK.BanterPlatformFilter.ShouldShow
+Banter.SDK.BanterPlatformFilter.ShouldShowOnDevice
 Banter.SDK.BanterPlatformFilter.ToString
 Banter.SDK.BanterPlatformFilter.TryGetComponent
 Banter.SDK.BanterPlatformFilter.destroyCancellationToken
@@ -11361,6 +11386,8 @@ Banter.SDK.BanterPlatformFilter.hideFlags
 Banter.SDK.BanterPlatformFilter.includeInNonVR
 Banter.SDK.BanterPlatformFilter.includeInVR
 Banter.SDK.BanterPlatformFilter.includeOnDesktop
+Banter.SDK.BanterPlatformFilter.includeOnHighEndMobile
+Banter.SDK.BanterPlatformFilter.includeOnLowEndMobile
 Banter.SDK.BanterPlatformFilter.includeOnMobile
 Banter.SDK.BanterPlatformFilter.isActiveAndEnabled
 Banter.SDK.BanterPlatformFilter.jsId
@@ -11616,6 +11643,7 @@ Banter.SDK.BanterSeat.IsHovered
 Banter.SDK.BanterSeat.IsInInteractionRange
 Banter.SDK.BanterSeat.IsLegHologramVisible
 Banter.SDK.BanterSeat.IsLoaded
+Banter.SDK.BanterSeat.IsOccupiedByLocalPlayer
 Banter.SDK.BanterSeat.IsOccupiedByOther
 Banter.SDK.BanterSeat.IsVisible
 Banter.SDK.BanterSeat.OccupiedByOtherResolver

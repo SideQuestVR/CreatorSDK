@@ -107,7 +107,7 @@ class CustomSceneProcessor : IProcessSceneWithReport
                 // Filters added before the component had a BSObjectId requirement can lack one, and a component
                 // without one cannot register with the scene (its property sync re-enqueues for ever).
                 if (filter.GetComponent<BSObjectId>() == null) filter.gameObject.AddComponent<BSObjectId>();
-                LogLine.Do($"BSPlatformFilter: keeping the filter on '{filter.gameObject.name}' for its VR / Non-VR check.");
+                LogLine.Do($"BSPlatformFilter: keeping the filter on '{filter.gameObject.name}' for its VR / Non-VR or headset check.");
             }
             else
             {

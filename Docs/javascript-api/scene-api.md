@@ -338,6 +338,7 @@ console.log(info.videoDetails.title, info.videoDetails.lengthSeconds, info.video
 const onQuest = await scene.IsAndroid();   // true on Quest (Android)
 const onPC = await scene.IsWindows();      // true on Windows, the Windows editor included
 const inHeadset = await scene.IsVR();      // true in a headset, false on a flat screen
+const olderHeadset = await scene.IsLowEndMobile(); // true on a Quest 2, Quest Pro or older Android headset
 
 // The same as one string, e.g. "VR,Unknown,Unknown,Android OS 14 / API-34 (...)"
 const platform = await scene.GetPlatform();
@@ -355,8 +356,10 @@ scene.Deserialise(saved, parentObject);     // adopts anything whose recorded pa
 whatever the build target. To show or hide objects per platform or VR mode, use a
 [Platform Filter](../building-in-unity/platform-filter.md) rather than checking these yourself.
 `IsVR` is the app's own device mode, the same one `GetPlatform` reports as `VR` or `2D`. In Play mode it is
-true only when an XR headset is active. In a graph, use the **Is Android**, **Is Windows** and **Is VR** nodes
-(`BS > Utils`).
+true only when an XR headset is active. `IsLowEndMobile` is true on Android headsets older than the Quest 3
+generation (Quest 2, Quest Pro, Quest 1, and any the app does not recognise) and false everywhere else, the editor
+included; an app from before it existed answers false. In a graph, use the **Is Android**, **Is Windows**, **Is VR**
+and **Is Low End Mobile** nodes (`BS > Utils`).
 
 `GetPlatform` resolves with four comma-separated fields: `VR` in a headset or `2D` on a flat screen,
 two fields that are always `Unknown`, then the operating system as the device reports it. In Play mode

@@ -4408,10 +4408,32 @@ namespace BS
             }
         }
 
-        /// <summary>The GET_DEVICE_INFO reply: "1" or "0" for Android, Windows and VR, in that order.</summary>
-        public static string FormatDeviceInfo(bool android, bool windows, bool vr)
+        /// <summary>
+        /// True on an Android headset older than the Quest 3 generation: Quest 2, Quest Pro, Quest 1, and headsets
+        /// <see cref="BSDeviceClass"/> does not recognise. False on PC and in the editor. Main thread only.
+        /// </summary>
+        public bool IsLowEndMobile()
         {
-            return (android ? "1" : "0") + MessageDelimiters.PRIMARY + (windows ? "1" : "0") + MessageDelimiters.PRIMARY + (vr ? "1" : "0");
+            try
+            {
+                return events.IsLowEndMobile?.Invoke() ?? false;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("[Banter] IsLowEndMobile failed: " + e);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// The GET_DEVICE_INFO reply: "1" or "0" for Android, Windows, VR and low-end mobile, in that order. The fourth
+        /// field was appended later; a page that reads three ignores it, and a page reading four from an older app gets
+        /// nothing there and treats it as "0".
+        /// </summary>
+        public static string FormatDeviceInfo(bool android, bool windows, bool vr, bool lowEndMobile = false)
+        {
+            return (android ? "1" : "0") + MessageDelimiters.PRIMARY + (windows ? "1" : "0") + MessageDelimiters.PRIMARY + (vr ? "1" : "0")
+                   + MessageDelimiters.PRIMARY + (lowEndMobile ? "1" : "0");
         }
 
         public void GetDeviceInfo(int reqId)
@@ -4420,7 +4442,7 @@ namespace BS
             UnityMainThreadTaskScheduler.Default.Enqueue(TaskRunner.Track(() =>
             {
                 // IsVR catches its own errors, so the page's promise always resolves.
-                SendReply(reqId, FormatDeviceInfo(IsAndroid(), IsWindows(), IsVR()));
+                SendReply(reqId, FormatDeviceInfo(IsAndroid(), IsWindows(), IsVR(), IsLowEndMobile()));
             }, $"{nameof(BSScene)}.{nameof(GetDeviceInfo)}"));
         }
         #endregion

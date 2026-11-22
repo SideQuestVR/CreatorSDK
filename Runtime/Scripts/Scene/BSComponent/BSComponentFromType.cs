@@ -171,6 +171,8 @@ namespace BS
                     return gameObject.AddComponent<BSAvatarMirror>();
                 case ComponentType.PhotoWall:
                     return gameObject.AddComponent<BSPhotoWall>();
+                case ComponentType.GaussianSplat:
+                    return gameObject.AddComponent<BSGaussianSplat>();
                 default:
                     return null;
             }

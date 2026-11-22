@@ -317,5 +317,14 @@ namespace BS
         adminsOnly,
         rows,
         columns,
+        includeOnLowEndMobile,
+        includeOnHighEndMobile,
+        maxSplats,
+        autoQuality,
+        occludeByWorld,
+        shDegree,
+        loadState,
+        loadError,
+        splatCount,
     }
 }

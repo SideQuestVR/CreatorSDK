@@ -29,12 +29,49 @@ namespace BS.SDKEditor.Tests
             }
         }
 
-        [TestCase(true, false, true, "1" + P + "0" + P + "1")]
-        [TestCase(false, true, false, "0" + P + "1" + P + "0")]
-        [TestCase(false, false, false, "0" + P + "0" + P + "0")]
-        public void Reply_IsAndroidWindowsVr(bool android, bool windows, bool vr, string expected)
+        [TestCase(true, false, true, false, "1" + P + "0" + P + "1" + P + "0")]
+        [TestCase(false, true, false, false, "0" + P + "1" + P + "0" + P + "0")]
+        [TestCase(false, false, false, false, "0" + P + "0" + P + "0" + P + "0")]
+        [TestCase(true, false, true, true, "1" + P + "0" + P + "1" + P + "1")]
+        public void Reply_IsAndroidWindowsVrLowEnd(bool android, bool windows, bool vr, bool lowEnd, string expected)
         {
-            Assert.AreEqual(expected, BSScene.FormatDeviceInfo(android, windows, vr));
+            Assert.AreEqual(expected, BSScene.FormatDeviceInfo(android, windows, vr, lowEnd));
+        }
+
+        [Test]
+        public void Reply_TheFirstThreeFieldsStayWhereTheyWere()
+        {
+            // A page from before the fourth field splits the reply and reads [0], [1], [2].
+            var fields = BSScene.FormatDeviceInfo(true, false, true, true).Split(new[] { P }, StringSplitOptions.None);
+            CollectionAssert.AreEqual(new[] { "1", "0", "1", "1" }, fields);
+        }
+
+        [Test]
+        public void IsLowEndMobile_AsksTheHook_AndAThrowingHookIsFalse()
+        {
+            var scene = BSScene.Instance();
+            var hook = scene.events.IsLowEndMobile;
+            try
+            {
+                scene.events.IsLowEndMobile = () => true;
+                Assert.IsTrue(scene.IsLowEndMobile());
+                scene.events.IsLowEndMobile = null;
+                Assert.IsFalse(scene.IsLowEndMobile());
+                scene.events.IsLowEndMobile = () => throw new InvalidOperationException("boom");
+                LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex(@"\[Banter\] IsLowEndMobile failed"));
+                Assert.IsFalse(scene.IsLowEndMobile());
+            }
+            finally
+            {
+                scene.events.IsLowEndMobile = hook;
+            }
+        }
+
+        [Test]
+        public void TheEditor_IsNotLowEndMobile()
+        {
+            Assert.IsFalse(BSDeviceClass.ThisDeviceIsLowEndMobile(), "the editor is never Android");
+            Assert.IsFalse(BSScene.Instance().IsLowEndMobile());
         }
 
         [Test]
@@ -70,6 +107,7 @@ namespace BS.SDKEditor.Tests
         [TestCase("BS.VisualScripting.IsAndroid", "Is Android")]
         [TestCase("BS.VisualScripting.IsWindows", "Is Windows")]
         [TestCase("BS.VisualScripting.IsVR", "Is VR")]
+        [TestCase("BS.VisualScripting.IsLowEndMobile", "Is Low End Mobile")]
         public void TheNodes_AreOfferedAndAllowed(string typeName, string output)
         {
             var unitType = AppDomain.CurrentDomain.GetAssemblies().Select(assembly => assembly.GetType(typeName)).FirstOrDefault(type => type != null);

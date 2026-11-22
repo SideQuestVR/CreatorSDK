@@ -194,6 +194,10 @@ internal static class CreatorConveniencesMenu
     [MenuItem(Root + "Objects/Portal", false, 35)]
     private static void CreatePortal(MenuCommand command) => CreateComponentObject<BSPortal>("Portal", command);
 
+    // A Gaussian splat capture, drawn by the app (the url is the creator's to fill in).
+    [MenuItem(Root + "Objects/Gaussian Splat", false, 36)]
+    private static void CreateGaussianSplat(MenuCommand command) => CreateComponentObject<BSGaussianSplat>("Gaussian Splat", command);
+
     [MenuItem(Root + "Objects/GLTF Model", false, 36)]
     private static void CreateGltf(MenuCommand command) =>
         CreateComponentObject<BSGLTF>("GLTF Model", command, so => so.FindProperty("addColliders").boolValue = true);

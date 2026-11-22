@@ -134,6 +134,10 @@ public class BSSceneEvents
     /// <summary>Whether the player is in a headset rather than on a flat screen. The host app sets it to its own
     /// device mode; without one (SDK Play Mode) it is whether an XR device is active. Called on the main thread.</summary>
     public Func<bool> IsVR = new Func<bool>(() => UnityEngine.XR.XRSettings.isDeviceActive);
+    /// <summary>Whether this is an Android headset older than the Quest 3 generation (<see cref="BS.BSDeviceClass"/>).
+    /// The host app may replace it (for a test, say); without one it reads the device model. Called on the main
+    /// thread.</summary>
+    public Func<bool> IsLowEndMobile = new Func<bool>(BS.BSDeviceClass.ThisDeviceIsLowEndMobile);
     /// <summary>The app's current baked lighting data as a persistable string, for
     /// the page to store with its saved scene. Empty = nothing baked yet.</summary>
     public Func<string> GetLightingData = new Func<string>(() => { return ""; });

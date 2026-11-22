@@ -137,6 +137,58 @@ await obj.AddComponent(new BS.Billboard({
 
 </div>
 
+## Gaussian Splat
+
+`BS.GaussianSplat` draws a Gaussian splat capture (3D Gaussian Splatting): a cloud of soft, coloured blobs that
+together look like a photographed scene or object. Give it the address of a `.ply` file; the app downloads it when
+the space loads or when `url` changes. Move, rotate and scale the GameObject to place it.
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `url` | string | "" | The capture: a binary `.ply` from 3D Gaussian Splatting (the format most trainers and editors export) |
+| `maxSplats` | number | 0 | The most splats drawn at once. 0 lets the app choose for the device |
+| `resolution` | number | 0 | The size of the buffer splats are drawn into, as a share of the screen's (0.25 to 1). Smaller is faster and softer. 0 lets the app choose |
+| `autoQuality` | boolean | true | Lower resolution and distant detail while the frame rate would drop, and raise them again after (standalone headsets) |
+| `occludeByWorld` | boolean | true | Opaque world geometry in front of the splats hides them. Costs about 3 ms a frame on a Quest 3 when splats fill the view |
+| `shDegree` | number | -1 | View-dependent colour, 0 (none) to 3 (all the file has). -1 lets the app choose: 1 on a Quest 3, 0 on a Quest 2 or Quest Pro, 3 on PC |
+| `loadState` | string | "none" | Read only: `none`, `loading`, `loaded`, `failed`, or `unsupported` (an app that cannot draw splats) |
+| `loadError` | string | "" | Read only: why the last load failed |
+| `splatCount` | number | 0 | Read only: how many splats were loaded (fully transparent ones are left out) |
+
+```js
+const garden = new BS.GameObject("Garden");
+const splat = await garden.AddComponent(new BS.GaussianSplat({ url: "https://example.com/garden.ply" }));
+splat.On("loaded", () => console.log(splat.loadState, splat.splatCount, splat.loadError));
+splat.On("progress", (e) => console.log("loading", e.detail.progress)); // up to 0.8 while downloading, then reading
+
+// A tighter budget and no view-dependent colour, for a capture in the background
+splat.maxSplats = 150000;
+splat.shDegree = 0;
+```
+
+**Budgets.** Splats are expensive to draw on a standalone headset, mostly in the pixels they cover. The app keeps
+them within a budget for the device: on a Quest 3 about 400,000 splats drawn at once up close and 480,000 from two
+metres away hold 72 fps in an otherwise empty space; a Quest 2 or Quest Pro is given about half (not measured yet). Nearby parts of a capture keep their
+full detail and distant parts lose their least important splats first. A file larger than the device takes is
+refused with a `loadError` that says so (Quest 3: 1.5 million splats or 384 MB; Quest 2 and Quest Pro: 800,000 or
+200 MB). Cut big captures down before uploading, for example with
+[splat-transform](https://github.com/playcanvas/splat-transform), and use a
+[Platform Filter](../building-in-unity/platform-filter.md)'s headset boxes to give older headsets a smaller file.
+
+**What else to know**
+
+- The file is a binary little-endian `.ply` with the usual 3D Gaussian Splatting properties (`x y z`, `f_dc_*`,
+  `f_rest_*`, `opacity`, `scale_*`, `rot_*`), all floats. Captures differ in which way is up: if yours comes in
+  upside down or facing away, rotate the GameObject.
+- The address follows the same rules as other downloads: http or https, and nothing on the player's own network
+  unless the space itself is served from there.
+- A capture that fails to load does not stop the space opening: check `loadState` and `loadError`.
+- Several captures in one space share one budget, and they are drawn one after another, not sorted into each
+  other: keep them from overlapping.
+- Splats show in the player's view, not in mirrors, camera photos or other cameras that draw into a texture.
+- In the Unity editor's Play mode the creator SDK has no splat renderer: the component reports `unsupported` and
+  shows a box gizmo where it sits.
+
 ## Mirror
 
 Creates a reflective mirror surface: 2.5 × 2.5 m, seen from the object's back (−Z). Scale the object to change its size.
