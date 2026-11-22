@@ -1,4 +1,4 @@
-// <mirror source="Assets/Systems/Attachments/AttachmentNetworkBridge.cs" sha256="cec4e24ba73a2ab9ec5b50300c924342ff03b0b829511e8a9627888aa62f84fc" mode="port" />
+// <mirror source="Assets/Systems/Attachments/AttachmentNetworkBridge.cs" sha256="4ee507df371f0adfdc5604a5862ef2544a96742bacc37e5221bb379b50c5f8e9" mode="port" />
 // AttachmentNetworkBridge (:27-391) with PacketParty swapped for the relay session, line by line. Substitutions:
 //   NetworkService.SetLocalUserState(key, value)        -> ILocalSession.SetEngineUserState (EditableOwnUserState)
 //   NetworkService.TryGetLocalHipBone                   -> ILocalRig.HipPosition / HipRotation, the desktop rig's hip

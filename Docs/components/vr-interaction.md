@@ -141,7 +141,7 @@ Attaches the object to the local player (a hat, a tool on the hand), or the loca
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `uid` | string | "" | The player to attach; see the note below |
-| `avatarAttachmentType` | number | `AttachToAvatar` | A `BS.AvatarAttachmentType`: `AttachToAvatar` (0) puts the object on the player, `AvatarAttachTo` (1) puts the player on the object |
+| `avatarAttachmentType` | number | `AttachToAvatar` | A `BS.AvatarAttachmentType`: `AttachToAvatar` (0) puts the object on the player, `AvatarAttachTo` (1) puts the player on the object, `RideZone` (2) makes the object a [moving platform players ride](#ride-zones) |
 | `avatarAttachmentPoint` | number | `HEAD` | Where the object goes on the player: a `BS.AvatarBoneName`. The app follows the head (`HEAD`, `NECK`), the hands (any hand, finger or forearm bone), and the body for anything else |
 | `attachmentPosition` | Vector3 | 0, 0, 0 | Offset from the attachment point |
 | `attachmentRotation` | Quaternion | 0, 0, 0, 1 | Rotation offset |
@@ -181,3 +181,14 @@ attached.Detach(scene.localUser.uid); // Detach again
 Attaching only ever moves the local player: you can't attach an object to someone else. Pass the local player's `uid` (`"me"` works too). In the app any `uid` attaches the local player; in SDK Play Mode another player's `uid` does nothing, and only head attachments and seats are acted out (the object is parented to the camera, or the desktop player sits).
 
 An object on a player follows its bone exactly, offset by `attachmentPosition` and `attachmentRotation`, until `Detach`. Attaching an object that is already attached moves it to the new settings. For a seat or vehicle (`AvatarAttachTo`), [Seat](player-setup.md#seat) sets everything up for you.
+
+### Ride zones
+
+For a moving floor players walk about on: a ferry's deck, a lift, a train car, a turntable. Set **Avatar Attachment Type** to **Ride Zone** and give the object (or its children) one or more **trigger** colliders covering where people stand, tall enough to hold a jumping player. Nothing else is needed: no seat, no call to `Attach`.
+
+- **Nothing holds the player on.** They walk, jump and fall as usual; the moving floor carries them by friction, as it always has.
+- **Other players see them on the platform.** While a player's body is inside a zone, everyone else draws them where they are on their own copy of the platform, instead of where the network last had them in the world, which trails a moving platform by the network delay. Name tags and voices go with them.
+- **Getting off** is leaving the zones: the ride ends a third of a second after the player's body leaves the last one, so a jump on the deck doesn't end it.
+- The object needs a stable [BSObjectId](../multiplayer/overview.md#bsobjectid) (every scripted component has one) and should be the moving object itself or move with it, like a [Synced Object](../multiplayer/overview.md#synced-objects) or anything every player moves the same way.
+- Zones are found when the object starts: a trigger collider added later is not watched. A trigger under another Attached Object belongs to that one.
+- Set the mode in Unity: `BS.AvatarAttachmentType.RideZone` is not in the JavaScript library yet. Players on older app versions see riders the old way (trailing a moving platform).

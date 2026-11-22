@@ -352,6 +352,7 @@ Used by `AttachedObject`; see [Attaching Objects to Users](../javascript-api/use
 ```js
 BS.AvatarAttachmentType.AttachToAvatar  // 0: the object goes on the player
 BS.AvatarAttachmentType.AvatarAttachTo  // 1: the player goes on the object
+// 2: RideZone, a moving platform players ride while inside its trigger colliders (set it in Unity; not in the JavaScript library yet)
 
 // For AvatarAttachTo (a seat or vehicle) only: an object on a player ignores it
 BS.AttachmentType.Physics        // 0: the player is held on the object (the default)

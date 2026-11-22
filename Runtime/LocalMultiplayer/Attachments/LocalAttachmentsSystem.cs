@@ -164,6 +164,8 @@ namespace BS.LocalMultiplayer.Attachments
 
         void OnAttachObject(BSAttachment attachment)
         {
+            // A Ride Zone (BSAttachedObject) moves nobody: in the app it only changes how other players draw the rider.
+            if (attachment.avatarAttachmentType == AvatarAttachmentType.RideZone) return;
             // The host registers the local user before any scene object starts, so "me" resolves synchronously, as
             // LocalUserService.EnsureUser makes it resolve in production.
             if (attachment.uid != null && attachment.uid.ToLower().Trim() == "me")
@@ -177,6 +179,7 @@ namespace BS.LocalMultiplayer.Attachments
 
         void OnDetachObject(BSAttachment data)
         {
+            if (data.avatarAttachmentType == AvatarAttachmentType.RideZone) return;
             if (data.uid != null && data.uid.ToLower().Trim() == "me")
             {
                 var localUser = _scene.users.Find(u => u.isLocal);
