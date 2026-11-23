@@ -227,8 +227,8 @@ The first player to sit drives the vehicle (they become its owner). Everyone who
 
 - **A vehicle that tilts or flips:** set its seats to **Follow Seat**, so each rider's view and whole body turn over with it. The default keeps the head upright, which is right for a car and wrong for a loop.
 - **Move it in Update or FixedUpdate.** Physics, a kinematic Rigidbody with `MovePosition`, an animation, a script's `SetTransform` and a Visual Scripting **On Update** all carry their riders in the same frame. A vehicle moved in **Late Update** is seen a moment late by the player driving it: they sit well behind their seat at speed.
-- **Do not teleport it with riders aboard.** A jump of tens of metres in one frame throws the riders' bodies, and they are put back on the ground off the seat. Stand them up first (each player's own `seat.Stand()`), or fly the vehicle there.
-- **Hands lag a fast vehicle.** Hands are physical bodies: a passenger's arms reach back behind them at speed, about a third of a metre at 10 m/s and a full arm's length by 20 m/s. Bodies, heads and name tags do not lag.
+- **Do not teleport it with riders aboard.** Passengers are carried across a jump, but the driver's own body is thrown by it, and they can be put back on the ground off the seat. Stand the driver up first (their own `seat.Stand()`), or fly the vehicle there.
+- **Move a fast vehicle with physics.** Hands are physical bodies. On a vehicle moved by physics (velocity, forces, or `MovePosition` in FixedUpdate) every rider's hands stay with them at any speed, driver and passengers alike. On a vehicle a script moves by its transform, passengers are fine but the driver's own hands shake: 10 to 20 cm at 100 to 300 m/s on desktop, in bursts up to an arm's length on a Quest.
 - **Give a seat inside a cabin an exit point outside it, or on the vehicle's own deck.** A seated player does not collide with their own vehicle, and after getting off the two collide again only once the player's body is clear of the vehicle's colliders. An exit point on a deck works when it is at the deck's surface (up to about 15 cm under it still lands the player on it). With no exit point under a roof, or an exit point inside a solid part of the vehicle, the player passes through the vehicle until they have walked out of it.
 - **A seat can move inside its vehicle.** Animate the seat or move its transform (a cabin lift, a seat that slides back): the rider's view, body and hands go with it.
 - **Turn Take Ownership On Collision off on the vehicle.** With it on, a player who touches a vehicle someone is riding, or stands on it, takes it over for as long as they touch it (that is how a swing gets pushed). With it off, the vehicle stays with its driver.
@@ -279,10 +279,11 @@ The SDK ships the marker model at `Runtime/Resources/CreatorConveniences/Models/
 Measured on 2026-11-20 with two players in one room (a desktop player and a Quest 3) on a four-seat vehicle flown through a slalom, a barrel roll, half loops and an inverted straight at 20 and 40 m/s. The vehicle was driven three ways (physics, a kinematic Rigidbody, a script moving it in Update), with each player taking a turn as driver:
 
 - Each rider's hips, head and own view stayed within 0.2 mm of their seat on both players' screens, and so did the name tag. Nothing drifted over 11 laps.
+- On 2026-11-23, on a level straight at 100 and 300 m/s with each player as driver in turn: a still hand moved under 4 mm from frame to frame, and the other player saw it within about 1 mm of where its owner had it. That held for every rider of a physics vehicle and for passengers of a script-moved one.
 - An Upright Follow Yaw seat on the same vehicle kept its rider's view level throughout.
 
 Not established:
 
 - **Comfort.** Nobody wore the headset for these runs. Editor checks and the robot preview do not establish headset comfort, and following a seat's movement and turning can still be uncomfortable. Try your vehicle in a headset before you publish it.
 - PC VR hardware, and more than two players at once.
-- Hands on fast vehicles lag as described under [Vehicles](#vehicles).
+- The driver's hands on a script-moved fast vehicle shake, as described under [Vehicles](#vehicles). Hands were not measured on a script-moved vehicle below 100 m/s.
