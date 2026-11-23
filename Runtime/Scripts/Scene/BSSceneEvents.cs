@@ -28,6 +28,9 @@ public class BSSceneEvents
     public UnityEvent<float> OnTeleportMaxRangeChanged = new UnityEvent<float>();
     public UnityEvent<bool> OnEnableBrowserStreamingChanged = new UnityEvent<bool>();
     public UnityEvent<bool> OnEnableUserUIColliderChanged = new UnityEvent<bool>();
+    public UnityEvent<bool> OnEnableMegaphoneChanged = new UnityEvent<bool>();
+    /// <summary>The megaphone lock (BSSceneSettings.IsMegaphoneLocked) came on (true), or was cleared as the space reset (false).</summary>
+    public UnityEvent<bool> OnIsMegaphoneLockedChanged = new UnityEvent<bool>();
     public UnityEvent<bool> OnEnableHandHoldChanged = new UnityEvent<bool>();
     public UnityEvent<bool> OnEnableRadarChanged = new UnityEvent<bool>();
     public UnityEvent<bool> OnEnableNametagsChanged = new UnityEvent<bool>();
@@ -198,6 +201,8 @@ public class BSSceneEvents
         OnTeleportMaxRangeChanged.RemoveAllListeners();
         OnEnableBrowserStreamingChanged.RemoveAllListeners();
         OnEnableUserUIColliderChanged.RemoveAllListeners();
+        OnEnableMegaphoneChanged.RemoveAllListeners();
+        OnIsMegaphoneLockedChanged.RemoveAllListeners();
         OnEnableHandHoldChanged.RemoveAllListeners();
         OnEnableRadarChanged.RemoveAllListeners();
         OnEnableNametagsChanged.RemoveAllListeners();

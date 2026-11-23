@@ -40,6 +40,7 @@ namespace BS
         public const string TeleportMaxRange = "TeleportMaxRange";
         public const string EnableBrowserStreaming = "EnableBrowserStreaming";
         public const string EnableUserUICollider = "EnableUserUICollider";
+        public const string EnableMegaphone = "EnableMegaphone";
         public const string EnableHandHold = "EnableHandHold";
         public const string EnableRadar = "EnableRadar";
         public const string EnableNametags = "EnableNametags";
@@ -71,6 +72,7 @@ namespace BS
 
         public const string SettingsLocked = "SettingsLocked";
         public const string PhysicsSettingsLocked = "PhysicsSettingsLocked";
+        public const string MegaphoneLocked = "MegaphoneLocked";
     }
     /// <summary>
     /// How <see cref="BSScene.Cancel"/> fails a load: the join was refused, the page failed, or the player
@@ -4003,6 +4005,14 @@ namespace BS
                          }
                          continue;
                      }
+                     // Not under SettingsLocked either: a latch that only ever locks ("0" does nothing, see
+                     // BSSceneSettings.IsMegaphoneLocked), and a page that sends SettingsLocked in the same call
+                     // (it comes first) must still get it.
+                     if (setting[0] == SettingsMap.MegaphoneLocked)
+                     {
+                         if (setting[1] == "1") settings.IsMegaphoneLocked = true;
+                         continue;
+                     }
                      if (!settings.IsSettingsLocked)
                      {
                          switch (setting[0])
@@ -4039,6 +4049,9 @@ namespace BS
                                  break;
                              case SettingsMap.EnableUserUICollider:
                                  settings.EnableUserUICollider = setting[1] == "1";
+                                 break;
+                             case SettingsMap.EnableMegaphone:
+                                 settings.EnableMegaphone = setting[1] == "1";
                                  break;
                              case SettingsMap.EnableHandHold:
                                  settings.EnableHandHold = setting[1] == "1";

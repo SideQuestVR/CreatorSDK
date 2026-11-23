@@ -326,5 +326,7 @@ namespace BS
         loadState,
         loadError,
         splatCount,
+        enableMegaphone,
+        isMegaphoneLocked,
     }
 }

@@ -22,6 +22,7 @@ window.addEventListener("bs-loaded", async () => {
 - **Every space starts from the defaults.** The settings are reset when the player leaves, so nothing carries over to the next space.
 - **A [Scene Settings](../components/player-setup.md#settings) object in the scene** (see [Easy Prefabs](../building-in-unity/easy-prefabs.md#scene-settings-bssettings)) sets the same values when it starts, again whenever the page reloads, and whenever one of its properties changes. Whichever runs last wins: a `SetSettings` call after it replaces all of its values, and it replaces yours. Use one or the other, or lock them.
 - **Locks.** Once `SettingsLocked` is `true`, nothing can change the general settings (the first table) until the player leaves: later `SetSettings` calls and Scene Settings objects are ignored for them. `PhysicsSettingsLocked` does the same for the physics settings. The call that sets a lock still applies its own values first, and a lock can't be undone. A Scene Settings object that set a lock can still change its own values.
+- **The megaphone lock.** `MegaphoneLocked` works on its own: `true` keeps the megaphone to moderators until the player leaves or rejoins, and nothing can unlock it before then (`false` is ignored). `SettingsLocked` doesn't stop a page setting it. See [Megaphone](#megaphone).
 - **In SDK Play Mode** only `ClippingPlane` has an effect. Everything else needs the app.
 
 ## General Settings
@@ -44,9 +45,25 @@ window.addEventListener("bs-loaded", async () => {
 | `RefreshRate` | number | 72 | The display refresh rate, on headsets that let apps change it (Quest). The headset's highest supported rate at or below this is used; elsewhere it's ignored. |
 | `ClippingPlane` | Vector2 | (0.02, 1500) | The player's camera near (`x`) and far (`y`) clipping planes, in metres. |
 | `SpawnPoint` | Vector4 | (0, 0, 0, 1) | Where players arrive: `x`, `y`, `z`, and in `w` the Y rotation in degrees. They're placed here as the loading screen opens, and the menu's **Respawn** brings them back. The default (0, 0, 0, 1) means "none": then a [Spawn](../components/player-setup.md#spawn) in the scene picks the spot, or players start at the origin. A spawn point you set wins over Spawn objects. |
-| `SettingsLocked` | boolean | false | Locks the settings in this table. See [Locks](#how-settings-are-applied). |
+| `EnableMegaphone` | boolean | false | Anyone in the space can turn their own megaphone on from the radial menu, so they're heard across the room. Off by default: only moderators can megaphone people. [Megaphone Volumes](../components/special.md#megaphonevolume) work either way. A-Frame pages: `sq-enablemegaphone` on the scene. |
+| `SettingsLocked` | boolean | false | Locks the settings in this table (not `MegaphoneLocked`). See [Locks](#how-settings-are-applied). |
+| `MegaphoneLocked` | boolean | false | Locks the megaphone: only moderators can megaphone people, and Megaphone Volumes and `EnableMegaphone` stop working. Players can still turn their own megaphone off. Once `true` it stays on until the player leaves or rejoins the space: nothing can unlock it before then. A-Frame pages: `sq-megaphonelocked` on the scene. |
 
 `EnableGuests` is a check in the app, made as your space loads. To really keep guests out, use your world's settings on altvr.app: **Edit world > Who is turned away > Guests**. That stops guests at the door, before they get in.
+
+## Megaphone
+
+A megaphoned player is heard across the room. Who can turn it on:
+
+- **Moderators** can megaphone anyone in the world, in any instance, always. A moderator turning someone's megaphone off turns it off now, a Megaphone Volume's included; where the space lets them (`EnableMegaphone`, or standing in a volume, and not locked) they can turn their own on again.
+- **Anyone, for themselves**, from the radial menu, when `EnableMegaphone` is `true`: on and off as they like.
+- **Anyone standing in a [Megaphone Volume](../components/special.md#megaphonevolume)** (a stage, a podium), whatever `EnableMegaphone` says.
+
+`MegaphoneLocked` turns the last two off: only moderators are left. Players can always turn their own megaphone off.
+
+- **What it sounds like**: mostly flat, so the whole room hears it, but a quarter of it still comes from where the player stands. It is at full volume to 40 m and fades out by 100 m (both scaled by `VoiceDistanceMultiplier`).
+- **It ends when the player leaves or rejoins.** Nobody arrives megaphoned.
+- **It is not the mirror.** A moderator can also *mirror* someone: show them, and let them be heard, in every instance of the world. A mirrored player who is also megaphoned is megaphoned in every instance they're mirrored into.
 
 ## Physics Settings
 

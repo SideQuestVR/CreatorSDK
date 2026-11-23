@@ -77,6 +77,26 @@ namespace BS
         /// such as with a gun), and their profiles open only from the People list.</summary>
         private bool _EnableUserUICollider = true;
         public bool EnableUserUICollider { get { return _EnableUserUICollider; } set { _EnableUserUICollider = value; scene.events.OnEnableUserUIColliderChanged.Invoke(value); } }
+        /// <summary>Anyone in the space can turn their own megaphone on from the radial menu (heard across the room).
+        /// Off unless the space turns it on; off, only moderators can megaphone people. Megaphone Volumes
+        /// (<see cref="BSMegaphoneVolume"/>) work either way. <see cref="IsMegaphoneLocked"/> overrides it.</summary>
+        private bool _EnableMegaphone = false;
+        public bool EnableMegaphone { get { return _EnableMegaphone; } set { _EnableMegaphone = value; scene.events.OnEnableMegaphoneChanged.Invoke(value); } }
+        /// <summary>The megaphone is locked: only moderators can megaphone people, and Megaphone Volumes and
+        /// <see cref="EnableMegaphone"/> stop working. Players can still turn their own megaphone off.
+        /// A latch: setting it false does nothing once it is true, and OnIsMegaphoneLockedChanged fires only on the
+        /// false-to-true flip. Only <see cref="Reset"/> (the space is left, reloaded or rejoined) clears it.</summary>
+        private bool _IsMegaphoneLocked = false;
+        public bool IsMegaphoneLocked
+        {
+            get { return _IsMegaphoneLocked; }
+            set
+            {
+                if (!value || _IsMegaphoneLocked) return;
+                _IsMegaphoneLocked = true;
+                scene.events.OnIsMegaphoneLockedChanged.Invoke(true);
+            }
+        }
         // TODO(not wired up in the app yet): let players grab and hold other players' hands (remote players' hands get
         // grabbable colliders, also gated by the player's own Hand Holding comfort option). Remote players have no hand
         // colliders in the client yet.
@@ -306,6 +326,13 @@ namespace BS
             TeleportMaxRange = 0f;
             EnableBrowserStreaming = true;
             EnableUserUICollider = true;
+            EnableMegaphone = false;
+            // Past the latch: the only place it is cleared.
+            if (_IsMegaphoneLocked)
+            {
+                _IsMegaphoneLocked = false;
+                scene.events.OnIsMegaphoneLockedChanged.Invoke(false);
+            }
             EnableHandHold = true;
             EnableRadar = true;
             EnableNametags = true;

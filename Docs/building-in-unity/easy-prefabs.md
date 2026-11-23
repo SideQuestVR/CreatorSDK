@@ -58,9 +58,10 @@ Sets the space's settings from the scene:
 
 - abilities: teleport, force grab (distance grab), spider-man, bird flight, running, hand holding, radar, name tags, portals, guests. Distance grab, bird flight and running are on unless you turn them off here
 - the furthest players can teleport (Teleport Max Range, in metres; 0 leaves it to each player), and whether players may stream their menu browser into the space (on unless you turn it off)
+- the megaphone: whether anyone can turn their own on (off unless you turn it on), and a lock that keeps it to moderators until the player leaves
 - refresh rate and clipping planes
 - player physics
-- the two locks
+- the locks (settings, physics, megaphone)
 
 They are applied when the space loads, again when the page reloads, and whenever a property changes. Spawn point, occupancy, avatars and dev tools are not included. Use one per scene.
 
