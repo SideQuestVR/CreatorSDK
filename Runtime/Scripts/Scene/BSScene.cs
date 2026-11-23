@@ -3938,6 +3938,39 @@ namespace BS
             // }
         }
 
+        // A page's SetSettings sends every setting, so a call meant only for something else switches an ability (teleport,
+        // distance grab, the grapple, flight, running) back on at its default. That overrides a BS Settings object in the
+        // world that has it off, or is overridden by it, whichever runs last: which one that is can differ between players
+        // (scene-settings.md, "Whichever runs last wins"). Checked at the first such call per ability per page load, so a
+        // tester's log names the world and the ability.
+        BSSceneSettings _pageAbilityWarnedFor;
+        readonly HashSet<string> _pageAbilityWarned = new HashSet<string>();
+
+        bool PageAbility(string value, bool current, string key, Func<BSSettings, bool> componentHasIt)
+        {
+            bool on = value == "1";
+            if (!on || current)
+                return on;
+            if (_pageAbilityWarnedFor != settings)
+            {
+                _pageAbilityWarnedFor = settings;
+                _pageAbilityWarned.Clear();
+            }
+            if (!_pageAbilityWarned.Add(key))
+                return on;      // checked already this load (warned, or nothing had it off then)
+            foreach (var component in FindObjects.All<BSSettings>())
+            {
+                // A disabled one never applied its values.
+                if (!component.isActiveAndEnabled || componentHasIt(component))
+                    continue;
+                Debug.LogWarning($"[SceneSettings] A page SetSettings turned {key} back on; this world's BS Settings " +
+                                 $"(\"{component.name}\") has it off. Whichever runs last wins, and that can differ between " +
+                                 "players: set it in one place, or lock the settings.");
+                break;
+            }
+            return on;
+        }
+
         public void SetSettings(string msg, int reqId)
         {
 
@@ -3978,16 +4011,16 @@ namespace BS
                                  settings.EnableDevTools = setting[1] == "1";
                                  break;
                              case SettingsMap.EnableTeleport:
-                                 settings.EnableTeleport = setting[1] == "1";
+                                 settings.EnableTeleport = PageAbility(setting[1], settings.EnableTeleport, SettingsMap.EnableTeleport, c => c.enableTeleport);
                                  break;
                              case SettingsMap.EnableForceGrab:
-                                 settings.EnableForceGrab = setting[1] == "1";
+                                 settings.EnableForceGrab = PageAbility(setting[1], settings.EnableForceGrab, SettingsMap.EnableForceGrab, c => c.enableForceGrab);
                                  break;
                              case SettingsMap.EnableSpiderMan:
-                                 settings.EnableSpiderMan = setting[1] == "1";
+                                 settings.EnableSpiderMan = PageAbility(setting[1], settings.EnableSpiderMan, SettingsMap.EnableSpiderMan, c => c.enableSpiderMan);
                                  break;
                              case SettingsMap.EnableBirdFlight:
-                                 settings.EnableBirdFlight = setting[1] == "1";
+                                 settings.EnableBirdFlight = PageAbility(setting[1], settings.EnableBirdFlight, SettingsMap.EnableBirdFlight, c => c.enableBirdFlight);
                                  break;
                              case SettingsMap.AvatarSyncMode:
                                  settings.AvatarSyncMode = setting[1];
@@ -3996,7 +4029,7 @@ namespace BS
                                  settings.VoiceDistanceMultiplier = NumberFormat.Parse(setting[1]);
                                  break;
                              case SettingsMap.EnableRun:
-                                 settings.EnableRun = setting[1] == "1";
+                                 settings.EnableRun = PageAbility(setting[1], settings.EnableRun, SettingsMap.EnableRun, c => c.enableRun);
                                  break;
                              case SettingsMap.TeleportMaxRange:
                                  settings.TeleportMaxRange = NumberFormat.Parse(setting[1]);
