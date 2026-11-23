@@ -244,7 +244,7 @@ multiplayer.
 | | Who can write |
 |---|---|
 | Public space state | anyone in the room |
-| Protected space state | the world owner, or an Owner/Moderator of the community hosting it |
+| Protected space state | the world's owner, an Owner/Moderator of the world's group (or of the community space), or a SideQuest admin, signed in |
 | User state | **only the user it belongs to** |
 
 Two things to keep in mind:

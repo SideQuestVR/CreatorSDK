@@ -26,7 +26,7 @@ Players join the room once the space has loaded, and leave it when they leave th
 | `id` | The player's session id for this visit. One-shots name their sender by it (`fromId`). Your own `id` reads `"local"` until you've joined the room, then updates in place. |
 | `name` | Display name. |
 | `isLocal` | `true` for you. |
-| `isSpaceAdmin` | The space's owner, a SideQuest admin, or (in a community space) one of its moderators. For other players it only covers a world's owner for now. Graphs read it as it was when the player joined; pages get later changes in place. Use it to decide what to show, not to protect anything: a modified client can claim it. |
+| `isSpaceAdmin` | The space's owner, a SideQuest admin, or an Owner or Moderator of the world's group (in a community space, of that community). For other players it only covers a world's owner for now. Graphs read it as it was when the player joined; pages get later changes in place. Use it to decide what to show, not to protect anything: a modified client can claim it. |
 | `color` | `"4488FF"` for you and `"AAAAAA"` for everyone else. It isn't the avatar's colour. |
 
 ## Synced objects
@@ -221,7 +221,7 @@ window.addEventListener("bs-loaded", () => {
 - **Your own writes come back to you** as changes, so do the work in the change handler, not straight after writing. Then a player who arrives later runs the same code.
 - **Arriving players get everything:** when you join, `space-state-changed` fires with every value.
 - **It outlives the visit.** Space state is kept until 24 hours after the last change, whether or not anyone is in the space. Reading it, or joining, doesn't extend that.
-- **Public** values can be written by anyone in the room. **Protected** values can be written only by the world's owner, an Owner or Moderator of the community hosting it, or a SideQuest admin, and only while signed in. Anyone can read both. Once a key has been written as protected it stays protected; see [What "protected" means](../javascript-api/scene-api.md#what-quotprotectedquot-means).
+- **Public** values can be written by anyone in the room. **Protected** values can be written only by the world's owner, an Owner or Moderator of the world's group (in a community space, of that community), or a SideQuest admin, and only while signed in. A group manager who is banned from the world can't. Anyone can read both. Once a key has been written as protected it stays protected; see [What "protected" means](../javascript-api/scene-api.md#what-quotprotectedquot-means).
 - `SetPublicSpaceProps` and `SetProtectedSpaceProps` take strings. `SpaceStateSet`, `SpaceStateMerge` and `SpaceStateDelete` take real JSON values and nested paths, and reject with an error you can catch. See [JSON space state](../javascript-api/scene-api.md#json-space-state), [Limits](../javascript-api/scene-api.md#limits) and [State Events](../javascript-api/scene-events.md#state-events).
 
 ## User state
@@ -254,7 +254,7 @@ window.addEventListener("bs-loaded", () => {
 | Synced object | Its owner | Everyone | While anyone is in the room | Its current position |
 | One-shot | Anyone in the room | Everyone else in the room now | Not kept | Nothing |
 | Public space state | Anyone | Everyone | 24 h after the last change | Every value |
-| Protected space state | The world's owner, community Owners and Moderators, SideQuest admins | Everyone | 24 h after the last change | Every value |
+| Protected space state | The world's owner, Owners and Moderators of the world's group or community, SideQuest admins | Everyone | 24 h after the last change | Every value |
 | User state | The player it belongs to | Everyone | Until 30 s after the player leaves | Everyone's values |
 
 ## Shared time
