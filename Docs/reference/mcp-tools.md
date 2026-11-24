@@ -8,12 +8,19 @@ Agents read these descriptions from the server themselves, so you rarely need th
 
 | Tool | What it does |
 |---|---|
-| [`get_state`](#get_state) | Where the player is and is looking, what's available, and the latest event number. |
+| [`get_state`](#get_state) | The agent's own body: where it is and looks, its hands, what they hold and press, and what the world allows. |
 | [`wait_for_events`](#wait_for_events) | Waits until something happens, then returns it. |
-| [`take_snapshot`](#take_snapshot) | A picture of what the player sees right now. |
+| [`take_snapshot`](#take_snapshot) | A picture of what the player sees right now: the agent's eyes. |
 | [`move`](#move) | Walks, turns, looks up or down and jumps, in any combination. |
-| [`teleport`](#teleport) | Moves the player instantly, optionally facing a direction. |
-| [`list_users`](#list_users) | Who is in the space, where they are, and who is talking. |
+| [`teleport`](#teleport) | Teleports with the teleport arc, as a person does. |
+| [`hand`](#hand) | Moves a hand: in front of the body, onto something, pointing at something. |
+| [`press`](#press) | Presses, holds or lets go of a controller button, trigger, grip or stick. |
+| [`click`](#click) | Points a hand's laser at something and pulls the trigger. |
+| [`grab`](#grab) | Puts a hand on something and grips it. |
+| [`release`](#release) | Lets go of what a hand holds, or throws it. |
+| [`type_text`](#type_text) | Types into the text field the keyboard is open for. |
+| [`gesture`](#gesture) | High five, fist bump, handshake, holding hands, or a wave. |
+| [`list_users`](#list_users) | Who is in the space and who is talking. |
 | [`say`](#say) | Speaks text aloud into the space. |
 | [`stop_speaking`](#stop_speaking) | Stops speaking straight away. |
 | [`list_voices`](#list_voices) | The voices available, and which one is selected. |
@@ -25,9 +32,19 @@ Agents read these descriptions from the server themselves, so you rarely need th
 
 A tool that can't run says why in its answer, for example when the app isn't in a space yet, rather than failing silently. No call runs for longer than 5 minutes.
 
+### The agent plays as a person in a headset
+
+The agent has exactly what a person in a headset has, and uses it the same way: a head to look with, two hands, and the controllers' buttons, triggers, grips and sticks. It opens the menu with the left Y button, clicks with its laser, teleports with the teleport arc and picks things up by gripping them. Whatever your world allows or forbids a person (teleporting, grabbing, grappling, which surfaces you can teleport onto), it allows or forbids the agent. Nothing moves the player, an object or a menu any other way.
+
+It sees only through its eyes: `take_snapshot`, plus its own body in `get_state`.
+
+### Pointing at what it sees
+
+Tools that act on something (`click`, `grab`, `hand`, `teleport`, `move`, `gesture`) take a **view point**: `{ "view": [u, v] }`, a place in the agent's latest snapshot. `u` runs from 0 at the left edge to 1 at the right, `v` from 0 at the top to 1 at the bottom, so `[0.5, 0.5]` is the middle. The agent finds what is there along the line of sight the snapshot was taken from, even if it has turned since. Most of these also take a world position instead.
+
 ### Directions and positions
 
-Positions are world coordinates in metres, with **y** up, the same as in Unity and in your world's scripts. **Yaw** is a compass heading in degrees: 0 faces **+Z**, 90 faces **+X**. **Pitch** is how far up the player looks, from -85 (down) to 85 (up), 0 being level.
+Positions are world coordinates in metres, with **y** up, the same as in Unity and in your world's scripts. **Yaw** is a compass heading in degrees: 0 faces **+Z**, 90 faces **+X**. **Pitch** is how far up the player looks, from -80 (down) to 80 (up), 0 being level.
 
 ## Seeing and moving
 
@@ -40,7 +57,8 @@ No arguments. Returns a snapshot of the app, in sections. Agents call it first t
 | `server` | Server name, version, address and uptime. |
 | `client` | Product, platform and whether it's running in the Unity editor. |
 | `events` | `high_water_mark`: the number of the latest event. |
-| `player` | `available`, `position`, `head_position`, `yaw`, `pitch`, `facing`, `grounded`, `moving`, `under_agent_control`, `can_look_up_down`, `can_jump`, `can_teleport`. |
+| `player` | `available` (and a `reason` when not), `position`, `head_position`, `yaw`, `pitch`, `facing`, `grounded`, `moving`, `can_look_up_down`, `can_jump`. |
+| `body` | The agent's own body: `head`; each hand's `position`, `pointing`, what it is `holding`, the controls it is `holding_down`, and its `laser` (the label of what the laser is on, as a person sees it highlighted); `menu_open`, `mic_muted`, `seated`; `teleport` (whether it is allowed, and while aiming whether the ring shows or the red cross, and where it lands); `abilities` (move, turn, jump, teleport, grab, distance grab, grapple, fly: what the world allows right now); `held_by` when something is holding the controls off, such as a text field. |
 | `networking` | Whether the app is connected to the space's room, the room, this player's id and how many people are in it. |
 | `speech` | Whether the agent can speak, the selected voice and the voice engines. |
 | `hearing`, `transcription`, `models` | Whether the agent is listening, audio counters, and the speech recognition model. |
@@ -54,6 +72,7 @@ A JPEG of the view in front of the player, taken from the app's camera.
 | `width` | 1024 | 64 to 1920 pixels |
 | `height` | 576 | 64 to 1080 pixels |
 | `quality` | 80 | JPEG quality, 10 to 100 |
+| `grid` | false | Draws faint lines every 0.1 of the width and height, to read view points off |
 
 One snapshot is taken at a time: a second call while one is being taken is answered with "try again in a moment". To see somewhere else, turn or walk first, then take another.
 
@@ -63,11 +82,11 @@ Walking, turning, looking up or down and jumping, in one call, because they happ
 
 | Argument | What it does |
 |---|---|
-| `to` | Walk to this position: `{ "x": 0, "y": 0, "z": 5 }`. |
+| `to` | Walk here: the floor at a view point, `{ "view": [0.5, 0.8] }`, or a position, `{ "x": 0, "y": 0, "z": 5 }`. |
 | `yaw` | Face this heading, 0 to 360. |
 | `turn_degrees` | Turn this much from the current heading, -360 to 360; positive turns right. |
-| `look_at` | Face and aim at this position, up or down included. |
-| `pitch` | Look this far up, -85 to 85. |
+| `look_at` | Face and look at this (a view point or a position), up or down included. |
+| `pitch` | Look this far up, -80 to 80. |
 | `pitch_degrees` | Look this much further up than now; negative looks further down. |
 | `jump` | Jump. Combine it with `to` to jump while walking. |
 | `timeout_s` | Give up after this long. Default 30, at most 120. |
@@ -91,18 +110,18 @@ The call waits until the player arrives and faces the right way, or stops making
 
 Not arriving is a normal answer, not an error: the agent reads `detail` and tries another way. Only `Unavailable` is reported as an error.
 
-Looking up and down only works when the app isn't in a headset: in a headset the person wearing it decides where it looks, and `move` says so. Snap turning turns in whole steps, so a turn ends within half a step of the heading asked for.
+It walks with the left stick and turns with the right one, as your Controls settings say (snap or smooth turning, one-stick movement), and jumps with right A. Snap turning turns in whole steps, so a turn ends within half a step of the heading asked for.
 
 ### teleport
 
-Moves the player instantly. Use it to cover distance; use `move` when the journey should be seen.
+Teleports the way a person does: raises the right hand, holds B, steers the arc until its ring is on the spot, and lets go. It only lands where the arc can: on surfaces your world lets people teleport onto, within the arc's reach, and only where teleporting is allowed at all.
 
 | Argument | What it does |
 |---|---|
-| `position` | Required. Where to appear: `{ "x": 0, "y": 0, "z": 5 }`. |
-| `yaw` | The heading to face afterwards, 0 to 360. |
+| `to` | Required. Where to go: a view point or a position. |
+| `tolerance_m` | How close the ring has to get to the spot. Default 1. |
 
-Answers with `teleported` and the `position` the player landed at.
+Answers with `teleported`, where the ring was and the `position` the player landed at. When the ring can't be put on the spot, nothing happens and `why` says so: no ground there, the red cross (somewhere you can't teleport onto), out of reach, or teleporting turned off. Use `move` to walk there instead.
 
 ### list_users
 
@@ -115,9 +134,89 @@ No arguments. Everyone in the space, the agent's own player included:
 | `peer_id` | Their id in the space's room, used in events. |
 | `is_local` | `true` for the agent's own player. |
 | `talking` | Whether they're talking right now. Always `false` for the agent's own player. |
-| `position` | Where their avatar is, or their voice until the avatar appears. For the agent's own player, where its head (the camera) is. |
 
-Walk towards someone with `move` and `to`, or face them with `look_at`.
+There are no positions: to find someone, the agent looks for them with `take_snapshot`, turning if it needs to, and then walks over with `move` and a view point.
+
+## Hands and buttons
+
+### hand
+
+Moves one hand, or both, at a person's speed and only as far as an arm reaches.
+
+| Argument | What it does |
+|---|---|
+| `hand` | `left`, `right` (the default) or `both`. |
+| `rest` | `true` puts the hand down by the hips. |
+| `body` | Hold the hand here, in metres from the chest: `{ "forward": 0.4, "right": 0.2, "up": 0.1 }`. It moves with the player. |
+| `reach` | Put the hand on this: a view point or a position. |
+| `point_at` | Aim the hand, and its laser, at this. |
+| `palm` | Which way the palm faces: `down`, `up`, `in`, `out`, `forward` (raised, fingers up) or `back`. |
+
+Answers with where each hand got to, whether something held it back or it was out of reach, what it holds and what its laser is on.
+
+### press
+
+Uses one control on one controller. What it does is whatever the app and your world make it do, as for anyone.
+
+| Argument | What it does |
+|---|---|
+| `control` | Required. `trigger`, `grip`, `a`, `b` (right), `x`, `y`, `menu` (left), `stick` or `stick_click`. |
+| `hand` | For trigger, grip and the stick: `left` or `right` (the default). |
+| `action` | `tap` (the default: press, then let go), `hold` or `release`. |
+| `value` | How far to pull a trigger or grip, 0 to 1. |
+| `stick` | Where to push the stick, `[x, y]` from -1 to 1. |
+| `duration_ms` | How long a tap holds. Default 150. |
+
+In the app, left Y (or the menu button) opens the menu, left X mutes the microphone, right A jumps and right B aims a teleport. The trigger clicks what the laser is on, uses a held item and fires the grapple where your world allows it; the grip grabs.
+
+### click
+
+Points a hand's laser at something and pulls the trigger: menu buttons, panels, the keyboard, things in your world that react to clicks, seats (to sit down) and people (to open their card). Only one hand points at a time; clicking with the other one first takes the pointer over with a trigger press, as it does for a person.
+
+| Argument | What it does |
+|---|---|
+| `target` | Required. A view point. |
+| `hand` | `left` or `right` (the default). |
+| `hover_only` | `true` points without clicking. |
+| `hold_ms` | How long the trigger is held. Default 120. |
+
+Answers with what the laser was on, and whether a click registered.
+
+### grab
+
+Puts a hand on something and closes the grip, so it has to be within arm's reach. With `distance: true` it points at the thing and grips instead, where your world allows distance grab. Only things your world made grabbable can be picked up.
+
+| Argument | What it does |
+|---|---|
+| `target` | Required. A view point or a position. |
+| `hand` | `left` or `right` (the default). |
+| `distance` | Grab from afar. |
+
+### release
+
+Opens the hand. With `throw_at` (a view point or a position) the arm swings that way and lets go mid-swing; `speed` is how hard, up to 8 metres a second.
+
+### type_text
+
+Types into the text field the keyboard is open for, as typing from your phone does. The agent clicks the field first, which opens the keyboard.
+
+| Argument | What it does |
+|---|---|
+| `text` | Required. What to type. `\b` deletes a character. |
+| `submit` | `true` presses Enter afterwards. |
+
+### gesture
+
+A hand gesture with someone: `high_five`, `fist_bump`, `handshake` (shaking for 3 seconds makes you friends), `hold_hand`, or a `wave`. It only counts when the other person takes part too, and their **Social Interactions** setting decides who can hold their hand.
+
+| Argument | What it does |
+|---|---|
+| `kind` | Required. Which gesture. |
+| `with` | The person, as a view point. Not needed for `wave`. |
+| `hand` | `left` or `right` (the default). |
+| `wait_s` | How long to wait for them to join in. Default 6. |
+
+Answers with whether the hands met and whether the gesture was confirmed.
 
 ## Speaking
 
@@ -239,7 +338,7 @@ Things the agent may want to react to. Each has a `seq` number that only goes up
 | `user_left` | Someone left. | `peer_id`, `name`, `user_id` |
 | `connection_state` | The connection to the space's room changed. | `state` |
 | `walk_finished` | A `move` call ended, including turn-, look- and jump-only calls and calls answered `Busy`. | `outcome`, `position`, `yaw` |
-| `teleported` | A `teleport` happened. | `requested`, `position` |
+| `teleported` | A `teleport` landed. | `ring`, `position` |
 | `say_started` | The agent started speaking, or sent a tone (which has no `say_finished`). | `utterance_id`, `text`; for a tone `kind`, `frequency_hz`, `duration_ms` |
 | `say_finished` | It finished, or was stopped. | `utterance_id`, `cancelled`, `spoken_seconds` |
 | `model_progress` | A model download moved on. | `model`, `percent`, `received_mb`, `total_mb`; `done` at the end |

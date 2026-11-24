@@ -1,14 +1,14 @@
 # AI Agents (MCP)
 
-The Windows app has an [MCP](https://modelcontextprotocol.io) server built in. An AI agent such as Claude Code, Codex or Antigravity connects to it over HTTP and plays as you: it walks, turns, looks around and jumps, sees what the player sees, speaks into the space, hears and transcribes the people in it, and reacts when something happens.
+The Windows app has an [MCP](https://modelcontextprotocol.io) server built in. An AI agent such as Claude Code, Codex or Antigravity connects to it over HTTP and plays as you, as a person in a headset: it looks around and walks, uses its hands, the controllers and the menu, clicks, grabs, teleports and does hand gestures, speaks into the space, hears and transcribes the people in it, and reacts when something happens.
 
 Use it to walk an agent through your published world and have it report what it finds, take screenshots from the player's eyes, try a greeting out on the people in a space, or have a second player around while you test.
 
 !> **Windows app only, and off unless you ask for it.** The server isn't in the Quest app or in SDK Play mode. It starts only when the app is launched with `-mcp`, and it only listens on your own computer unless you open it up with a token.
 
-The agent drives the same player you do. While it walks or turns, your own movement input is paused, and it comes back as soon as the move ends.
+**The agent gets a headset of its own.** An app started with `-mcp` is the agent's: it plays in VR through a virtual headset and controllers, even on a PC without a headset, and your keyboard and mouse don't drive it. To keep the player yourself and only let the agent see, speak and listen, add `-mcp-no-body`. If a headset is running on the PC (SteamVR, Link), the agent leaves it to whoever is wearing it unless you add `-mcp-body`.
 
-**What an agent can't do:** click or grab objects, use menus or web pages, or run your world's scripts. It moves, looks, speaks and listens. In a headset, it can't look up or down: the person wearing it decides where it points.
+**It can do what a person can, and only that.** It opens the menu with the left Y button and clicks with its laser, teleports with the teleport arc, and picks things up by gripping them, so your world's rules apply to it as to anyone: where people may teleport, what can be grabbed, whether the grapple is on. It can't run your world's scripts or teleport to a position. It sees only through its eyes: it finds things and people by looking (`take_snapshot`), not from a list of positions.
 
 ## Start the app with MCP
 
@@ -33,6 +33,7 @@ Anything you pass to the launcher goes to the app, so `"Altspace MCP.cmd" 42071`
 | `-mcp <port>` | Starts the server on that port instead. The number must come straight after `-mcp`. |
 | `-mcp-token <secret>` | Requires every request to carry `Authorization: Bearer <secret>`. |
 | `-mcp-lan` | Listens on every network interface instead of only this computer, so another machine can connect. Needs `-mcp-token`: without one the server refuses to start. |
+| `-mcp-no-body` | The agent doesn't get a body: the player stays yours, and the agent can only see, speak and listen. |
 | `-elevenlabs-key <key>` | Lets the agent speak with [ElevenLabs](https://elevenlabs.io) voices. The key is never logged. |
 | `-elevenlabs-model <id>` | The ElevenLabs model to speak with. Default `eleven_turbo_v2_5`, a low-latency model. |
 
@@ -199,10 +200,12 @@ Start the app with the launcher, go into a space, then ask your agent something 
 
 A typical agent then:
 
-1. calls `get_state` to learn where the player is and what's available,
-2. calls `take_snapshot` to see the view, and `list_users` to find people and where they stand,
-3. uses `move` to walk over and face someone, and `say` to speak,
+1. calls `get_state` to learn where its body is and what the world allows,
+2. calls `take_snapshot` to see the view (and `list_users` to learn who is here),
+3. uses `move` with a point in the snapshot to walk over and face someone, and `say` to speak,
 4. loops on `wait_for_events`, which returns as soon as someone talks, joins, leaves, or a move finishes.
+
+To use the menu it presses `y`, takes a snapshot and clicks what it sees; to type, it clicks a text field and uses `type_text`.
 
 To hear what people say, the agent turns on listening with `set_listening`. Transcription needs a speech model: the agent can fetch one with `download_model`, and the app uses it from the next time it starts. [MCP Tools & Events](mcp-tools.md) describes every tool and event.
 
@@ -267,7 +270,7 @@ The app was started from a code editor's terminal. Use the launcher; see [Start 
 
 ### Movement is unavailable
 
-The player hasn't been loaded yet, for example during a space's loading screen. `get_state` shows `"player": { "available": false }` until it is; try again once you're in the space. `can_teleport` in the same section says whether `teleport` can be used yet.
+The player hasn't been loaded yet, for example during a space's loading screen, or the app was started with `-mcp-no-body`. `get_state` shows `"player": { "available": false }` with a `reason` until it can move; try again once you're in the space. `body.abilities` says what the world allows right now, and `body.held_by` what is holding the controls off (a text field being typed in, for example).
 
 ### The agent can't speak or hear
 
