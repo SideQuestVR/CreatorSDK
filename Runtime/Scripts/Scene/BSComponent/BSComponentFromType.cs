@@ -173,6 +173,8 @@ namespace BS
                     return gameObject.AddComponent<BSPhotoWall>();
                 case ComponentType.GaussianSplat:
                     return gameObject.AddComponent<BSGaussianSplat>();
+                case ComponentType.LargeWorld:
+                    return gameObject.AddComponent<BSLargeWorld>();
                 default:
                     return null;
             }

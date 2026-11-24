@@ -98,6 +98,15 @@ Shows an object only on the platforms and in the modes you tick: PC or Android, 
 await obj.AddComponent(new BS.PlatformFilter({ includeOnDesktop: false, includeInNonVR: false })); // Quest headsets only
 ```
 
+## LargeWorld
+
+A floating origin for worlds kilometres across: keeps the player near Unity's zero, where positions are most precise. With `autoShift` on it shifts the origin whenever the player is more than `shiftThreshold` (32 to 1024 m) from zero; the app moves the player and places other players and synced objects, and your world moves its own content in the `origin-shifted` event. Global positions cross as `"x,y,z"` text (`GetOrigin`, `LocalToGlobal`, `GlobalToLocal`). See [Large Worlds](../building-in-unity/large-worlds.md) for the full rules.
+
+```js
+const world = await obj.AddComponent(new BS.LargeWorld({ autoShift: true, shiftThreshold: 256 }));
+BS.Scene.GetInstance().On("origin-shifted", (e) => console.log(e.detail.delta, e.detail.origin));
+```
+
 ## WorldOption
 
 Adds a button for your world to the player's radial menu. Add it with **Add Component > BS > World Option** (one per GameObject). There are two slots, and the button is there while the component is enabled. If two options want the same slot, the last one enabled shows. Set up the button in the Inspector: **Slot**, **Label** (up to 32 characters of plain text), **Icon**, and **Is Toggle** for a button that stays on or off.

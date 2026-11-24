@@ -86,7 +86,8 @@
     {"id": 81, "name": "WorldOption"},
     {"id": 82, "name": "AvatarMirror"},
     {"id": 83, "name": "PhotoWall"},
-    {"id": 84, "name": "GaussianSplat"}
+    {"id": 84, "name": "GaussianSplat"},
+    {"id": 85, "name": "LargeWorld"}
   ],
   "propertyNames": [
     {"id": 0, "name": "hasUnity"},
@@ -414,7 +415,9 @@
     {"id": 322, "name": "loadError"},
     {"id": 323, "name": "splatCount"},
     {"id": 324, "name": "enableMegaphone"},
-    {"id": 325, "name": "isMegaphoneLocked"}
+    {"id": 325, "name": "isMegaphoneLocked"},
+    {"id": 326, "name": "autoShift"},
+    {"id": 327, "name": "shiftThreshold"}
   ],
   "tags": [
     {"index": 0, "name": "UserTag1"},
@@ -679,7 +682,8 @@
     {"name": "PLAYER_TELEPORTED", "code": "ptp!"},
     {"name": "USER_LEAVING", "code": "ulv!"},
     {"name": "USER_LEAVING_LISTEN", "code": "!ulvl!"},
-    {"name": "USER_LEAVING_DONE", "code": "!ulvd!"}
+    {"name": "USER_LEAVING_DONE", "code": "!ulvd!"},
+    {"name": "ORIGIN_SHIFTED", "code": "osh!"}
   ],
   "uiCommands": [
     {"name": "CREATE_UI_ELEMENT", "code": "!cui!"},
@@ -3387,6 +3391,50 @@
       ],
       "methods": [],
       "tsConstructor": ["url: String | any = new String()", "maxSplats: number = 0", "resolution: number = 0", "autoQuality: boolean = true", "occludeByWorld: boolean = true", "shDegree: number = -1", "loadState: String = new String(\"none\")", "loadError: String = new String()", "splatCount: number = 0"]
+    },
+    {
+      "name": "LargeWorld",
+      "cs": "BS.BSLargeWorld",
+      "base": "BS.BSComponentBase",
+      "fields": [
+        {"name": "autoShift", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 326, "initial": "false"},
+        {"name": "shiftThreshold", "attr": "See", "type": "System.Single", "wire": "Float", "propId": 327, "initial": "128"}
+      ],
+      "methods": [
+        {
+          "name": "_ShiftOrigin",
+          "returns": "System.Boolean",
+          "params": [
+            ["delta", "UnityEngine.Vector3"]
+          ]
+        },
+        {"name": "_ShiftOriginToPlayer", "returns": "UnityEngine.Vector3", "params": []},
+        {"name": "_SuggestShift", "returns": "UnityEngine.Vector3", "params": []},
+        {
+          "name": "_SetOrigin",
+          "returns": "System.Boolean",
+          "params": [
+            ["globalXyz", "System.String"]
+          ]
+        },
+        {"name": "_GetOrigin", "returns": "System.String", "params": []},
+        {"name": "_GetPlayerGlobalPosition", "returns": "System.String", "params": []},
+        {
+          "name": "_LocalToGlobal",
+          "returns": "System.String",
+          "params": [
+            ["local", "UnityEngine.Vector3"]
+          ]
+        },
+        {
+          "name": "_GlobalToLocal",
+          "returns": "UnityEngine.Vector3",
+          "params": [
+            ["globalXyz", "System.String"]
+          ]
+        }
+      ],
+      "tsConstructor": ["autoShift: boolean | any = false", "shiftThreshold: number = 128"]
     }
   ],
   "jsAliases": [

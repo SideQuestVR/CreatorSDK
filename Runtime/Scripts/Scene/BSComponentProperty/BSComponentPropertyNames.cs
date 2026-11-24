@@ -328,5 +328,7 @@ namespace BS
         splatCount,
         enableMegaphone,
         isMegaphoneLocked,
+        autoShift,
+        shiftThreshold,
     }
 }
