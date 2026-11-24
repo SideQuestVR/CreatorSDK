@@ -4,7 +4,7 @@ What your world can keep after everyone has left, and for how long.
 
 | | Who can write | Who can read | How long it lasts | Use it for |
 |---|---|---|---|---|
-| [World files](#world-files) | The world's owner, signed in | Everyone | Until you replace or remove them | Things the owner sets up in the world: layouts, settings, a high-score board they curate |
+| [World files](#world-files) | The world's owner and SideQuest staff, signed in | Everyone | Until you replace or remove them | Things the owner sets up in the world: layouts, settings, a high-score board they curate |
 | [Space state](#space-state) | Anyone in the space (protected keys: the owner and moderators) | Everyone in the same instance | 24 hours after the last change | A game in progress that should survive people leaving for a while |
 | [User state](#user-state) | Each player, their own | Everyone in the space | Until the player leaves | Live per-player values; not for saving |
 | [`localStorage`](#localstorage) | Your page | Your page, on that one device | On that device, until it's cleared | Small per-device conveniences |
@@ -13,7 +13,9 @@ There is no built-in way to save a player's own progress between visits. Your pa
 
 ## World files
 
-Named files stored with your world. Anyone in the space can read them, but only the world's owner, signed in to SideQuest, can write them. That makes them the place for things the owner edits in the world and everyone else then sees: arrange the furniture, save it, and every later visitor loads that arrangement.
+Named files stored with your world. Anyone in the space can read them, but only the world's owner, signed in to SideQuest, can write them, along with SideQuest staff, who can edit any world to help its owner. That makes them the place for things the owner edits in the world and everyone else then sees: arrange the furniture, save it, and every later visitor loads that arrangement.
+
+!> Being able to save doesn't prove a player owns the world, because staff can save too. To know who the owner is on your own server, use a [role token](world-roles.md).
 
 They live at your world's address. A file you save as `layout` is served at `https://my-world.worldspace.host/__persisted_layout.json`, and stays there through later uploads from the Builder.
 
@@ -34,7 +36,7 @@ if (info.canWrite) {
 
 | Field | What it is |
 |---|---|
-| `canWrite` | `true` when this player is signed in and owns the world |
+| `canWrite` | `true` when this player is signed in and is the world's owner or SideQuest staff |
 | `signedIn` | Whether the player is signed in to SideQuest |
 | `reason` | Why `canWrite` is false, in words you can show the player; `null` when they can write |
 | `url` | Your world's address, where the files are served from |
@@ -48,7 +50,7 @@ const result = await BS.PersistFileBridge.set(scene, "layout", JSON.stringify(la
 console.log("Saved", result.bytes, "bytes at", result.savedAt);
 ```
 
-`set(scene, name, data)` replaces the whole file with `data`, which must be a string: `JSON.stringify` anything else. It resolves once the file is stored, with `name` (the stored file name), `url`, `bytes` and `savedAt`. It rejects with an `Error` saying why when the save is refused: the player isn't the owner, isn't signed in, or the file is too big.
+`set(scene, name, data)` replaces the whole file with `data`, which must be a string: `JSON.stringify` anything else. It resolves once the file is stored, with `name` (the stored file name), `url`, `bytes` and `savedAt`. It rejects with an `Error` saying why when the save is refused: the player isn't the owner or staff, isn't signed in, or the file is too big.
 
 Saves to the same name run one after another, in the order you made them. A save that fails leaves the previous version in place. Each save is an upload, so save when something changes, not every frame.
 
@@ -94,7 +96,7 @@ The `.json` ending is fixed, but the contents are whatever string you save.
 
 ### Rules and limits
 
-- **Only the owner writes.** Other players, guests and moderators can't, whatever your script does. `info()` tells you before you try.
+- **Only the owner and SideQuest staff write.** Other players, guests, moderators and group managers can't, whatever your script does. `info()` tells you before you try.
 - **Everyone can read.** The files are public at your world's address. Never save anything secret in one.
 - **50 MB** per file.
 - **Published worlds only.** The files belong to a world published with the Builder; in a space that isn't one, every call reports that.
@@ -111,7 +113,7 @@ The same files, from a graph. The actions are under `BS > World` and the events 
 | On Persist File Saved | A save finished. Outputs `Saved Name`, `Success` and `Error`. Set `Name` to catch only that file, or leave it empty for all. |
 | On Persist File Loaded | A load finished. Outputs `Loaded Name`, `Success`, `Data` and `Error`. A file that was never saved gives `Success` true and empty `Data`. Set `Name` to filter, or leave it empty. |
 
-Names follow the same rules as above, and the event's name is the one the graph passed (`layout`, not `__persisted_layout.json`). A save by anyone but the owner gives `Success` false and the reason in `Error`.
+Names follow the same rules as above, and the event's name is the one the graph passed (`layout`, not `__persisted_layout.json`). A save by anyone but the owner or staff gives `Success` false and the reason in `Error`.
 
 ## Space state
 

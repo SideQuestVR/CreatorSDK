@@ -241,4 +241,7 @@ public class APICommands
     public const string USER_LEAVING = "ulv!";
     public const string USER_LEAVING_LISTEN = "!ulvl!";
     public const string USER_LEAVING_DONE = "!ulvd!";
+    // Large worlds, Unity -> page: the floating origin shifted (BSLargeWorld): dx§dy§dz§origin, where origin is the
+    // new origin as "x,y,z" (doubles, invariant culture).
+    public const string ORIGIN_SHIFTED = "osh!";
 }

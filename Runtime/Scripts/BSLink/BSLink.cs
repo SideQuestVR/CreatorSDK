@@ -39,6 +39,7 @@ namespace BS
         void ShutDown()
         {
             shuttingDown = true;
+            WorldOrigin.Shifted -= OnOriginShifted;
             if (bridge != null)
             {
                 BridgePump.Unregister(this);
@@ -52,6 +53,7 @@ namespace BS
 
         void Start()
         {
+            WorldOrigin.Shifted += OnOriginShifted;
             scene.events.OnLoad.AddListener(() =>
             {
                 usersAnnounced = false;
@@ -1423,6 +1425,25 @@ namespace BS
         public void OnPlayerTeleported(Vector3 position, Vector3 rotation, bool isSpawn)
         {
             Send(APICommands.EVENT + APICommands.PLAYER_TELEPORTED + MessageDelimiters.PRIMARY + NumberFormat.Format(position.x) + MessageDelimiters.SECONDARY + NumberFormat.Format(position.y) + MessageDelimiters.SECONDARY + NumberFormat.Format(position.z) + MessageDelimiters.SECONDARY + NumberFormat.Format(rotation.x) + MessageDelimiters.SECONDARY + NumberFormat.Format(rotation.y) + MessageDelimiters.SECONDARY + NumberFormat.Format(rotation.z) + MessageDelimiters.SECONDARY + (isSpawn ? "1" : "0"));
+        }
+
+        /// <summary>
+        /// Large worlds: the floating origin shifted (raised inside the physics step of the shift, after the app moved the
+        /// local player). Visual Scripting's On Origin Shifted runs now, in that step, so a graph can move its content;
+        /// the page's origin-shifted event (dx§dy§dz§origin) arrives after it.
+        /// </summary>
+        void OnOriginShifted(Vector3 delta)
+        {
+            try
+            {
+                EventBus.Trigger("OnOriginShifted", new CustomEventArgs("", new object[] { delta }));
+            }
+            catch (Exception e)
+            {
+                // A world's graph must not stop the shift.
+                Debug.LogException(e);
+            }
+            Send(APICommands.EVENT + APICommands.ORIGIN_SHIFTED + MessageDelimiters.PRIMARY + NumberFormat.Format(delta.x) + MessageDelimiters.SECONDARY + NumberFormat.Format(delta.y) + MessageDelimiters.SECONDARY + NumberFormat.Format(delta.z) + MessageDelimiters.SECONDARY + WorldOrigin.Origin.ToString());
         }
 
         public void OnUserLeaving(int token, string reason, bool isLastUser, int peers, int timeoutMs)

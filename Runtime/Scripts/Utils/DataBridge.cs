@@ -40,18 +40,21 @@ namespace BS
         public Action<(string eventName, KeyValuePair<string, string>[] keyValues)> SendTelemetry = _ => { };
 
         /// <summary>
-        /// Reads and writes the current world's persisted files. Unimplemented here on purpose: a
-        /// write is an authenticated call as the signed-in SideQuest user, and the SDK has no auth
-        /// and no reference to the platform SDK. The Banter client installs the real one.
+        /// Reads and writes the current world's persisted files, and mints world-role tokens
+        /// ("roleToken"). Unimplemented here on purpose: both are authenticated calls as the
+        /// signed-in SideQuest user, and the SDK has no auth and no reference to the platform SDK.
+        /// The Banter client installs the real one.
         /// </summary>
         public Func<PersistFileRequest, Task<PersistFileResult>> PersistFile
-            = _ => Task.FromResult(PersistFileResult.Unavailable("persisted files are not available in this build"));
+            = r => Task.FromResult(PersistFileResult.Unavailable(r != null && r.Op == "roleToken"
+                ? "role tokens are not available in this build"
+                : "persisted files are not available in this build"));
     }
 
     /// <summary>What the page asked for. <see cref="Name"/> is already prefixed and sanitised.</summary>
     public class PersistFileRequest
     {
-        /// <summary>One of "set", "get", "list", "remove", "info".</summary>
+        /// <summary>One of "set", "get", "list", "remove", "info", "roleToken".</summary>
         public string Op;
 
         /// <summary>The full on-world file name, e.g. "__persisted_shanes_editor.json". Empty for list/info.</summary>
@@ -59,6 +62,9 @@ namespace BS
 
         /// <summary>The bytes to store, for "set" only.</summary>
         public string Data;
+
+        /// <summary>For "roleToken": the page's nonce, echoed in the token. Null for none.</summary>
+        public string Nonce;
     }
 
     /// <summary>The reply, serialised straight back to the page.</summary>
@@ -86,6 +92,12 @@ namespace BS
 
         /// <summary>Why a write is impossible, for a UI that wants to say so before trying.</summary>
         public string reason;
+
+        // roleToken: the signed token and, for display only, what it says. Left out of every other reply.
+        [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)] public string token;
+        [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)] public string role;
+        [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)] public bool? staff;
+        [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)] public string expiresAt;
 
         public static PersistFileResult Unavailable(string why)
             => new PersistFileResult { ok = false, error = why, reason = why };

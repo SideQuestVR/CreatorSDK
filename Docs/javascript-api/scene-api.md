@@ -322,6 +322,16 @@ scene.DeepLink("1234567890123456", "welcome");
 
 `DeepLink` only works on Quest: the first argument is the other app's Quest App ID (digits only), not a URL. On Windows and in Play mode nothing happens. In a graph, use the **Deep Link** node (`BS > Utils`).
 
+## Proving a Player's Role
+
+```js
+// A token signed by SideQuest saying whether this player owns, moderates or is staff in your world
+const { token, role } = await scene.GetRoleToken(nonceFromYourServer);
+```
+
+Your own server verifies the token, so it can trust the role where `isSpaceAdmin` can be faked. See
+[World Roles](world-roles.md).
+
 ## Utility Methods
 
 ```js

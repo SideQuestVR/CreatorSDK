@@ -13,6 +13,7 @@
   - [Seats](/building-in-unity/seats.md)
   - [Snippets](/building-in-unity/snippets.md)
   - [Platform Filter](/building-in-unity/platform-filter.md)
+  - [Large Worlds](/building-in-unity/large-worlds.md)
 - JavaScript API
   - [Scene API](/javascript-api/scene-api.md)
   - [Scene Settings](/javascript-api/scene-settings.md)
@@ -21,6 +22,7 @@
   - [Component Base Class & Events](/javascript-api/component-base.md)
   - [User & Multiplayer](/javascript-api/user-multiplayer.md)
   - [Saving Data](/javascript-api/saving-data.md)
+  - [World Roles](/javascript-api/world-roles.md)
   - [Recording](/javascript-api/recording.md)
   - [Photos](/javascript-api/photos.md)
 - Multiplayer

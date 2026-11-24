@@ -949,6 +949,7 @@ namespace BS
                             Op = sub,
                             Name = name,
                             Data = body.data,
+                            Nonce = sub == "roleToken" ? body.nonce : null,
                         });
                         reply = Newtonsoft.Json.JsonConvert.SerializeObject(result ?? PersistFileResult.Unavailable("no result"));
                     }
@@ -967,6 +968,7 @@ namespace BS
         {
             public string name;
             public string data;
+            public string nonce;
         }
 
         public void LightingDataGet(int reqId)
