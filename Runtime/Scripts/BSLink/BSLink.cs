@@ -259,6 +259,15 @@ namespace BS
                 var data = GetMsgData(msg, APICommands.DESTROY_ASSET);
                 UnityMainThreadTaskScheduler.Default.Enqueue(TaskRunner.Track(() => HandleDestroyAsset(data, NoRequest), $"{nameof(BSLink)}.{nameof(ParseCommand)}.DESTROY_ASSET"));
             }
+            // The user-leaving hook (BSPreLeave): whether the page listens, and its handlers having settled.
+            else if (msg.StartsWith(APICommands.USER_LEAVING_LISTEN))
+            {
+                BSPreLeave.SetPageListening(GetMsgData(msg, APICommands.USER_LEAVING_LISTEN) == "1");
+            }
+            else if (msg.StartsWith(APICommands.USER_LEAVING_DONE))
+            {
+                BSPreLeave.PageDone(GetMsgData(msg, APICommands.USER_LEAVING_DONE));
+            }
             else if (UIElementBridge.IsUICommand(msg))
             {
                 UnityMainThreadTaskScheduler.Default.Enqueue(TaskRunner.Track(() => UIElementBridge.HandleMessage(msg), $"{nameof(BSLink)}.{nameof(ParseCommand)}.UIElementBridge.IsUICommand"));
@@ -1414,6 +1423,11 @@ namespace BS
         public void OnPlayerTeleported(Vector3 position, Vector3 rotation, bool isSpawn)
         {
             Send(APICommands.EVENT + APICommands.PLAYER_TELEPORTED + MessageDelimiters.PRIMARY + NumberFormat.Format(position.x) + MessageDelimiters.SECONDARY + NumberFormat.Format(position.y) + MessageDelimiters.SECONDARY + NumberFormat.Format(position.z) + MessageDelimiters.SECONDARY + NumberFormat.Format(rotation.x) + MessageDelimiters.SECONDARY + NumberFormat.Format(rotation.y) + MessageDelimiters.SECONDARY + NumberFormat.Format(rotation.z) + MessageDelimiters.SECONDARY + (isSpawn ? "1" : "0"));
+        }
+
+        public void OnUserLeaving(int token, string reason, bool isLastUser, int peers, int timeoutMs)
+        {
+            Send(APICommands.EVENT + APICommands.USER_LEAVING + MessageDelimiters.PRIMARY + token + MessageDelimiters.SECONDARY + reason + MessageDelimiters.SECONDARY + (isLastUser ? "1" : "0") + MessageDelimiters.SECONDARY + peers + MessageDelimiters.SECONDARY + timeoutMs);
         }
 
         public void OnControllerAxisUpdate(HandSide hand, float x, float y)

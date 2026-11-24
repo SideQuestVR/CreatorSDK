@@ -234,4 +234,11 @@ public class APICommands
     // teleported (a respawn, a portal, a script): px§py§pz§rx§ry§rz§isSpawn.
     public const string POINTER_OVER_UI = "pou!";
     public const string PLAYER_TELEPORTED = "ptp!";
+
+    // The user-leaving hook (BSPreLeave). Unity -> page, just before this client leaves the page's world:
+    // token§reason§isLastUser§peers§timeoutMs. Page -> Unity: whether anything listens (1/0), sent when the page's
+    // listener count leaves or reaches 0; and the token once its handlers' waitUntil promises have settled.
+    public const string USER_LEAVING = "ulv!";
+    public const string USER_LEAVING_LISTEN = "!ulvl!";
+    public const string USER_LEAVING_DONE = "!ulvd!";
 }

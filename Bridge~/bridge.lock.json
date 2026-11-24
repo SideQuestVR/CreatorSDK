@@ -676,7 +676,10 @@
     {"name": "WORLD_STATE_JSON", "code": "wpj!"},
     {"name": "ASSET_DATABASE", "code": "!adb!"},
     {"name": "POINTER_OVER_UI", "code": "pou!"},
-    {"name": "PLAYER_TELEPORTED", "code": "ptp!"}
+    {"name": "PLAYER_TELEPORTED", "code": "ptp!"},
+    {"name": "USER_LEAVING", "code": "ulv!"},
+    {"name": "USER_LEAVING_LISTEN", "code": "!ulvl!"},
+    {"name": "USER_LEAVING_DONE", "code": "!ulvd!"}
   ],
   "uiCommands": [
     {"name": "CREATE_UI_ELEMENT", "code": "!cui!"},

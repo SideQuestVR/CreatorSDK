@@ -105,6 +105,7 @@ Event nodes start a graph's control flow when something happens in the space. Th
 |------|---------|
 | On User Joined | A user joined the space. Outputs `User Info` (BSUser). Fires for you in every world you load, once the room's join has said whether you're a space admin, so `isSpaceAdmin` is already right |
 | On User Left | A user left the space. Outputs `User Info` (BSUser) |
+| On User Leaving | You (the local player) are about to leave: for another world, home, a rejoin or quitting. Outputs `Reason` (`switch`, `home`, `reload` or `quit`), `Is Last User` and `Peers`. Write the space state you want to leave behind straight away: the app sends it before going, but waits only a moment for the graph. It doesn't fire on a crash, a dropped connection, a Quest quit, or in the editor. See [Leaving](../javascript-api/scene-events.md#leaving) |
 | On Player Teleported | You (the local player) were just teleported: by a script, a portal, a seat, arriving, respawning from the menu, or the app catching a fall out of the world. Outputs `Position`, `Rotation` (Euler degrees, only Y used) and `Is Spawn`, true for arriving, a respawn and a fall caught, and for a `Teleport To Location` with `Is Spawn` on. Use `Is Spawn` to reset a game when the player respawns |
 | On User State Value Changed | A participant's prop changed. Filter by `Key` (leave empty for all); outputs `Value`, `JSON`, `UserId`, `Is Local`, `Deleted` |
 | On User State Result | The outcome of a write you tagged with a `Request Id`. Outputs `Ok`, `Error`, `Key`, `JSON` |
