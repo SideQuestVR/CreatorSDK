@@ -26,7 +26,7 @@ Players join the room once the space has loaded, and leave it when they leave th
 | `id` | The player's session id for this visit. One-shots name their sender by it (`fromId`). Your own `id` reads `"local"` until you've joined the room, then updates in place. |
 | `name` | Display name. |
 | `isLocal` | `true` for you. |
-| `isSpaceAdmin` | The space's owner, a SideQuest admin, or an Owner or Moderator of the world's group (in a community space, of that community). For other players it only covers a world's owner for now. Graphs read it as it was when the player joined; pages get later changes in place. Use it to decide what to show, not to protect anything: a modified client can claim it. |
+| `isSpaceAdmin` | The space's owner, a SideQuest admin, or an Owner or Moderator of the world's group (in a community space, of that community). For other players it only covers a world's owner for now. Graphs read it as it was when the player joined; pages get later changes in place. Use it to decide what to show, not to protect anything: a modified client can claim it. To prove a player's role to your own server, use a [role token](../javascript-api/world-roles.md). |
 | `color` | `"4488FF"` for you and `"AAAAAA"` for everyone else. It isn't the avatar's colour. |
 
 ## Synced objects

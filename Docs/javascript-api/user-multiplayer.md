@@ -19,6 +19,10 @@ user.props;     // Their user state, as strings
 user.state;     // The same user state as real JSON values
 ```
 
+`isSpaceAdmin` is for deciding what to show. It doesn't separate the owner from staff or moderators, and a
+modified app can claim it. To prove to your own server who owns the world, use a
+[role token](world-roles.md).
+
 Use `uid` to tell players apart. On your own page, your `id` can read `"local"` until you've joined the
 room. `color` isn't the avatar's colour. [Multiplayer](../multiplayer/overview.md#players) has more on
 players.
