@@ -34,7 +34,8 @@ namespace SideQuest.FlexaBody
     }
 
     /// <summary>
-    /// Global action gates and input blockers. Same fields and defaults as FlexaBody's ActionsSystem;
+    /// Global action gates and input blockers. Same names and defaults as FlexaBody's ActionsSystem (there the
+    /// can* gates are properties that a host's hold can also switch off; nothing here holds them, so plain fields);
     /// spaces toggle them through BSScene / visual scripting, and the SDK desktop controller honours them.
     /// </summary>
     public static class ActionsSystem

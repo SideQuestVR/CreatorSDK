@@ -6,8 +6,7 @@ namespace BS
 {
     /*
     #### Banter Photo Wall
-    A wall players pin their photos to. The Scene view shows it filled with placeholder photos. Photos face the object's
-    back (-Z), like a Unity Quad.
+    A wall players pin their photos to, previewed with placeholders in the Scene view. Photos face -Z, like a Unity Quad.
 
     **Properties**
     - `rows` - Rows of photos.

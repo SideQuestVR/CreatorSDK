@@ -6,26 +6,37 @@ namespace BS
 {
     /*
     #### Banter Platform Filter
-    Shows this GameObject (and everything under it) only where it is wanted: on PC or Android, in VR or not, or any
-    combination. The two groups are combined with AND, and within a group any ticked option matches, so "Android + VR
-    only" is Android and VR ticked, PC and Non-VR unticked. Everything ticked (the default) shows it everywhere.
+    Shows this GameObject (and everything under it) only where it is wanted: on PC or Android, in VR or not, on older
+    or newer Android headsets, or any combination. The groups are combined with AND, and within a group any ticked
+    option matches, so "Android + VR only" is Android and VR ticked, PC and Non-VR unticked. Everything ticked (the
+    default) shows it everywhere.
+
+    The headset group only matters on Android. Low end is the Quest 2, Quest Pro, Quest 1 and any Android headset the
+    app does not recognise; high end is the Quest 3, Quest 3S and newer. "Quest 3 and newer only" is Android and high
+    end ticked, PC and low end unticked.
 
     The platform half is also applied when a space bundle is built: an object excluded from a platform is left out of
-    that platform's bundle entirely. The VR half can only be known on the player's device, so an object restricted by
-    VR / Non-VR keeps the filter and hides itself when it starts. Hiding deactivates the GameObject; it never activates
-    one it did not hide.
+    that platform's bundle entirely. The VR and headset halves can only be known on the player's device, so an object
+    restricted by them keeps the filter and hides itself when it starts. Hiding deactivates the GameObject; it never
+    activates one it did not hide.
 
     **Properties**
     - `includeOnMobile` - Show on Android (Quest).
     - `includeOnDesktop` - Show on PC (Windows).
     - `includeInVR` - Show to players in a headset.
     - `includeInNonVR` - Show to players on a flat screen.
+    - `includeOnLowEndMobile` - Show on older Android headsets: Quest 2, Quest Pro, Quest 1, and unrecognised ones.
+    - `includeOnHighEndMobile` - Show on Quest 3, Quest 3S and newer Android headsets.
 
     **Code Example**
     ```js
         // Android headsets only: not on PC, not on a flat screen.
         const gameObject = new BS.GameObject("QuestVrOnly");
         await gameObject.AddComponent(new BS.PlatformFilter({ includeOnDesktop: false, includeInNonVR: false }));
+
+        // A heavier version for Quest 3 and newer; pair it with a lighter one that has the two headset boxes swapped.
+        const detailed = new BS.GameObject("DetailedVersion");
+        await detailed.AddComponent(new BS.PlatformFilter({ includeOnLowEndMobile: false }));
     ```
 
     */
@@ -48,6 +59,12 @@ namespace BS
         [Tooltip("Show this GameObject and all its children to players on a flat screen.")]
         [See(initial = "true")] public bool includeInNonVR = true;
 
+        [Tooltip("Show this GameObject and all its children on older Android headsets: Quest 2, Quest Pro, Quest 1, and any the app does not recognise. Only matters on Android.")]
+        [See(initial = "true")] public bool includeOnLowEndMobile = true;
+
+        [Tooltip("Show this GameObject and all its children on Quest 3, Quest 3S and newer Android headsets. Only matters on Android.")]
+        [See(initial = "true")] public bool includeOnHighEndMobile = true;
+
         /// <summary>
         /// Set when this filter deactivated its own GameObject, so it only ever re-activates what it hid. An object
         /// that something else switched off stays off.
@@ -62,18 +79,37 @@ namespace BS
         public static bool IsModeIncluded(bool isVR, bool includeInVR, bool includeInNonVR) =>
             isVR ? includeInVR : includeInNonVR;
 
-        /// <summary>Should an object with these settings show on this device? Both halves have to agree.</summary>
+        /// <summary>
+        /// Does the headset half let the object through? It only applies on Android: off Android it always does.
+        /// <paramref name="isLowEndMobile"/> is <see cref="BSScene.IsLowEndMobile"/>.
+        /// </summary>
+        public static bool IsHeadsetIncluded(bool isAndroid, bool isLowEndMobile, bool includeOnLowEndMobile, bool includeOnHighEndMobile) =>
+            !isAndroid || (isLowEndMobile ? includeOnLowEndMobile : includeOnHighEndMobile);
+
+        /// <summary>
+        /// Should an object with these settings show on this device, leaving the headset half aside? The platform and VR
+        /// halves have to agree. (Kept with this signature for graphs that already use it.)
+        /// </summary>
         public static bool ShouldShow(bool isAndroid, bool isVR,
                                       bool includeOnMobile, bool includeOnDesktop,
                                       bool includeInVR, bool includeInNonVR) =>
             IsPlatformIncluded(isAndroid, includeOnMobile, includeOnDesktop)
             && IsModeIncluded(isVR, includeInVR, includeInNonVR);
 
+        /// <summary>Should an object with these settings show on this device? All three halves have to agree.</summary>
+        public static bool ShouldShowOnDevice(bool isAndroid, bool isVR, bool isLowEndMobile,
+                                              bool includeOnMobile, bool includeOnDesktop,
+                                              bool includeInVR, bool includeInNonVR,
+                                              bool includeOnLowEndMobile, bool includeOnHighEndMobile) =>
+            ShouldShow(isAndroid, isVR, includeOnMobile, includeOnDesktop, includeInVR, includeInNonVR)
+            && IsHeadsetIncluded(isAndroid, isLowEndMobile, includeOnLowEndMobile, includeOnHighEndMobile);
+
         /// <summary>
-        /// True when the filter has something to decide on the device: the VR half restricts the object. A build strips
-        /// filters that only restrict by platform, because the bundle for each platform already settled that.
+        /// True when the filter has something to decide on the device: the VR half or the headset half restricts the
+        /// object. A build strips filters that only restrict by platform, because the bundle for each platform already
+        /// settled that.
         /// </summary>
-        public bool NeedsRuntimeCheck => !(includeInVR && includeInNonVR);
+        public bool NeedsRuntimeCheck => !(includeInVR && includeInNonVR) || !(includeOnLowEndMobile && includeOnHighEndMobile);
 
         internal override void StartStuff()
         {
@@ -114,8 +150,9 @@ namespace BS
             // (Init -> Deserialise) never gets a Start, and the space would then never finish loading.
             SetLoadedIfNot();
 
-            var show = ShouldShow(scene.IsAndroid(), scene.IsVR(),
-                                  includeOnMobile, includeOnDesktop, includeInVR, includeInNonVR);
+            var show = ShouldShowOnDevice(scene.IsAndroid(), scene.IsVR(), scene.IsLowEndMobile(),
+                                          includeOnMobile, includeOnDesktop, includeInVR, includeInNonVR,
+                                          includeOnLowEndMobile, includeOnHighEndMobile);
             if (!show && gameObject.activeSelf)
             {
                 hiddenByFilter = true;

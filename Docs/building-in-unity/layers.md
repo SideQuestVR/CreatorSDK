@@ -18,9 +18,9 @@ Builder's checklist flags objects on them, with a button to move them to Default
 | 5 | UI | Anything players click or point at: world-space UI, buttons, seats, clickable objects. The player's body and hands pass through it. |
 | 6–11 | UserLayer2–7 | Yours. Solid and walkable: ground, teleport and grapple all use them, and the player's body bumps into them. The hands pass through. |
 | 12 | UserLayer8 | Yours. Like UserLayer2–7 (ground, teleport and grapple), and also grabbable, and the hands bump into it. For things players pick up that they can also stand on or teleport onto. |
-| 13–19 | UserLayer9–15 | Yours. Teleport, grapple and ground ignore them; the player's body and hands still bump into them. |
-| 20 | Grabbable | Things the player can pick up, and grapple to. `BSGrababble` puts its object here for you. |
-| 21 | Invisible | Hidden from the player's own view (mirrors still show it). Still solid. |
+| 13–19 | UserLayer9–15 | Yours. Players can't stand on, grapple to or teleport onto them, and the teleport line stops at them; the player's body and hands still bump into them. |
+| 20 | Grabbable | Things the player can pick up, and grapple to. `BSGrababble` puts its object here for you. The teleport line stops at them (not at what the player is holding). |
+| 21 | Invisible | Hidden from the player's own view (mirrors still show it). Still solid, and the teleport line stops at it. |
 | 22 | Menu | The client's menus, and clickable like UI. Recording cameras leave it out; the player's body and hands pass through it. |
 | 23 | CharacterColliders | The local player's body: the rolling ball, torso and head. Don't put your own objects here. |
 | 24 | CharacterHandColliders | The local player's physics hands. Don't put your own objects here. |
@@ -36,12 +36,17 @@ What works on each layer (✓ = yes):
 |---|---|---|---|---|---|---|---|---|---|
 | Stand on it (ground) | ✓ | ✓ | ✓ | ✓ | ✓ | | ✓ | | |
 | Teleport onto it | ✓ | | ✓ | ✓ | ✓ | | | | |
+| Stops the teleport line | ✓ | | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
 | Grapple to it | ✓ | ✓ | | ✓ | ✓ | | ✓ | | |
 | Grab it | | | | | ✓ | | ✓ | | |
 | Click or point at it | | | | | | | | | ✓ |
 | Body bumps into it | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
 | Hands bump into it | | | | | ✓ | ✓ | ✓ | ✓ | |
 
+- **Teleport** lands only on the layers marked above. The teleport line stops at anything on UserLayer9–15,
+  Grabbable or Invisible and shows a red cross, so players can't teleport through or past those colliders
+  (an Invisible collider stops teleports as well as walking). It passes through Ignore Raycast, UI, Menu, triggers
+  and whatever the player is holding.
 - **Grab** only ever looks at Grabbable and UserLayer8, so a grabbable object needs a collider on one of
   those two. Use Grabbable unless players should also be able to teleport onto the object. In Play mode
   only Grabbable can be grabbed for now (see [Testing in Play Mode](../getting-started/testing-in-play-mode.md)).

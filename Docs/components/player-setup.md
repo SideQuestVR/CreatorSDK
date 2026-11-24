@@ -49,7 +49,7 @@ Only spawns that are in the scene while the space loads take part in the arrival
 
 ## Seat
 
-Clicking a seat sits the local player on it, and moving or jumping stands them up; see [Seat authoring](../building-in-unity/easy-prefabs.md#seat-bsseat) for placement, Robot pose handles, and holograms. All modes face the seat on entry and use its authored pelvis and leg pose. Legacy carries the full seat rotation; the two upright modes keep seat tilt out of the view. New seats default to Upright Follow Yaw.
+Clicking a seat sits the local player on it, and moving or jumping stands them up; see [Seats](../building-in-unity/seats.md) for placement, the Scene view gizmos, posing and vehicles. All modes face the seat on entry and use its authored pelvis and leg pose. Follow Seat carries the full seat rotation; the two upright modes keep seat tilt out of the view. New seats default to Upright Follow Yaw.
 
 The seat's shared [Pointer Range](ui-system.md#pointer-range) component defaults to **2 metres**; change its **Distance** to choose the seat's reach. Clicking, the hover marker, the sit hint and the VR targeting ray use this same head-to-seat-origin distance. Scaling its visual or enlarging its trigger does not extend reach. Moving out of range before releasing the click cancels seating. Editor placement previews and scripted `Sit()` remain available at any distance.
 
@@ -113,7 +113,7 @@ seat._Sit();
 
 In Visual Scripting, use the member setter for **BSSeat.ViewMode** with a `BS.SeatViewMode` value before invoking the seat's **Sit** member (`BSSeat._Sit`). **Stand** uses `BSSeat._Stand`. The supported **ShowRuntimeVisual** and **ShowLegHologram** setters control the two previews independently. Author the detailed pose in the seat Inspector; it is not a graph-driven pose editor. Validate the graph with the SDK's normal allow-list checks.
 
-Keep occupied-seat mode/pose edits out of local multiplayer comparisons: SDK late joins or recreated preview avatars can use the current settings rather than the occupant's earlier snapshot. See the [authoring notes and validation limits](../building-in-unity/easy-prefabs.md#seat-bsseat). Real headset comfort and real two-client behavior have **not yet been validated**.
+Keep occupied-seat mode/pose edits out of local multiplayer comparisons: SDK late joins or recreated preview avatars can use the current settings rather than the occupant's earlier snapshot. See [what has been tested and what has not](../building-in-unity/seats.md#tested-and-not-tested): riders on a moving vehicle were measured between two players, and headset comfort has not been judged.
 
 ## Teleporter
 
@@ -181,6 +181,7 @@ When it starts, it applies all of its values, so anything you don't set goes bac
 | `teleportMaxRange` | number | 0 | `TeleportMaxRange`: the furthest players can teleport here, in metres. 0 leaves it to each player's own Teleport Range (8 m unless they change it, up to 100 m); any other value caps everyone's teleports at that distance |
 | `enableBrowserStreaming` | boolean | true | `EnableBrowserStreaming`: players can stream their menu browser into the space. Untick it to forbid that here; browsers placed in the scene are not affected |
 | `enableUserUICollider` | boolean | true | `EnableUserUICollider`: pointers land on other players, and clicking one opens their profile. Untick it so pointers pass through players, for a world that aims at them itself |
+| `enableMegaphone` | boolean | false | `EnableMegaphone`: anyone can turn their own megaphone on from the radial menu (heard across the room). Off: only moderators can megaphone people. Megaphone Volumes work either way |
 | `voiceDistanceMultiplier` | number | 1 | `VoiceDistanceMultiplier`: scales how far voices carry here, on top of each player's own Voice Distance setting: 2 = twice as far (a stage or auditorium), 0.5 = half. Clamped to 0.1-10. Voices beyond that distance aren't received at all, so a large multiplier in a crowded space costs players bandwidth |
 | `enableHandHold` | boolean | true | `EnableHandHold`: players can hold hands |
 | `enableRadar` | boolean | true | `EnableRadar`: the radar is shown |
@@ -217,6 +218,7 @@ When it starts, it applies all of its values, so anything you don't set goes bac
 |---|---|---|---|
 | `isSettingsLocked` | boolean | false | Locks the abilities, refresh rate and clipping planes once this component's values are in. Until the page reloads, `scene.SetSettings` and any other Settings component can't change them; this component still can. |
 | `isPhysicsSettingsLocked` | boolean | false | The same for the player physics settings. |
+| `isMegaphoneLocked` | boolean | false | Locks the megaphone: only moderators can megaphone people, and [Megaphone Volumes](special.md#megaphonevolume) and `enableMegaphone` stop working. Players can still turn their own megaphone off. Once on it stays on until the player leaves or rejoins the space: nothing can unlock it before then, this component included. |
 
 Locks only ever lock: setting one back to `false` doesn't unlock the settings. A lock someone else set first also stops this component: it leaves those settings alone.
 

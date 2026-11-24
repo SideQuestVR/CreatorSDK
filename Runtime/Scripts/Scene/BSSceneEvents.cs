@@ -28,6 +28,9 @@ public class BSSceneEvents
     public UnityEvent<float> OnTeleportMaxRangeChanged = new UnityEvent<float>();
     public UnityEvent<bool> OnEnableBrowserStreamingChanged = new UnityEvent<bool>();
     public UnityEvent<bool> OnEnableUserUIColliderChanged = new UnityEvent<bool>();
+    public UnityEvent<bool> OnEnableMegaphoneChanged = new UnityEvent<bool>();
+    /// <summary>The megaphone lock (BSSceneSettings.IsMegaphoneLocked) came on (true), or was cleared as the space reset (false).</summary>
+    public UnityEvent<bool> OnIsMegaphoneLockedChanged = new UnityEvent<bool>();
     public UnityEvent<bool> OnEnableHandHoldChanged = new UnityEvent<bool>();
     public UnityEvent<bool> OnEnableRadarChanged = new UnityEvent<bool>();
     public UnityEvent<bool> OnEnableNametagsChanged = new UnityEvent<bool>();
@@ -38,6 +41,8 @@ public class BSSceneEvents
     public UnityEvent<Vector4> OnSpawnPointChanged = new UnityEvent<Vector4>();
     public UnityEvent<float> OnRefreshRateChanged = new UnityEvent<float>();
     public UnityEvent<Vector2> OnClippingPlaneChanged = new UnityEvent<Vector2>();
+    /// <summary>BSSceneSettings.VisualScriptingAcceleration was set (by the page, or back to Default on leaving).</summary>
+    public UnityEvent<VisualScriptingAcceleration> OnVisualScriptingAccelerationChanged = new UnityEvent<VisualScriptingAcceleration>();
     public UnityEvent<string> OnPageOpened = new UnityEvent<string>();
     public UnityEvent<string, bool> OnOneShot = new UnityEvent<string, bool>();
     public UnityEvent<BSSynced, BSSyncedObject> OnSyncedObject = new UnityEvent<BSSynced, BSSyncedObject>();
@@ -61,6 +66,11 @@ public class BSSceneEvents
     /// scene is now loading the missing-world fallback instead. Argument: the URL that was asked for.
     /// </summary>
     public UnityEvent<string> OnMissingWorldFallback = new UnityEvent<string>();
+    /// <summary>
+    /// The load in progress failed (<see cref="BSScene.Cancel(string, bool, SceneLoadFailureKind, string, int)"/>) and the
+    /// loading screen now shows the failure. Raised once per failed load, on the main thread, after the scene's state changed.
+    /// </summary>
+    public UnityEvent<SceneLoadFailure> OnLoadFailed = new UnityEvent<SceneLoadFailure>();
     public UnityEvent<string, string, bool> OnJsCallbackRecieved = new UnityEvent<string, string, bool>();
     public UnityEvent<string, string> OnAvatarSet = new UnityEvent<string, string>();
     public UnityEvent<string, string> OnGuestAvatarSet = new UnityEvent<string, string>();
@@ -132,6 +142,10 @@ public class BSSceneEvents
     /// <summary>Whether the player is in a headset rather than on a flat screen. The host app sets it to its own
     /// device mode; without one (SDK Play Mode) it is whether an XR device is active. Called on the main thread.</summary>
     public Func<bool> IsVR = new Func<bool>(() => UnityEngine.XR.XRSettings.isDeviceActive);
+    /// <summary>Whether this is an Android headset older than the Quest 3 generation (<see cref="BS.BSDeviceClass"/>).
+    /// The host app may replace it (for a test, say); without one it reads the device model. Called on the main
+    /// thread.</summary>
+    public Func<bool> IsLowEndMobile = new Func<bool>(BS.BSDeviceClass.ThisDeviceIsLowEndMobile);
     /// <summary>The app's current baked lighting data as a persistable string, for
     /// the page to store with its saved scene. Empty = nothing baked yet.</summary>
     public Func<string> GetLightingData = new Func<string>(() => { return ""; });
@@ -192,6 +206,8 @@ public class BSSceneEvents
         OnTeleportMaxRangeChanged.RemoveAllListeners();
         OnEnableBrowserStreamingChanged.RemoveAllListeners();
         OnEnableUserUIColliderChanged.RemoveAllListeners();
+        OnEnableMegaphoneChanged.RemoveAllListeners();
+        OnIsMegaphoneLockedChanged.RemoveAllListeners();
         OnEnableHandHoldChanged.RemoveAllListeners();
         OnEnableRadarChanged.RemoveAllListeners();
         OnEnableNametagsChanged.RemoveAllListeners();
@@ -202,6 +218,7 @@ public class BSSceneEvents
         OnSpawnPointChanged.RemoveAllListeners();
         OnRefreshRateChanged.RemoveAllListeners();
         OnClippingPlaneChanged.RemoveAllListeners();
+        OnVisualScriptingAccelerationChanged.RemoveAllListeners();
         OnPageOpened.RemoveAllListeners();
         OnOneShot.RemoveAllListeners();
         OnPublicSpaceStateChanged.RemoveAllListeners();

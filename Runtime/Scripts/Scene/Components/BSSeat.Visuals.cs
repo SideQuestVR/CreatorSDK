@@ -111,7 +111,8 @@ namespace BS
             if (markerMesh == null || markerMaterial == null) return;
             var parameters = new RenderParams(markerMaterial)
             {
-                // UI/Menu render layers can draw through walls; use ordinary world depth for the marker.
+                // Layer 0: the world's transparent pass, where the shader draws it last and without a depth test, over
+                // the whole world. Not the Menu/UIOnTop layers: their late passes would put it over the menu too.
                 layer = 0,
                 camera = camera,
                 matProps = properties,

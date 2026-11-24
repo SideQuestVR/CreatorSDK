@@ -1,8 +1,9 @@
-// <mirror source="Assets/Systems/Attachments/AttachmentsSystem.cs" sha256="548b5a4e1e011610ce98efbc5f65d6ca37eae658ee97ded74d47f69bf9e773d2" mode="port" />
-// The Attachment component (AttachmentsSystem.cs:17-64) with the system reference typed to the port, plus the
+// <mirror source="Assets/Systems/Attachments/AttachmentsSystem.cs" sha256="09150bde1e0c4a8f4ac82f215becd7a949851d4a534d413b576488b344aa36ae" mode="port" />
+// The Attachment component (AttachmentsSystem.cs:17-68) with the system reference typed to the port, plus the
 // host's lifetime guard: after a script reload or once the host is gone, OnDestroy does nothing. It doesn't implement
 // ISyncedObjectHold (HoldsSyncedObject = !isDestroyed): the port's idle reset, SyncedObjectSafetyNet, reads this
-// component's isDestroyed directly.
+// component's isDestroyed directly. Not ported: production's Attachment lists itself in SyncedObjectHolds
+// (Awake / OnDestroy), which is where production's safety net now looks for holds.
 using System;
 using BS;
 using UnityEngine;

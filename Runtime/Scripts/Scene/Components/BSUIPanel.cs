@@ -343,6 +343,68 @@ namespace BS
             // Tree's own prefix), registered in that order once the document has a root.
             if (uiElementBridge != null && uiElementBridge.HasPendingUXML)
                 uiElementBridge.ProcessPendingUXML();
+
+            UpdateSleep();
+        }
+
+        // BS (perf): a panel scaled to zero cannot be seen or clicked, but UI Toolkit still updates, lays out and
+        // repaints it every frame (each SDK panel is its own UI Toolkit panel). While its world scale is zero the
+        // document is taken off its panel settings, which keeps the element tree (unlike disabling the document,
+        // which rebuilds it) and lets UI Toolkit drop the empty panel; it goes back on when the scale returns.
+        // Only plain world-space panels that own their settings sleep.
+        private bool asleep;
+
+        private void UpdateSleep()
+        {
+            if (!SdkPerf.SleepHiddenPanels)
+            {
+                if (asleep) WakePanel();
+                return;
+            }
+            if (uiDocument == null || panelSettings == null || !ownsPanelSettings || screenSpace || meshInput || waitingForDocumentRoot)
+            {
+                if (asleep) WakePanel();
+                return;
+            }
+            var s = transform.lossyScale;
+            bool hidden = s.x == 0f && s.y == 0f && s.z == 0f;
+            if (hidden)
+            {
+                if (!asleep && uiDocument.rootVisualElement != null && uiDocument.panelSettings == panelSettings)
+                {
+                    asleep = true;
+                    // The raycaster and event handler are bound to the UI Toolkit panel that is about to go: off until
+                    // the panel is back, so the input module never asks a disposed panel for a hit.
+                    SetPanelInputEnabled(false);
+                    uiDocument.panelSettings = null;
+                }
+            }
+            else if (asleep)
+            {
+                WakePanel();
+            }
+        }
+
+        private void WakePanel()
+        {
+            asleep = false;
+            if (uiDocument != null && uiDocument.panelSettings == null && panelSettings != null)
+                uiDocument.panelSettings = panelSettings;
+            // Going back on its settings gives the document a NEW UI Toolkit panel. The pointer raycaster, the event
+            // handler and the panel's selectable object were bound to the old one (AddPanelStuff), so without this the
+            // panel looks right and takes no input. Reset() binds them to the new panel (waiting for it if needed) and
+            // announces it again (PanelReady: input lock, virtual keyboard).
+            SetPanelInputEnabled(true);
+            var binder = GetComponent<AddPanelStuff>();
+            if (binder != null) binder.Reset();
+        }
+
+        private void SetPanelInputEnabled(bool on)
+        {
+            var raycaster = GetComponent<PanelRaycaster>();
+            if (raycaster != null) raycaster.enabled = on;
+            var handler = GetComponent<PanelEventHandler>();
+            if (handler != null) handler.enabled = on;
         }
 
         /// <summary>
@@ -1075,6 +1137,10 @@ namespace BS
                 // If initialization fails, we can't process updates yet
                 return;
             }
+
+            // A sleeping panel goes back on its settings before a property change touches them (it sleeps again
+            // on the next LateUpdate if it is still hidden).
+            if (asleep) WakePanel();
 
             if (changedProperties.Contains(PropertyName.resolution))
             {

@@ -69,7 +69,7 @@ BS.SeatViewMode.UprightFollowYaw   // 1: follow position/yaw, remove seat pitch/
 BS.SeatViewMode.UprightIndependent // 2: follow position, ignore seat rotation for the view
 ```
 
-All three modes keep the authored pelvis and legs attached to the seat's complete rotation while real head/hand tracking remains free. See [Robot pose authoring and comfort limits](../building-in-unity/easy-prefabs.md#seat-bsseat).
+All three modes keep the authored pelvis and legs attached to the seat's complete rotation while real head/hand tracking remains free. See [View Rotation](../building-in-unity/seats.md#view-rotation) for when to use each, and [posing the sitter](../building-in-unity/seats.md#pose-the-sitter).
 
 ## HandSide
 
@@ -352,6 +352,7 @@ Used by `AttachedObject`; see [Attaching Objects to Users](../javascript-api/use
 ```js
 BS.AvatarAttachmentType.AttachToAvatar  // 0: the object goes on the player
 BS.AvatarAttachmentType.AvatarAttachTo  // 1: the player goes on the object
+// 2: RideZone, a moving platform players ride while inside its trigger colliders (set it in Unity; not in the JavaScript library yet)
 
 // For AvatarAttachTo (a seat or vehicle) only: an object on a player ignores it
 BS.AttachmentType.Physics        // 0: the player is held on the object (the default)

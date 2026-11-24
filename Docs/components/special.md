@@ -1,6 +1,6 @@
 # Special Components
 
-Kit assets, synced, spawned and world objects, platform filters, world options, host checks, Quest Home, script graphs and AO baking.
+Kit assets, synced, spawned and world objects, platform filters, world options, host checks, megaphone volumes, Quest Home, script graphs and AO baking.
 
 ## KitAsset
 
@@ -144,6 +144,17 @@ The Domain comparison is exact, except that a world's address on SideQuest's oth
 This deters copies; it can't stop them. For the strongest check, keep it on its own object at the root of the scene, with no BS components: page scripts only see objects that have them.
 
 In a script graph, instantiate a prefab that holds the component, or use the **Verify Host** node (`BS > Space`), which runs the same check and then carries on from **Verified** or **Wrong Host**. That happens later, in a new flow, so use graph or object variables for anything you need from before the node. The node's inputs live in the graph, which a page can edit, so use the component when that matters.
+
+## MegaphoneVolume
+
+Anyone standing inside is megaphoned: their voice carries across the room. Use it for a stage, a podium or a DJ booth. Add it with **Add Component > BS > Megaphone Volume**; it adds a 4 × 3 × 4 m trigger box standing on the object for you, and moves an object on Default to Ignore Raycast so the box doesn't block teleports or pointers (see [Layers](../building-in-unity/layers.md)).
+
+- **The volume is its colliders**: every enabled Box, Sphere, Capsule or convex Mesh Collider on the object or its children, trigger or not. Resize the box, or add more colliders for an odd shape. A Mesh Collider that isn't convex is skipped, with a warning.
+- **It works whatever the space's `enableMegaphone` setting says**, unless `isMegaphoneLocked` is on: then only moderators can megaphone people. See [Megaphone](../javascript-api/scene-settings.md#megaphone).
+- **Players can still turn their own megaphone off** while they stand inside.
+- **It works while it's enabled.** Turn the stage on and off by enabling or disabling the component or its object, from a graph or an animation. Colliders added after it was enabled count from the next time it's enabled.
+
+It has no properties and no JavaScript API: page scripts can't add it, read it or change it.
 
 ## WorldObject
 

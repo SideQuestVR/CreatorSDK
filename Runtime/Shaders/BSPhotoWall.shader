@@ -14,6 +14,7 @@ Shader "BS/Photo Wall"
         _DevelopSeconds("Develop seconds", Float) = 1.5
         _SelfLight("Card Self Light", Range(0, 1)) = 0.35
         _MinLight("Min Light", Range(0, 1)) = 0
+        _PhotoUnlit("Photo Unlit", Range(0, 1)) = 0.8
     }
 
     SubShader
@@ -35,6 +36,7 @@ Shader "BS/Photo Wall"
             float _DevelopSeconds;
             half _SelfLight;
             half _MinLight;
+            half _PhotoUnlit;
         CBUFFER_END
 
         float BoxSdf(float2 p, float2 halfSize, float radius)
@@ -151,6 +153,8 @@ Shader "BS/Photo Wall"
                 half3 albedo;
                 half alpha = 1;
                 half self = 0;
+                half3 shown = 0;   // the picture as taken, drawn mostly unlit so photos read in any light
+                half unlit = 0;
                 if (input.info.x < 0.5)
                 {
                     albedo = _BackingColor.rgb;
@@ -173,9 +177,12 @@ Shader "BS/Photo Wall"
                     half3 paper = _PaperColor.rgb * (0.97 + 0.03 * input.info.z);
                     albedo = lerp(paper, photo, picture);
                     self = _SelfLight;
+                    shown = photo;
+                    unlit = picture * _PhotoUnlit;
                 }
 
-                half3 color = MixFog(albedo * (max(input.light, _MinLight) + self), input.fogFactor);
+                half3 lit = albedo * (max(input.light, _MinLight) + self);
+                half3 color = MixFog(lerp(lit, shown, unlit), input.fogFactor);
                 return half4(color, alpha);
             }
             ENDHLSL

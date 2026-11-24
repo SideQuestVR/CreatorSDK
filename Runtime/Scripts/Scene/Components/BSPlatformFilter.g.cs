@@ -12,6 +12,8 @@ namespace BS
         public System.Boolean IncludeOnDesktop { get { return includeOnDesktop; } set { includeOnDesktop = value; UpdateCallback(new List<PropertyName> { PropertyName.includeOnDesktop }); } }
         public System.Boolean IncludeInVR { get { return includeInVR; } set { includeInVR = value; UpdateCallback(new List<PropertyName> { PropertyName.includeInVR }); } }
         public System.Boolean IncludeInNonVR { get { return includeInNonVR; } set { includeInNonVR = value; UpdateCallback(new List<PropertyName> { PropertyName.includeInNonVR }); } }
+        public System.Boolean IncludeOnLowEndMobile { get { return includeOnLowEndMobile; } set { includeOnLowEndMobile = value; UpdateCallback(new List<PropertyName> { PropertyName.includeOnLowEndMobile }); } }
+        public System.Boolean IncludeOnHighEndMobile { get { return includeOnHighEndMobile; } set { includeOnHighEndMobile = value; UpdateCallback(new List<PropertyName> { PropertyName.includeOnHighEndMobile }); } }
 
         BSScene _scene;
         public BSScene scene
@@ -34,12 +36,12 @@ namespace BS
 
         internal override void ReSetup()
         {
-            List<PropertyName> changedProperties = new List<PropertyName>() { PropertyName.includeOnMobile, PropertyName.includeOnDesktop, PropertyName.includeInVR, PropertyName.includeInNonVR, };
+            List<PropertyName> changedProperties = new List<PropertyName>() { PropertyName.includeOnMobile, PropertyName.includeOnDesktop, PropertyName.includeInVR, PropertyName.includeInNonVR, PropertyName.includeOnLowEndMobile, PropertyName.includeOnHighEndMobile, };
             UpdateCallback(changedProperties);
         }
         internal override string GetSignature()
         {
-            return "PlatformFilter" +  PropertyName.includeOnMobile + includeOnMobile + PropertyName.includeOnDesktop + includeOnDesktop + PropertyName.includeInVR + includeInVR + PropertyName.includeInNonVR + includeInNonVR;
+            return "PlatformFilter" +  PropertyName.includeOnMobile + includeOnMobile + PropertyName.includeOnDesktop + includeOnDesktop + PropertyName.includeInVR + includeInVR + PropertyName.includeInNonVR + includeInNonVR + PropertyName.includeOnLowEndMobile + includeOnLowEndMobile + PropertyName.includeOnHighEndMobile + includeOnHighEndMobile;
         }
 
         internal override void Init(List<object> constructorProperties = null)
@@ -119,6 +121,24 @@ namespace BS
                         changedProperties.Add(PropertyName.includeInNonVR);
                     }
                 }
+                if (values[i] is BSBool)
+                {
+                    var valincludeOnLowEndMobile = (BSBool)values[i];
+                    if (valincludeOnLowEndMobile.n == PropertyName.includeOnLowEndMobile)
+                    {
+                        includeOnLowEndMobile = valincludeOnLowEndMobile.x;
+                        changedProperties.Add(PropertyName.includeOnLowEndMobile);
+                    }
+                }
+                if (values[i] is BSBool)
+                {
+                    var valincludeOnHighEndMobile = (BSBool)values[i];
+                    if (valincludeOnHighEndMobile.n == PropertyName.includeOnHighEndMobile)
+                    {
+                        includeOnHighEndMobile = valincludeOnHighEndMobile.x;
+                        changedProperties.Add(PropertyName.includeOnHighEndMobile);
+                    }
+                }
             }
             if (values.Count > 0) { UpdateCallback(changedProperties); }
         }
@@ -169,6 +189,30 @@ namespace BS
                     name = PropertyName.includeInNonVR,
                     type = PropertyType.Bool,
                     value = includeInNonVR,
+                    componentType = ComponentType.PlatformFilter,
+                    oid = oid,
+                    cid = cid
+                });
+            }
+            if (force)
+            {
+                updates.Add(new BSComponentPropertyUpdate()
+                {
+                    name = PropertyName.includeOnLowEndMobile,
+                    type = PropertyType.Bool,
+                    value = includeOnLowEndMobile,
+                    componentType = ComponentType.PlatformFilter,
+                    oid = oid,
+                    cid = cid
+                });
+            }
+            if (force)
+            {
+                updates.Add(new BSComponentPropertyUpdate()
+                {
+                    name = PropertyName.includeOnHighEndMobile,
+                    type = PropertyType.Bool,
+                    value = includeOnHighEndMobile,
                     componentType = ComponentType.PlatformFilter,
                     oid = oid,
                     cid = cid

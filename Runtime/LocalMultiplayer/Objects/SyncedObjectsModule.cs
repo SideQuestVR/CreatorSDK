@@ -1,9 +1,12 @@
-// <mirror source="Assets/Systems/Networking/SyncedObjectSystem.cs" sha256="277c913005a87b1f191471d3cfd2311053a446d96f7a25217e42bb977bdc8b63" mode="port" />
+// <mirror source="Assets/Systems/Networking/SyncedObjectSystem.cs" sha256="b0e84310e261fd09271706c5ce824c5d132d297cf213ed111b8c8fb5d16765e7" mode="port" />
 // SyncedObjectSystem with its serialized Greenfield values (Assets/Scenes/Main.unity:366-377: 30 Hz, the five
 // local-player tags, fall threshold -250, a 15 s default idle reset, proximity margin 0.3). Differences: the
 // listeners are attached at install, before any scene object starts (BSSyncedObject announces itself from its own
 // Start); the transform host always exists, so the deferred-host retry is gone; the Rate-LOD preset has no local
 // meaning (the relay delivers at full rate); and an already-started object (late install) is replayed with Refresh().
+// Left out with the seat push: the driver's reclaim, the driver made by a world's own TakeOwnership and the giving
+// way to a rider who took the object (ReclaimIfDriving, NoteScriptTake, YieldToRidingOwner): nothing here takes an
+// object back, so a script's take sticks.
 // It also owns the binder, the transform runtime, the desktop grab bridge and the spawner-copy service
 // (LocalSpawnerObjects), which Greenfield's NetworkService and SyncedObjectSystem create. Not added: the safety
 // bubble's BubbleHeldHider (there is no safety bubble here).

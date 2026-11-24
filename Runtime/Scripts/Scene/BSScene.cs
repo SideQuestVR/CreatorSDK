@@ -40,6 +40,7 @@ namespace BS
         public const string TeleportMaxRange = "TeleportMaxRange";
         public const string EnableBrowserStreaming = "EnableBrowserStreaming";
         public const string EnableUserUICollider = "EnableUserUICollider";
+        public const string EnableMegaphone = "EnableMegaphone";
         public const string EnableHandHold = "EnableHandHold";
         public const string EnableRadar = "EnableRadar";
         public const string EnableNametags = "EnableNametags";
@@ -52,6 +53,7 @@ namespace BS
         public const string RefreshRate = "RefreshRate";
         public const string ClippingPlane = "ClippingPlane";
         public const string SpawnPoint = "SpawnPoint";
+        public const string VisualScriptingAcceleration = "VisualScriptingAcceleration";
 
         public const string PhysicsMoveSpeed = "PhysicsMoveSpeed";
         public const string PhysicsMoveAcceleration = "PhysicsMoveAcceleration";
@@ -70,6 +72,7 @@ namespace BS
 
         public const string SettingsLocked = "SettingsLocked";
         public const string PhysicsSettingsLocked = "PhysicsSettingsLocked";
+        public const string MegaphoneLocked = "MegaphoneLocked";
     }
     /// <summary>
     /// How <see cref="BSScene.Cancel"/> fails a load: the join was refused, the page failed, or the player
@@ -159,6 +162,15 @@ namespace BS
         public BSLink link;
         public BSSceneEvents events;
         public BSSceneSettings settings;
+
+        /// <summary>
+        /// What the current world asks for the app's Visual Scripting acceleration
+        /// (<see cref="BSSceneSettings.VisualScriptingAcceleration"/>); Default (no preference) before the first load and
+        /// until the page asks. The page's request arrives after the load starts, so the app should also listen to
+        /// events.OnVisualScriptingAccelerationChanged.
+        /// </summary>
+        public VisualScriptingAcceleration VisualScriptingAccelerationRequest =>
+            settings != null ? settings.VisualScriptingAcceleration : VisualScriptingAcceleration.Default;
 
         /// <summary>
         /// Completes once the first page load has created <see cref="settings"/> (the task <see cref="OnLoad"/> queues;
@@ -1779,6 +1791,15 @@ namespace BS
             }
             PushLoadProgress(loadedCount, totalCount, combinedPercentage);
         }
+        /// <summary>"BSAssetBundle on 'World' failed: ..." for the loading screen and the failure event.</summary>
+        internal static string DescribeComponentFailure(UnityEngine.Object comp, GameObject go, string message)
+        {
+            string type = comp != null ? comp.GetType().Name : "A component";
+            string where = go != null ? $" on '{go.name}'" : "";
+            string why = string.IsNullOrWhiteSpace(message) ? "no reason given" : message.Trim();
+            return $"{type}{where} failed: {why}";
+        }
+
         public void RegisterComponentOnMainThread(GameObject go, BSComponentBase comp)
         {
             var obj = go.GetComponent<BSObjectId>();
@@ -1802,7 +1823,7 @@ namespace BS
                             // Fails the load only while the load is still waiting for this component (BSLoadGate).
                             if (FailureCancelsCurrentLoad(cid, banterComp))
                             {
-                                Cancel(message, false);
+                                Cancel(DescribeComponentFailure(comp, go, message), false, SceneLoadFailureKind.ComponentFailed);
                             }
                             else
                             {
@@ -2883,7 +2904,9 @@ namespace BS
                     obj.id.watchRotation = false;
                     obj.id.watchLocalRotation = false;
                     obj.id.watchLocalScale = false;
-                    var transformParts = parts[1].Split(MessageDelimiters.PRIMARY);
+                    // An empty list stops watching (WatchTransform([]) is the page's unwatch); it used to throw on
+                    // int.Parse("") after clearing the flags, so it already stopped, with an error in the log.
+                    var transformParts = string.IsNullOrEmpty(parts[1]) ? Array.Empty<string>() : parts[1].Split(MessageDelimiters.PRIMARY);
                     foreach (var part in transformParts)
                     {
                         switch ((PropertyName)int.Parse(part))
@@ -3126,14 +3149,24 @@ namespace BS
             CancelFor(loadUrlTaskCompletionSource, message, isUserCancel);
         }
 
-        /// <summary><see cref="Cancel"/>, asked while <paramref name="owningLoad"/> was the load in progress.</summary>
-        internal void CancelFor(TaskCompletionSource<bool> owningLoad, string message, bool isUserCancel)
+        /// <summary>
+        /// Fails the load in progress, saying what kind of failure it was (<see cref="BSSceneEvents.OnLoadFailed"/>).
+        /// <paramref name="title"/>, when given, is the loading screen's heading instead of "Loading failed".
+        /// </summary>
+        public void Cancel(string message, bool isUserCancel, SceneLoadFailureKind kind, string title = null, int netErrorCode = 0)
+        {
+            CancelFor(loadUrlTaskCompletionSource, message, isUserCancel, kind, title, netErrorCode);
+        }
+
+        /// <summary><see cref="Cancel(string, bool)"/>, asked while <paramref name="owningLoad"/> was the load in progress.</summary>
+        internal void CancelFor(TaskCompletionSource<bool> owningLoad, string message, bool isUserCancel,
+            SceneLoadFailureKind kind = SceneLoadFailureKind.Other, string title = null, int netErrorCode = 0)
         {
             if (!UnityGame.OnMainThread)
             {
                 UnityMainThreadTaskScheduler.Default.Enqueue(TaskRunner.Track(() =>
                 {
-                    CancelFor(owningLoad, message, isUserCancel);
+                    CancelFor(owningLoad, message, isUserCancel, kind, title, netErrorCode);
                 }, $"{nameof(BSScene)}.{nameof(Cancel)}"));
                 return;
             }
@@ -3144,16 +3177,33 @@ namespace BS
                 LogLine.Do("[LOADING] Ignored a cancel meant for a load a newer one replaced: " + BSLoadGate.Printable(message));
                 return;
             }
+            // Whether this ends a load still in progress: not a world that is open (its page navigating somewhere dead, a
+            // setting changed later), nor a load that already failed. No load at all (the boot gate) counts: the player is
+            // on the loading screen with nothing to show.
+            // While the user-leaving hook runs, `loading` is only held so the guards refuse: no load is in progress yet,
+            // so a late failure of the world being left is not a load failure and must not drop those guards.
+            bool endsALoad = owningLoad == null || (loading && !IsPreLeaving) || !owningLoad.Task.IsCompleted;
             loaded = true;
-            loading = false;
+            if (!IsPreLeaving) loading = false;
             UnityMainThreadTaskScheduler.Default.SetLoading(false); // the failure screen needs no 25 ms passes
             externalLoadFailed = true;
             loadUrlTaskCompletionSource?.TrySetException(new SceneLoadFailedException(message, isUserCancel));
             loadUrlTaskCompletionSource?.TrySetCanceled();
             state = SceneState.LOAD_FAILED;
-            loadingManager?.SetLoadProgress(isUserCancel ? "Loading Cancelled" : "Loading failed", 0, message, true);
-            LogLine.Do(isUserCancel ? "Loading Cancelled" : "Loading failed");
+            if (isUserCancel) kind = SceneLoadFailureKind.UserCancel;
+            var heading = !string.IsNullOrEmpty(title) ? title : isUserCancel ? "Loading Cancelled" : "Loading failed";
+            loadingManager?.SetLoadProgress(heading, 0, message, true);
+            LogLine.Do($"{heading} ({kind}): {BSLoadGate.Printable(message)}");
             loadingManager?.UpdateCancelText();
+            if (!endsALoad) return;
+            try
+            {
+                events?.OnLoadFailed.Invoke(new SceneLoadFailure(CurrentUrl, kind, message, title, netErrorCode));
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
         }
         public void ResetLoadingProgress()
         {
@@ -3250,7 +3300,49 @@ namespace BS
         }
         public Task LoadUrl(string url, bool isLoadingOpen = false)
         {
-            return ObserveLoadFailure(LoadUrlInternal(url, url, isLoadingOpen, isFallback: false), url);
+            // The world being left gets its user-leaving event first, while it can still write to the room. Nothing
+            // listening (the usual case): the load starts as it always has, without even working out the reason.
+            if (!BSPreLeave.HasListeners)
+                return ObserveLoadFailure(LoadUrlInternal(url, url, isLoadingOpen, isFallback: false), url);
+            var preLeave = BSPreLeave.RunAsync(this, BSPreLeave.ReasonFor(this, url));
+            if (preLeave.IsCompleted)
+                return ObserveLoadFailure(LoadUrlInternal(url, url, isLoadingOpen, isFallback: false), url);
+            // Loading from now on, as LoadUrlInternal would have said at once: the guards on `loading` (portals, the
+            // page's own LoadUrl, menu joins, rejoins) must refuse while the world leaves, or the leaving world could
+            // send the player somewhere else, or back into itself, from its own handler.
+            loading = true;
+            pendingUrl = url;
+            return ObserveLoadFailure(LoadAfterPreLeave(preLeave, url, isLoadingOpen), url);
+        }
+
+        // Loads asked for while the user-leaving hook ran (only those that replace a running load get through, such as
+        // Go Home): only the newest goes ahead, the others end cancelled.
+        int loadsAfterPreLeave;
+
+        // Where the player is going while the world they are leaving still has the user-leaving hook running.
+        string pendingUrl;
+
+        /// <summary>
+        /// While the user-leaving hook runs, the world being left is still <see cref="CurrentUrl"/>: this is where the
+        /// player is going (the newest load asked for). Null otherwise. Anything that means "the world the player is
+        /// in or headed for" (a rejoin, a same-account redirect) reads <c>PendingUrl ?? CurrentUrl</c>.
+        /// </summary>
+        public string PendingUrl => pendingUrl;
+
+        /// <summary>The user-leaving hook is running: the world being left is still open, its handlers still running.</summary>
+        public bool IsPreLeaving => pendingUrl != null;
+
+        async Task LoadAfterPreLeave(Task preLeave, string url, bool isLoadingOpen)
+        {
+            int load = ++loadsAfterPreLeave;
+            pendingUrl = url;
+            // Never faults (RunAsync logs its own failures), but a fault here would leave the player stuck loading.
+            try { await preLeave; }
+            catch (Exception e) { Debug.LogException(e); }
+            if (load != loadsAfterPreLeave)
+                throw new OperationCanceledException($"Loading {url} was replaced by a newer load while the world was leaving.");
+            pendingUrl = null;
+            await LoadUrlInternal(url, url, isLoadingOpen, isFallback: false);
         }
 
         /// <summary>
@@ -3290,7 +3382,7 @@ namespace BS
                 string.Format(MissingWorldLabelFormat, shownUrl), MissingWorldSpawnPoint);
             if (pageUrl == null)
             {
-                Cancel("That world couldn't be found.");
+                Cancel("That world couldn't be found.", false, SceneLoadFailureKind.NotFound);
                 return Task.CompletedTask;
             }
             LoadingStatus = MissingWorldLoadingStatus;
@@ -3413,7 +3505,13 @@ namespace BS
                 catch (Exception e)
                 {
                     LogLine.Err($"[LOADING] LoadUrl body threw for {displayUrl}: {e}");
+                    // Finished already: it succeeded, or a Cancel failed it and said why.
+                    bool endedAlready = tcs.Task.IsCompleted;
                     tcs.TrySetException(e);
+                    // A faulted load used to leave the cage shut with no failure shown: fail it properly, so the
+                    // loading screen says so and the app can tell the player (CancelFor ignores a superseded load).
+                    if (!endedAlready && Application.isPlaying)
+                        CancelFor(tcs, "Unexpected error while loading: " + e.Message, false, SceneLoadFailureKind.Exception);
                 }
                 finally
                 {
@@ -3447,7 +3545,8 @@ namespace BS
                             LogLine.Err($"[LOADING] LoadOut threw: {e}");
                         }
                     }
-                    if (!supersededByNewerLoad)
+                    // Not while a later load is waiting on the user-leaving hook: it holds `loading` for the guards.
+                    if (!supersededByNewerLoad && !IsPreLeaving)
                     {
                         loading = false;
                     }
@@ -3516,6 +3615,9 @@ namespace BS
             // we have explicitly naviagted the page, but also becuase someone hut f5 in the debugger. 
             state = SceneState.NONE;
             RestartEmptySceneGrace();
+            // Here, not in OnLoad's queued listeners: the new page's first messages (it may say it listens straight
+            // away) must not arrive before the old page's listening is forgotten.
+            BSPreLeave.PageLoadStarted();
             UnityMainThreadTaskScheduler.Default.Enqueue(TaskRunner.Track(() =>
              {
                  if (settings != null)
@@ -3926,6 +4028,39 @@ namespace BS
             // }
         }
 
+        // A page's SetSettings sends every setting, so a call meant only for something else switches an ability (teleport,
+        // distance grab, the grapple, flight, running) back on at its default. That overrides a BS Settings object in the
+        // world that has it off, or is overridden by it, whichever runs last: which one that is can differ between players
+        // (scene-settings.md, "Whichever runs last wins"). Checked at the first such call per ability per page load, so a
+        // tester's log names the world and the ability.
+        BSSceneSettings _pageAbilityWarnedFor;
+        readonly HashSet<string> _pageAbilityWarned = new HashSet<string>();
+
+        bool PageAbility(string value, bool current, string key, Func<BSSettings, bool> componentHasIt)
+        {
+            bool on = value == "1";
+            if (!on || current)
+                return on;
+            if (_pageAbilityWarnedFor != settings)
+            {
+                _pageAbilityWarnedFor = settings;
+                _pageAbilityWarned.Clear();
+            }
+            if (!_pageAbilityWarned.Add(key))
+                return on;      // checked already this load (warned, or nothing had it off then)
+            foreach (var component in FindObjects.All<BSSettings>())
+            {
+                // A disabled one never applied its values.
+                if (!component.isActiveAndEnabled || componentHasIt(component))
+                    continue;
+                Debug.LogWarning($"[SceneSettings] A page SetSettings turned {key} back on; this world's BS Settings " +
+                                 $"(\"{component.name}\") has it off. Whichever runs last wins, and that can differ between " +
+                                 "players: set it in one place, or lock the settings.");
+                break;
+            }
+            return on;
+        }
+
         public void SetSettings(string msg, int reqId)
         {
 
@@ -3947,6 +4082,25 @@ namespace BS
                      {
                          continue;
                      }
+                     // Not under SettingsLocked: it is a request to the app, not a rule of the space, and a snippet
+                     // must be able to make it in a world that locked its settings. A value that doesn't parse
+                     // leaves the request as it was.
+                     if (setting[0] == SettingsMap.VisualScriptingAcceleration)
+                     {
+                         if (BSSceneSettings.TryParseVisualScriptingAcceleration(setting[1], out var acceleration))
+                         {
+                             settings.VisualScriptingAcceleration = acceleration;
+                         }
+                         continue;
+                     }
+                     // Not under SettingsLocked either: a latch that only ever locks ("0" does nothing, see
+                     // BSSceneSettings.IsMegaphoneLocked), and a page that sends SettingsLocked in the same call
+                     // (it comes first) must still get it.
+                     if (setting[0] == SettingsMap.MegaphoneLocked)
+                     {
+                         if (setting[1] == "1") settings.IsMegaphoneLocked = true;
+                         continue;
+                     }
                      if (!settings.IsSettingsLocked)
                      {
                          switch (setting[0])
@@ -3955,16 +4109,16 @@ namespace BS
                                  settings.EnableDevTools = setting[1] == "1";
                                  break;
                              case SettingsMap.EnableTeleport:
-                                 settings.EnableTeleport = setting[1] == "1";
+                                 settings.EnableTeleport = PageAbility(setting[1], settings.EnableTeleport, SettingsMap.EnableTeleport, c => c.enableTeleport);
                                  break;
                              case SettingsMap.EnableForceGrab:
-                                 settings.EnableForceGrab = setting[1] == "1";
+                                 settings.EnableForceGrab = PageAbility(setting[1], settings.EnableForceGrab, SettingsMap.EnableForceGrab, c => c.enableForceGrab);
                                  break;
                              case SettingsMap.EnableSpiderMan:
-                                 settings.EnableSpiderMan = setting[1] == "1";
+                                 settings.EnableSpiderMan = PageAbility(setting[1], settings.EnableSpiderMan, SettingsMap.EnableSpiderMan, c => c.enableSpiderMan);
                                  break;
                              case SettingsMap.EnableBirdFlight:
-                                 settings.EnableBirdFlight = setting[1] == "1";
+                                 settings.EnableBirdFlight = PageAbility(setting[1], settings.EnableBirdFlight, SettingsMap.EnableBirdFlight, c => c.enableBirdFlight);
                                  break;
                              case SettingsMap.AvatarSyncMode:
                                  settings.AvatarSyncMode = setting[1];
@@ -3973,7 +4127,7 @@ namespace BS
                                  settings.VoiceDistanceMultiplier = NumberFormat.Parse(setting[1]);
                                  break;
                              case SettingsMap.EnableRun:
-                                 settings.EnableRun = setting[1] == "1";
+                                 settings.EnableRun = PageAbility(setting[1], settings.EnableRun, SettingsMap.EnableRun, c => c.enableRun);
                                  break;
                              case SettingsMap.TeleportMaxRange:
                                  settings.TeleportMaxRange = NumberFormat.Parse(setting[1]);
@@ -3983,6 +4137,9 @@ namespace BS
                                  break;
                              case SettingsMap.EnableUserUICollider:
                                  settings.EnableUserUICollider = setting[1] == "1";
+                                 break;
+                             case SettingsMap.EnableMegaphone:
+                                 settings.EnableMegaphone = setting[1] == "1";
                                  break;
                              case SettingsMap.EnableHandHold:
                                  settings.EnableHandHold = setting[1] == "1";
@@ -4385,10 +4542,32 @@ namespace BS
             }
         }
 
-        /// <summary>The GET_DEVICE_INFO reply: "1" or "0" for Android, Windows and VR, in that order.</summary>
-        public static string FormatDeviceInfo(bool android, bool windows, bool vr)
+        /// <summary>
+        /// True on an Android headset older than the Quest 3 generation: Quest 2, Quest Pro, Quest 1, and headsets
+        /// <see cref="BSDeviceClass"/> does not recognise. False on PC and in the editor. Main thread only.
+        /// </summary>
+        public bool IsLowEndMobile()
         {
-            return (android ? "1" : "0") + MessageDelimiters.PRIMARY + (windows ? "1" : "0") + MessageDelimiters.PRIMARY + (vr ? "1" : "0");
+            try
+            {
+                return events.IsLowEndMobile?.Invoke() ?? false;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("[Banter] IsLowEndMobile failed: " + e);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// The GET_DEVICE_INFO reply: "1" or "0" for Android, Windows, VR and low-end mobile, in that order. The fourth
+        /// field was appended later; a page that reads three ignores it, and a page reading four from an older app gets
+        /// nothing there and treats it as "0".
+        /// </summary>
+        public static string FormatDeviceInfo(bool android, bool windows, bool vr, bool lowEndMobile = false)
+        {
+            return (android ? "1" : "0") + MessageDelimiters.PRIMARY + (windows ? "1" : "0") + MessageDelimiters.PRIMARY + (vr ? "1" : "0")
+                   + MessageDelimiters.PRIMARY + (lowEndMobile ? "1" : "0");
         }
 
         public void GetDeviceInfo(int reqId)
@@ -4397,7 +4576,7 @@ namespace BS
             UnityMainThreadTaskScheduler.Default.Enqueue(TaskRunner.Track(() =>
             {
                 // IsVR catches its own errors, so the page's promise always resolves.
-                SendReply(reqId, FormatDeviceInfo(IsAndroid(), IsWindows(), IsVR()));
+                SendReply(reqId, FormatDeviceInfo(IsAndroid(), IsWindows(), IsVR(), IsLowEndMobile()));
             }, $"{nameof(BSScene)}.{nameof(GetDeviceInfo)}"));
         }
         #endregion

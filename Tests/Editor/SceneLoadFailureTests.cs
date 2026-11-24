@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using BS.Utilities.Async;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -66,6 +69,159 @@ namespace BS.SDKEditor.Tests
             var cancelled = new SceneLoadFailedException("Loading Cancelled", true);
             Assert.AreEqual("Cancelled: Loading Cancelled", cancelled.Message);
             Assert.IsTrue(cancelled.IsUserCancel);
+        }
+
+        // ---- OnLoadFailed: the app is told every failed load, with its kind, so it can say why --------------------
+
+        static BSScene SceneWithEvents(List<SceneLoadFailure> raised)
+        {
+            var scene = (BSScene)FormatterServices.GetUninitializedObject(typeof(BSScene));
+            scene.events = new BSSceneEvents();
+            scene.events.OnLoadFailed.AddListener(raised.Add);
+            scene.CurrentUrl = Url;
+            UnityGame.SetMainThread(); // this test's thread: Cancel otherwise hops to the scheduler
+            return scene;
+        }
+
+        static void WithLoadingModeKept(Action body)
+        {
+            var scheduler = UnityMainThreadTaskScheduler.Default;
+            var wasLoading = scheduler.IsLoading;
+            try { body(); }
+            finally { scheduler.SetLoading(wasLoading); }
+        }
+
+        [Test]
+        public void Cancel_RaisesOnLoadFailed_OnceWithItsKindAndTitle()
+        {
+            WithLoadingModeKept(() =>
+            {
+                var raised = new List<SceneLoadFailure>();
+                var scene = SceneWithEvents(raised);
+                var load = new TaskCompletionSource<bool>();
+                scene.loadUrlTaskCompletionSource = load;
+                BSScene.ObserveLoadFailure(load.Task, Url);
+
+                scene.Cancel("Couldn't connect to the room.", false, SceneLoadFailureKind.Network, "Connection failed");
+
+                Assert.AreEqual(1, raised.Count);
+                Assert.AreEqual(SceneLoadFailureKind.Network, raised[0].Kind);
+                Assert.AreEqual("Connection failed", raised[0].Title);
+                Assert.AreEqual("Couldn't connect to the room.", raised[0].Message);
+                Assert.AreEqual(Url, raised[0].Url);
+                Assert.AreEqual(SceneState.LOAD_FAILED, scene.state);
+                Assert.IsTrue(scene.HasLoadFailed());
+            });
+        }
+
+        [Test]
+        public void TheOldCancel_IsKindOther_AndAUserCancelIsAlwaysUserCancel()
+        {
+            WithLoadingModeKept(() =>
+            {
+                var raised = new List<SceneLoadFailure>();
+                var scene = SceneWithEvents(raised);
+
+                scene.loadUrlTaskCompletionSource = null;
+                scene.Cancel("Something");
+                scene.Cancel("User cancelled loading", true);
+
+                Assert.AreEqual(2, raised.Count);
+                Assert.AreEqual(SceneLoadFailureKind.Other, raised[0].Kind);
+                Assert.IsNull(raised[0].Title);
+                Assert.AreEqual(SceneLoadFailureKind.UserCancel, raised[1].Kind);
+                Assert.IsTrue(raised[1].IsUserCancel);
+            });
+        }
+
+        [Test]
+        public void ACancelForASupersededLoad_RaisesNothing()
+        {
+            WithLoadingModeKept(() =>
+            {
+                var raised = new List<SceneLoadFailure>();
+                var scene = SceneWithEvents(raised);
+                var older = new TaskCompletionSource<bool>();
+                scene.loadUrlTaskCompletionSource = new TaskCompletionSource<bool>();
+
+                scene.CancelFor(older, "late", false, SceneLoadFailureKind.PageFailed);
+
+                Assert.AreEqual(0, raised.Count);
+            });
+        }
+
+        [Test]
+        public void ACancelOverAnOpenWorld_OrAFailedOne_RaisesNothing()
+        {
+            WithLoadingModeKept(() =>
+            {
+                var raised = new List<SceneLoadFailure>();
+                var scene = SceneWithEvents(raised);
+
+                // The world opened (its page later navigating somewhere dead, a setting changed later): not a failed entry.
+                var opened = new TaskCompletionSource<bool>();
+                opened.SetResult(true);
+                scene.loadUrlTaskCompletionSource = opened;
+                scene.loading = false;
+                scene.Cancel("The web page failed to load!", false, SceneLoadFailureKind.PageFailed);
+                Assert.AreEqual(0, raised.Count, "an open world");
+
+                // A second failure of a load that already failed says nothing new.
+                var failing = new TaskCompletionSource<bool>();
+                scene.loadUrlTaskCompletionSource = failing;
+                BSScene.ObserveLoadFailure(failing.Task, Url);
+                scene.loading = true;
+                scene.Cancel("first", false, SceneLoadFailureKind.Network);
+                scene.Cancel("second", false, SceneLoadFailureKind.PageFailed);
+                Assert.AreEqual(1, raised.Count);
+                Assert.AreEqual("first", raised[0].Message);
+            });
+        }
+
+        [Test]
+        public void AnAbortedNavigation_IsKnownOnAndroidToo()
+        {
+            Assert.IsTrue(BSPipe.IsAbortedNavigation("{\"url\":\"https://a.example\",\"code\":-3,\"description\":\"ERR_ABORTED\"}"));
+            Assert.IsTrue(BSPipe.IsAbortedNavigation("{\"url\":\"https://a.example\",\"code\":-1,\"description\":\"net::ERR_ABORTED\"}"));
+            Assert.IsFalse(BSPipe.IsAbortedNavigation("{\"url\":\"https://a.example\",\"code\":-2,\"description\":\"net::ERR_NAME_NOT_RESOLVED\"}"));
+        }
+
+        // ---- The messages say what failed -------------------------------------------------------------------------
+
+        [Test]
+        public void APageThatDidntLoad_NamesTheHostTheErrorAndItsCode()
+        {
+            var text = BSPipe.DescribeLoadFailed(
+                "{\"url\":\"https://nope.invalid/world/\",\"code\":-105,\"description\":\"net::ERR_NAME_NOT_RESOLVED\"}", out var code);
+            Assert.AreEqual("Couldn't open nope.invalid: net::ERR_NAME_NOT_RESOLVED (-105)", text);
+            Assert.AreEqual(-105, code);
+        }
+
+        [Test]
+        public void APageThatDidntLoad_FromAnOlderOra_OrWithNothing_StillSaysSomething()
+        {
+            Assert.AreEqual("Couldn't open old.example", BSPipe.DescribeLoadFailed("https://old.example/space", out var bare));
+            Assert.AreEqual(0, bare);
+            Assert.AreEqual("The web page failed to load!", BSPipe.DescribeLoadFailed("", out _));
+            Assert.AreEqual("The web page failed to load!", BSPipe.DescribeLoadFailed(null, out _));
+            Assert.AreEqual("Couldn't open x.example (error -6)",
+                BSPipe.DescribeLoadFailed("{\"url\":\"https://x.example\",\"code\":-6,\"description\":\"\"}", out _));
+        }
+
+        [Test]
+        public void AFailedComponent_IsNamedWithItsObject()
+        {
+            var go = new GameObject("World");
+            try
+            {
+                var comp = go.AddComponent<BoxCollider>();
+                Assert.AreEqual("BoxCollider on 'World' failed: HTTP 404", BSScene.DescribeComponentFailure(comp, go, " HTTP 404 "));
+                Assert.AreEqual("A component failed: no reason given", BSScene.DescribeComponentFailure(null, null, null));
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(go);
+            }
         }
     }
 }

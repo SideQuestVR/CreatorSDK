@@ -48,6 +48,8 @@ namespace BS
     - `physicsGorillaMode` - Move by pushing off surfaces with the hands.
     - `isSettingsLocked` - Lock the settings so nothing can change them afterwards.
     - `isPhysicsSettingsLocked` - Lock the physics settings so nothing can change them afterwards.
+    - `enableMegaphone` - Anyone in the space can turn their own megaphone on from the radial menu (heard across the room). Off by default: only moderators can megaphone people. Megaphone Volumes work either way.
+    - `isMegaphoneLocked` - Lock the megaphone: only moderators can megaphone people, and Megaphone Volumes and `enableMegaphone` stop working. Players can still turn their own megaphone off. Once on it stays on until the space is left or rejoined: nothing can unlock it before then.
 
     **Code Example**
     ```js
@@ -171,6 +173,15 @@ namespace BS
                  "profiles still open from the People list.")]
         [See(initial = "true")][SerializeField] internal bool enableUserUICollider = true;
 
+        [Header("Megaphone")]
+        [Tooltip("Anyone in the space can turn their own megaphone on from the radial menu (heard across the room). " +
+                 "Off by default: only moderators can megaphone people. Megaphone Volumes work either way.")]
+        [See(initial = "false")][SerializeField] internal bool enableMegaphone = false;
+        [Tooltip("Lock the megaphone: only moderators can megaphone people, and Megaphone Volumes and Enable Megaphone " +
+                 "stop working. Players can still turn their own megaphone off. Once on it stays on until the space is " +
+                 "left or rejoined: nothing can unlock it before then.")]
+        [See(initial = "false")][SerializeField] internal bool isMegaphoneLocked = false;
+
         bool started;
         // The settings object (it is recreated on every page load) that this component locked, if any.
         // Its own locks don't stop it; locks set by anything else do.
@@ -234,6 +245,7 @@ namespace BS
                 if (Has(PropertyName.teleportMaxRange)) settings.TeleportMaxRange = teleportMaxRange;
                 if (Has(PropertyName.enableBrowserStreaming)) settings.EnableBrowserStreaming = enableBrowserStreaming;
                 if (Has(PropertyName.enableUserUICollider)) settings.EnableUserUICollider = enableUserUICollider;
+                if (Has(PropertyName.enableMegaphone)) settings.EnableMegaphone = enableMegaphone;
                 if (Has(PropertyName.enableHandHold)) settings.EnableHandHold = enableHandHold;
                 if (Has(PropertyName.enableRadar)) settings.EnableRadar = enableRadar;
                 if (Has(PropertyName.enableNametags)) settings.EnableNametags = enableNametags;
@@ -271,6 +283,8 @@ namespace BS
                 settings.IsPhysicsSettingsLocked = true;
                 lockedPhysicsSettings = settings;
             }
+            // A latch: nothing unlocks it before the space is left or rejoined (BSSceneSettings.IsMegaphoneLocked).
+            if (isMegaphoneLocked && !settings.IsMegaphoneLocked) settings.IsMegaphoneLocked = true;
 
 #if !GREENFIELD_PROJECT
             if (!loggedSdkNote)

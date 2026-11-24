@@ -1,9 +1,12 @@
-// <mirror source="Assets/Systems/Networking/SyncedObjectSafetyNet.cs" sha256="ca9a97174115ed609866690b3a56913da530cf1a91ee82bdcf7d4b7e67ca42d9" mode="port" />
+// <mirror source="Assets/Systems/Networking/SyncedObjectSafetyNet.cs" sha256="77bca1fc822849de8b29039ee7d119aeeae371f173f8893350af55f24a6250e6" mode="port" />
 // SyncedObjectSafetyNet line for line (PacketPartyNetworkObject, PacketPartyGrabbable and PacketPartyHeldObject replaced
 // by LocalNetworkObject, LocalGrabbable and LocalHeldObject; GrabNetworkBridge.IsHeldLocally by LocalGrabNetworkBridge's).
 // Production's ISyncedObjectHold has one implementation, the attachment component (HoldsSyncedObject = !isDestroyed),
-// so the port reads its own Attachment directly. The threshold the module configures is -250, the value serialized on
-// Greenfield's SyncedObjectSystem (Assets/Scenes/Main.unity), not the -100 code default below.
+// so the port reads its own Attachment directly, and still finds it with GetComponentsInChildren every physics
+// step: production's InUse asks the list of live holds instead (SyncedObjectHolds, 2026-11-21: the walk cost
+// 0.88 ms a frame on a Quest owning 21 vehicles). Not ported; the walk's cost in an editor session is not measured.
+// The threshold the module configures is -250, the value serialized on Greenfield's SyncedObjectSystem
+// (Assets/Scenes/Main.unity), not the -100 code default below.
 using System;
 using System.Collections.Generic;
 using BS.LocalMultiplayer.Attachments;
@@ -174,16 +177,21 @@ namespace BS.LocalMultiplayer.Objects
                 return;
             }
 
+            // The transform as well as the body. A body-only write lands at the next physics step, and a world that
+            // holds or moves the object through its transform meanwhile undoes it before it is ever seen: parked cars
+            // with their own rest logic logged a reset and stayed where they were, while the same move written to
+            // the transform brought them home (measured in the app, 2026-11-21). No velocity on a kinematic body:
+            // it has none, and setting one only logs a warning.
+            transform.SetPositionAndRotation(_spawnPosition, _spawnRotation);
             if (_rigidbody != null)
             {
                 _rigidbody.position = _spawnPosition;
                 _rigidbody.rotation = _spawnRotation;
-                _rigidbody.linearVelocity = Vector3.zero;
-                _rigidbody.angularVelocity = Vector3.zero;
-            }
-            else
-            {
-                transform.SetPositionAndRotation(_spawnPosition, _spawnRotation);
+                if (!_rigidbody.isKinematic)
+                {
+                    _rigidbody.linearVelocity = Vector3.zero;
+                    _rigidbody.angularVelocity = Vector3.zero;
+                }
             }
 
             // Back where it was placed: a Kinematic If Not Owned body rests there again.

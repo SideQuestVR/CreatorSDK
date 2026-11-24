@@ -1,11 +1,15 @@
-// <mirror source="Assets/Systems/Networking/SyncedObjectPhysicsHandoff.cs" sha256="fcf76bba720d45d6575990f46b278ce7ac2637f7ee94894eb5991ae5b5668347" mode="port" />
+// <mirror source="Assets/Systems/Networking/SyncedObjectPhysicsHandoff.cs" sha256="a1764994e54ab842eb5a197d172ba59c49b2a5d5a91b4d42e94d7a60b75dc426" mode="port" />
 // SyncedObjectPhysicsHandoff line for line (PacketParty types replaced by LocalNetworkObject / LocalSyncedTransform).
 // The proximity trigger sits on a child GameObject on layer 2 (Ignore Raycast), as in production, where the child's
 // trigger messages reach this component through the object's Rigidbody; here HandoffTriggerForwarder passes them on,
 // so an object with no Rigidbody (a collision-ownership object) gets them too. Left out: the seat push (production's
 // part 4, with its rider checks, hand-back and driver reclaim), as SyncedObjectsModule.TakeForSeat leaves out the
-// seat-push handling; the GREENFIELD_PHYSICS_DEBUG diagnostics; and FlexaBody's ThrowFlight exception to the
-// collision-detection switch. Teardown gives the body back its authored speed limits, collision detection and colliders.
+// seat-push handling; the GREENFIELD_PHYSICS_DEBUG diagnostics; FlexaBody's ThrowFlight exception to the
+// collision-detection switch; and the tag handles in IsLocalPlayer (they spare the seat's range trigger a string per
+// overlap per step, and that trigger belongs to the seat push). Teardown gives the body back its authored spin limit,
+// collision detection and colliders. The take rule itself is SyncedObjectClaims.BodyMayTake without its ridden-seat
+// part, and the driver's reclaim (with who it lost the object to) belongs to the seat push, as does the hand-back and
+// its slower retry after a failure.
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -38,9 +42,10 @@ namespace BS.LocalMultiplayer.Objects
     ///    player) has its colliders off until it slows down and is clear of the local player: a kinematic body
     ///    pushes the player with unlimited force. Anything else someone else drives (an object authored kinematic,
     ///    like a spawner's copy; one held, attached or ridden) gets the same past <see cref="TeleportSpeed"/>, which no
-    ///    platform, vehicle or swung prop reaches. Where this player simulates the object, physics itself caps it at
-    ///    <see cref="TeleportSpeed"/> and <see cref="SnapSpin"/>, so one bad contact can't send it, and every copy of
-    ///    it, across the world.
+    ///    platform or swung prop reaches (a vehicle flown faster than that has no colliders for the other players
+    ///    while it is). Where this player simulates the object, physics itself caps its spin at
+    ///    <see cref="SnapSpin"/>. Its speed is NOT capped: it used to be, at <see cref="TeleportSpeed"/>, and that held
+    ///    every vehicle to the same speed. The body keeps the maxLinearVelocity its world gave it.
     ///
     /// Needs a Rigidbody for the physics parts; without one it just acquires on approach. Added by
     /// <see cref="SyncedObjectsModule"/>.
@@ -104,9 +109,8 @@ namespace BS.LocalMultiplayer.Objects
         private Vector3 _trackedSpin;
         // The author's collision detection, put back while this player simulates the object.
         private CollisionDetectionMode _authoredDetection;
-        // The author's speed limits, given back at teardown.
+        // The author's spin limit, given back at teardown.
         private bool _limitsApplied;
-        private float _authoredMaxLinearVelocity;
         private float _authoredMaxAngularVelocity;
 
         public void Configure(string[] localPlayerTags, bool collisionOwnership, bool proximityOwnership, float proximityMargin)
@@ -134,14 +138,12 @@ namespace BS.LocalMultiplayer.Objects
         private void Start()
         {
             if (!_live) return;
-            // Speed limits PhysX applies while this player simulates the object (owner, optimistic claim, offline).
-            // Only lowered: an author's tighter limit stays.
+            // The spin limit PhysX applies while this player simulates the object (owner, optimistic claim, offline).
+            // Only lowered: an author's tighter limit stays. maxLinearVelocity is left alone (no speed limit).
             if (_rigidbody != null)
             {
-                _authoredMaxLinearVelocity = _rigidbody.maxLinearVelocity;
                 _authoredMaxAngularVelocity = _rigidbody.maxAngularVelocity;
                 _limitsApplied = true;
-                _rigidbody.maxLinearVelocity = Mathf.Min(_rigidbody.maxLinearVelocity, TeleportSpeed);
                 _rigidbody.maxAngularVelocity = Mathf.Min(_rigidbody.maxAngularVelocity, SnapSpin);
                 _authoredDetection = _rigidbody.collisionDetectionMode;
             }
@@ -439,7 +441,7 @@ namespace BS.LocalMultiplayer.Objects
 
         /// <summary>
         /// Local multiplayer is stopping: remove the proximity child, give the body back its colliders, collision
-        /// detection and speed limits, and go inert.
+        /// detection and spin limit, and go inert.
         /// </summary>
         internal void Teardown()
         {
@@ -447,7 +449,6 @@ namespace BS.LocalMultiplayer.Objects
             if (_disabledColliders.Count > 0) RestoreColliders();
             if (_rigidbody != null && _limitsApplied)
             {
-                _rigidbody.maxLinearVelocity = _authoredMaxLinearVelocity;
                 _rigidbody.maxAngularVelocity = _authoredMaxAngularVelocity;
                 if (_rigidbody.collisionDetectionMode != _authoredDetection) _rigidbody.collisionDetectionMode = _authoredDetection;
                 _limitsApplied = false;

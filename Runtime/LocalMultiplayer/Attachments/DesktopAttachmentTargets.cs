@@ -1,4 +1,4 @@
-// <mirror source="Assets/Systems/Attachments/AttachmentsSystem.cs" sha256="548b5a4e1e011610ce98efbc5f65d6ca37eae658ee97ded74d47f69bf9e773d2" mode="port" />
+// <mirror source="Assets/Systems/Attachments/AttachmentsSystem.cs" sha256="09150bde1e0c4a8f4ac82f215becd7a949851d4a534d413b576488b344aa36ae" mode="port" />
 // DesktopAttachmentTargets is the switch of GetAttachmentTransform (:411-470) with FlexaBody's parts swapped for the
 // desktop rig's, lifted out so it is testable.
 using BS;

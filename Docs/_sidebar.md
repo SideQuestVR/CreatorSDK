@@ -10,6 +10,7 @@
   - [Layers](/building-in-unity/layers.md)
   - [Tags](/building-in-unity/tags.md)
   - [Easy Prefabs](/building-in-unity/easy-prefabs.md)
+  - [Seats](/building-in-unity/seats.md)
   - [Snippets](/building-in-unity/snippets.md)
   - [Platform Filter](/building-in-unity/platform-filter.md)
 - JavaScript API

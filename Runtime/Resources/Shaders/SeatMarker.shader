@@ -9,7 +9,9 @@ Shader "BS/Seat Marker"
     }
     SubShader
     {
-        Tags { "RenderPipeline" = "UniversalPipeline" "RenderType" = "Transparent" "Queue" = "Transparent" }
+        // Drawn over everything in the world (walls, the seat's own vehicle, glass, world UI panels): last in the
+        // transparent queue with no depth test. The client's menu draws after post-processing, so it stays on top.
+        Tags { "RenderPipeline" = "UniversalPipeline" "RenderType" = "Transparent" "Queue" = "Overlay" }
         Pass
         {
             Name "SeatMarker"
@@ -17,7 +19,7 @@ Shader "BS/Seat Marker"
             Blend SrcAlpha One
             Cull Off
             ZWrite Off
-            ZTest LEqual
+            ZTest Always
 
             HLSLPROGRAM
             #pragma vertex Vertex

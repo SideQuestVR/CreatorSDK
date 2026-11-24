@@ -131,6 +131,119 @@ namespace BS.SDKEditor.Tests
             }
         }
 
+        // The headset half: Quest 2 class against Quest 3 class, on Android only.
+
+        [TestCase("Oculus Quest 3", true)]
+        [TestCase("Oculus Quest 3S", true)]
+        [TestCase("Meta Quest 3", true)]
+        [TestCase("Quest3", true)]
+        [TestCase("Valve Steam Frame", true)]
+        [TestCase("Pico A9210", true)]        // Pico 4 Ultra
+        [TestCase("Oculus Quest 2", false)]
+        [TestCase("Oculus Quest Pro", false)]
+        [TestCase("Oculus Quest", false)]     // Quest 1
+        [TestCase("Pico A8110", false)]       // Pico 4
+        [TestCase("Pico A7H10", false)]       // Neo 3
+        [TestCase("Some New Headset", false)] // unknown: the lighter content
+        [TestCase("", false)]
+        [TestCase(null, false)]
+        public void TheDeviceClass_IsTheGpuGeneration(string model, bool highEnd)
+        {
+            Assert.AreEqual(highEnd, BSDeviceClass.IsHighEndStandalone(model), model);
+            Assert.AreEqual(!highEnd, BSDeviceClass.IsLowEndMobile(true, model), model);
+            Assert.IsFalse(BSDeviceClass.IsLowEndMobile(false, model), "never low-end off Android");
+        }
+
+        [Test]
+        public void TheHeadsetHalf_OnlyAppliesOnAndroid()
+        {
+            for (int bits = 0; bits < 4; bits++)
+            {
+                bool low = (bits & 1) != 0, high = (bits & 2) != 0;
+                Assert.IsTrue(BSPlatformFilter.IsHeadsetIncluded(false, false, low, high), $"PC hidden by low={low} high={high}");
+                Assert.AreEqual(low, BSPlatformFilter.IsHeadsetIncluded(true, true, low, high), "Quest 2 class");
+                Assert.AreEqual(high, BSPlatformFilter.IsHeadsetIncluded(true, false, low, high), "Quest 3 class");
+            }
+        }
+
+        [Test]
+        public void Quest3AndNewerOnly_ShowsOnlyThere()
+        {
+            // Android and high end ticked, PC and low end unticked.
+            bool Show(bool android, bool lowEnd) =>
+                BSPlatformFilter.ShouldShowOnDevice(android, true, lowEnd, true, false, true, true, false, true);
+            Assert.IsTrue(Show(true, false), "Quest 3");
+            Assert.IsFalse(Show(true, true), "Quest 2");
+            Assert.IsFalse(Show(false, false), "PC");
+        }
+
+        [Test]
+        public void ShouldShowOnDevice_IsAllThreeHalves()
+        {
+            for (int bits = 0; bits < 64; bits++)
+            {
+                bool mobile = (bits & 1) != 0, desktop = (bits & 2) != 0, inVR = (bits & 4) != 0, inNonVR = (bits & 8) != 0,
+                     low = (bits & 16) != 0, high = (bits & 32) != 0;
+                foreach (var device in Devices)
+                    foreach (var lowEnd in new[] { false, true })
+                    {
+                        bool expected = (device.android ? mobile : desktop) && (device.vr ? inVR : inNonVR)
+                                        && (!device.android || (lowEnd ? low : high));
+                        Assert.AreEqual(expected, BSPlatformFilter.ShouldShowOnDevice(device.android, device.vr, lowEnd,
+                            mobile, desktop, inVR, inNonVR, low, high), $"bits={bits} {device} lowEnd={lowEnd}");
+                    }
+            }
+        }
+
+        [TestCase(true, true, false)]
+        [TestCase(false, true, true)]
+        [TestCase(true, false, true)]
+        public void AHeadsetRestriction_NeedsTheDeviceToDecide(bool low, bool high, bool expected)
+        {
+            var go = new GameObject("PlatformFilterTests");
+            try
+            {
+                var filter = go.AddComponent<BSPlatformFilter>();
+                Assert.IsTrue(filter.includeOnLowEndMobile && filter.includeOnHighEndMobile, "both default on");
+                filter.includeOnLowEndMobile = low;
+                filter.includeOnHighEndMobile = high;
+                Assert.AreEqual(expected, filter.NeedsRuntimeCheck);
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        [Test]
+        public void OnPc_TheHeadsetBoxesHideNothing()
+        {
+            OnDevice(false, () =>
+            {
+                var go = new GameObject("PlatformFilterTests");
+                try
+                {
+                    var filter = go.AddComponent<BSPlatformFilter>();
+                    filter.includeOnLowEndMobile = false;
+                    filter.includeOnHighEndMobile = false;
+                    filter.StartStuff();
+                    Assert.IsTrue(go.activeSelf, "the headset half hid an object on PC");
+                }
+                finally
+                {
+                    Object.DestroyImmediate(go);
+                }
+            });
+        }
+
+        [Test]
+        public void OnALowEndHeadset_TheLowEndBoxDecides()
+        {
+            // The editor is never Android, so this goes through the static rule the filter applies.
+            Assert.IsFalse(BSPlatformFilter.ShouldShowOnDevice(true, true, true, true, true, true, true, false, true));
+            Assert.IsTrue(BSPlatformFilter.ShouldShowOnDevice(true, true, true, true, true, true, true, true, false));
+        }
+
         // The device-side half: Start applies the filter to the GameObject, a property change re-applies it, and the
         // filter never switches on an object something else switched off. In the Windows editor the scene answers
         // PC; IsVR comes from the hook these tests set.

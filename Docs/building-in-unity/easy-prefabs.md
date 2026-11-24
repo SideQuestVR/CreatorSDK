@@ -22,43 +22,19 @@ The teleport stops the player's velocity. A spawn added by a page script after t
 
 Clicking the seat sits the local player on it. Moving (the move stick or WASD) or jumping stands them up, unless `unseatOnMove` / `unseatOnJump` are off.
 
-Clicking another seat transfers the player directly to it. The previous seat's exit position is skipped when another seat has already been entered.
+The prefab is one GameObject: `BSSeat`, `BSAttachedObject`, `BSObjectId`, `BSPointerRange` and a trigger BoxCollider on the **UI layer**. Its origin is the sitting point, facing local **+Z**; place it at the top of your furniture's cushion. It has no solid collider or furniture mesh; keep physical collision on your actual furniture.
 
-The shared **Pointer Range** component defaults to **2 m** on seats; edit its **Distance** to change reach. This governs clicking, the hover marker, sit hint and targeting ray. Distance is measured from the player's head to the seat origin in world space, so a scaled visual or larger trigger does not increase reach. Leaving range before releasing the click cancels seating. Editor placement previews and scripted `Sit()` remain available at any distance.
+![A seat on a bench: ring, backrest arch and facing arrow](../images/seats/seat-marker.png)
 
-`BSSeat` sets up the `BSAttachedObject` beside it as a seat: Physics + AvatarAttachTo, jointed, `isSeat`, and never auto-attached. It also listens for clicks on the colliders it has when it starts (so add colliders before the seat when building one from a script) and adds a kinematic Rigidbody if there is none. Without one, the client would add a dynamic Rigidbody and the chair would fall.
+Select the seat to see a reference robot sitting on it, then pose it with **Edit Pose in Scene**. The [Seats](seats.md) page has the whole of it:
 
-Turn on **Use Exit Position**, select the seat, and drag the orange **Exit** point in the Scene view to place the player's feet when they get off (standing up, moving or jumping). This works in every seat mode without entering pose editing and supports Undo and prefab overrides. The exit stays relative to the seat, including its scale. Legacy faces the seat direction; upright modes preserve the player's viewing direction. With it off, the player is lifted 1 m above the seat with their speed cleared and drops back down.
+- [The Scene view gizmos](seats.md#the-seat-in-the-scene-view) and how to use each one: the marker, the robot, the pose points and the exit point.
+- [Posing the sitter](seats.md#pose-the-sitter): feet on the floor, presets and seated animations.
+- [View Rotation](seats.md#view-rotation): whether the player tips over with the seat or stays upright.
+- [Vehicles](seats.md#vehicles): several seats on one car, boat or plane.
+- [Troubleshooting](seats.md#troubleshooting).
 
-The prefab is one GameObject: `BSSeat`, `BSAttachedObject`, `BSObjectId`, `BSPointerRange` and a trigger BoxCollider. Its origin is the sitting point, facing local **+Z**; place it at the top of your furniture's cushion. The preset starts 0.48 m above its placement point. Its trigger box is on the **UI layer**: only the UI and Menu layers can be clicked, in the app and in Play mode. It has no solid collider or furniture mesh; keep physical collision on your actual furniture.
-
-**View Rotation** chooses how the seat carries the view and avatar:
-
-| Mode | View | Pelvis and legs |
-|---|---|---|
-| **Follow Seat** | Carries the view with the seat's full rotation. | Fixed to the authored pose and follow the seat's complete rotation. |
-| **Upright Follow Yaw** (default) | Follows seat position and left/right rotation, keeping seat pitch and roll out of the view. | Fixed to the authored pose and follow the seat's complete rotation. |
-| **Upright Independent** | Follows seat position while seat rotation does not turn the view. | Fixed to the authored pose and follow the seat's complete rotation. |
-
-**View Smoothing** (Follow Seat and Upright Follow Yaw, Unity Inspector only) is how many seconds the view takes to catch up with the seat's rotation, softening jitter and sharp turns on vehicles. The seat's position is never smoothed, so at higher values the cabin swings a little in the player's view. 0, the default, follows exactly. It is read when the player sits and needs a client that has it; the SDK's desktop Play Mode ignores it.
-
-Sitting aligns the player's viewing direction with the seat's forward direction. The upright modes use world **+Y** as up (or the direction against gravity, for players with Comfort > Gravity Tilting on) and align yaw while preserving physical head pitch and roll. Real head rotation and leaning still work normally; the camera is not forced level when the player physically tilts their head. Artificial VR snap/smooth turning is disabled while seated in these modes. Desktop mouse look and gamepad look remain available. The upper body follows tracked head and hands through IK; waist and foot tracking do not override the seat's pelvis and leg placement until the player stands.
-
-Select the seat with Scene view Gizmos enabled to see the full **base Robot** reference avatar with Basic shoes for judging foot placement. Enable **Editor Robot Preview**, then choose **Edit Pose in Scene**. Click the **Pelvis**, **Left sole**, **Right sole**, **Left knee**, or **Right knee** point in the Scene view, then use the Move (**W**) gizmo. Rotate (**E**) is available for the selected pelvis or foot. Unity's **Local/Global** toggle sets the Move gizmo's orientation. Knee points sit on the posed joints; moving them changes bend direction while preserving leg lengths and foot targets. **Reset Seated Pose** restores the default pose. **Save Preset…** writes the pose to a `.seatpose.json` file and **Load Preset…** replaces the seat's pose from one, with Undo; damaged, incomplete, wrong-kind or newer files are refused without changing the pose. Click **Folder…** to choose a preset folder for this project; **Folder Preset** then lists its seat presets, and selecting one loads it. Presets stay relative to the seat, so check foot height after loading onto different furniture. Open prefab assets in Prefab Mode to use scene handles; edits support Undo and prefab overrides.
-
-The pose stores pelvis and left/right **sole** positions and rotations, plus two knee hints. The default pelvis joint is **0.04 m** above the seat origin, placing the reference Robot's underside just above the seat plane. The default soles sit **0.60 m below** and **0.475 m forward** of the seat origin, giving the reference Robot nearly level thighs and naturally bent knees. Adjust sole height to suit the furniture and avatar proportions. Existing custom poses are preserved; Reset Seated Pose replaces the entire pose with the defaults. These offsets are metres in the seat's rotated coordinate frame: a 0.2 m pelvis offset stays 0.2 m if the furniture or its parent is scaled. The preview is a reference Robot, not a replacement for the player's chosen avatar. At runtime the avatar keeps its own limb lengths; targets outside its reach are clamped. A very short avatar, a large lean, or an upside-down chair can therefore leave feet or the rendered head short of their targets. The camera remains tracked, and reaching a limit does not automatically eject the player.
-
-View mode and pose are captured when the player sits. Changing them while occupied takes effect after standing and sitting again; moving or rotating the seat itself continues to carry its occupant. Configure the pose before using the seat. In SDK local multiplayer, late joiners or recreated preview avatars can use newly edited seat settings while existing observers retain the earlier pose; an unobserved stand-and-sit on the same seat cannot always be distinguished by that simulator. The production client streams the solved avatar bones instead.
-
-The seat ring, backrest and facing arrow use the shared marker material in the Scene view (Gizmos enabled), respect hidden objects and Prefab Mode, and stay out of the Game view while editing. During play, **Show Seat Hologram** controls this marker and the sit hint; it keeps the existing `ShowRuntimeVisual` setting and defaults on. **Show Leg Hologram** independently shows the posed Robot pelvis, legs and Basic shoes and defaults off. Either, both, or neither can be enabled. Runtime holograms appear only while the local player targets an empty seat within interaction range, and hide when occupied. They are visual aids: hiding them does not disable the collider, sitting, or the editor preview. The client uses **Trigger to sit** (XR) or **Click to sit** (desktop); the SDK desktop simulator uses **Click to sit**.
-
-The SDK ships the model at `Runtime/Resources/CreatorConveniences/Models/Seat.fbx` and its shared `Materials/SeatMarker` material. The SDK model is used by both editor previews and runtime. Vertex colors identify the ring (red), backrest (green) and arrow (blue). The texture-free, single-pass seat marker shader uses those masks for color and the authored UV spacing for a gentle traveling highlight. A double-sided additive glow fades vertically along the backrest and softly across the ring/arrow strips, with no bloom requirement. The shader bobs the ring 1–2.5 cm above its mesh; on hover the arrow eases from a 10 cm lift down to 1.5 cm over 0.25 seconds. Keep the full UV values, including V coordinates outside 0–1. One cached mesh and material serve every seat; a cached per-seat property block supplies the hover press without modifying that shared material. The glow uses ordinary depth testing, no depth writes and no shadows; the marker sits 0.015 m above the seat origin. The SDK and client must both contain this seat version; no extra visual component or custom world script is required.
-
-When updating older prefab instances, the sitting origin has moved from the `SitPoint` child onto the root. Check existing placement and transform overrides so the root remains at cushion height. Preserve the existing `BSObjectId`; do not regenerate interaction identities to migrate a seat.
-
-In SDK Play Mode, clicking the seat sits the desktop player. **Space** stands them up (unless they're holding something, when Space is the held object's primary button), and so does moving while flying (right mouse + WASD).
-
-For scripts and graphs, see [Seat API](../components/player-setup.md#seat). Upright-view comfort, moving-seat behavior on real PCVR/Quest hardware, and real two-client behavior have **not yet been validated**. Editor checks and the Robot preview do not establish headset comfort; translation and yaw-following can still produce uncomfortable motion.
+For scripts and graphs, see [Seat API](../components/player-setup.md#seat).
 
 ## Teleporter (`BSTeleporter`)
 
@@ -82,9 +58,10 @@ Sets the space's settings from the scene:
 
 - abilities: teleport, force grab (distance grab), spider-man, bird flight, running, hand holding, radar, name tags, portals, guests. Distance grab, bird flight and running are on unless you turn them off here
 - the furthest players can teleport (Teleport Max Range, in metres; 0 leaves it to each player), and whether players may stream their menu browser into the space (on unless you turn it off)
+- the megaphone: whether anyone can turn their own on (off unless you turn it on), and a lock that keeps it to moderators until the player leaves
 - refresh rate and clipping planes
 - player physics
-- the two locks
+- the locks (settings, physics, megaphone)
 
 They are applied when the space loads, again when the page reloads, and whenever a property changes. Spawn point, occupancy, avatars and dev tools are not included. Use one per scene.
 

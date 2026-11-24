@@ -131,7 +131,20 @@ namespace BS
             }
             try
             {
-                GameObject asset = KitBundle.LoadAsset<GameObject>(loadPath);
+                // Asynchronous: Unity then reads the prefab and what it references (a large Visual Scripting graph asset
+                // parses for seconds) on its loading thread instead of stalling a frame on this one.
+                var loadTimer = System.Diagnostics.Stopwatch.StartNew();
+                var bundle = KitBundle;
+                var request = bundle.LoadAssetAsync<GameObject>(loadPath);
+                await request;
+                if (this == null) return;
+                if (!ReferenceEquals(KitBundle, bundle)) { SetLoadedIfNot(false, "KitItem '" + loadPath + "': its bundle changed while loading."); return; }
+                GameObject asset = request.asset as GameObject;
+                if (asset == null) { SetLoadedIfNot(false, "Kititem not found at path: " + loadPath); return; }
+                // A second setup may have finished while this one waited: never leave two copies.
+                if (item != null) { scene.kitItems.Remove(item); Destroy(item); item = null; }
+                long loadMs = loadTimer.ElapsedMilliseconds;
+                loadTimer.Restart();
                 // Judged on the asset, before any copy exists, so every instance inherits it (BSUnityEventGuard); a
                 // prefab that fails throws, refusing the item. A reloaded asset is a new object and is judged again.
                 BSUnityEventGuard.SanitizePrefab(asset, loadPath);
@@ -169,6 +182,8 @@ namespace BS
                     }
                 }
 
+                if (loadMs + loadTimer.ElapsedMilliseconds > 250)
+                    Debug.Log($"[BSKitItem] '{loadPath}': asset load {loadMs} ms (off the main thread), instantiate {loadTimer.ElapsedMilliseconds} ms.");
                 SetLoadedIfNot();
             }
             catch (Exception e)

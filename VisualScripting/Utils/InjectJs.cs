@@ -27,6 +27,13 @@ namespace BS.VisualScripting
             {
                 var code = flow.GetValue<string>(jsCode);
                 var returnCode = flow.GetValue<string>(returnId);
+                // BS (perf): with no Return ID nobody listens for the result, so ask for no reply at all
+                // (SdkPerf.InjectJsNoReplyWithoutId): one bridge crossing instead of two, and no callback dispatch.
+                if (SdkPerf.InjectJsNoReplyWithoutId && string.IsNullOrWhiteSpace(returnCode))
+                {
+                    BSScene.Instance().link.pipe.view.EvaluateJS(code, null);
+                    return outputTrigger;
+                }
                 BSScene.Instance().link.pipe.view.EvaluateJS(code,
                     s =>
                     {

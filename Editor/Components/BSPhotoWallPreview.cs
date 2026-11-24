@@ -23,8 +23,8 @@ namespace BS.SDKEditor
         static readonly PhotoWallGeometry Geometry = new PhotoWallGeometry();
         static readonly List<PhotoWallCard> Cards = new List<PhotoWallCard>();
         static readonly List<BSPhotoWall> Gone = new List<BSPhotoWall>();
-        static BSPhotoWall[] stageWalls = System.Array.Empty<BSPhotoWall>(); // Scene view
-        static BSPhotoWall[] mainWalls = System.Array.Empty<BSPhotoWall>();  // Game view
+        static BSPhotoWall[] stageWalls = System.Array.Empty<BSPhotoWall>();
+        static BSPhotoWall[] mainWalls = System.Array.Empty<BSPhotoWall>();
         static bool wallsDirty = true;
         static Texture2D placeholder;
         static GUIStyle labelStyle;
@@ -143,7 +143,6 @@ namespace BS.SDKEditor
             }
         }
 
-        // A sunset over hills.
         static Texture2D Placeholder
         {
             get

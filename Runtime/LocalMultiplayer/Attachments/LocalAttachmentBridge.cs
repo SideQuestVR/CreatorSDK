@@ -1,4 +1,4 @@
-// <mirror source="Assets/Systems/Attachments/AttachmentNetworkBridge.cs" sha256="5e1e451efe01a98d1414f1fe228ebe8142120631915a2ae1f7265c12fdb9df00" mode="port" />
+// <mirror source="Assets/Systems/Attachments/AttachmentNetworkBridge.cs" sha256="4ee507df371f0adfdc5604a5862ef2544a96742bacc37e5221bb379b50c5f8e9" mode="port" />
 // AttachmentNetworkBridge (:27-391) with PacketParty swapped for the relay session, line by line. Substitutions:
 //   NetworkService.SetLocalUserState(key, value)        -> ILocalSession.SetEngineUserState (EditableOwnUserState)
 //   NetworkService.TryGetLocalHipBone                   -> ILocalRig.HipPosition / HipRotation, the desktop rig's hip
@@ -8,6 +8,10 @@
 //   RemoteAvatarService.TryGetRemoteBone / SetPilotSeat -> IRemoteBoneSource, the orb avatars
 //   BSSeat / SyncedObjectSystem rider resolvers         -> IsOccupiedByOther, from the pilots received (the synced-object
 //                                                          module asks BSSeat)
+//                                                          (production's RemoteRiderOf asks first whether anyone else
+//                                                          publishes a seat at all; nothing to port in this bridge. The
+//                                                          port's own seat walk is SyncedObjectsModule.HasOtherRider,
+//                                                          once per take, not periodic)
 //   Start / OnDestroy / Update                          -> Start / Stop / Update, driven by AttachmentModule
 //   RemoteAvatarTearingDown                             -> PeerLeft: an orb is never reloaded, but it goes with a peer
 //                                                          whose socket closed. The relay keeps their user state for
@@ -21,6 +25,9 @@
 // waiting diagnostics read the object first) and the profiler markers.
 // Added, diagnostics only (behaviour unchanged): instructions pending over 3 s for an object or seat this scene
 // lacks, and Ids that make user-state paths the room refuses.
+// Reviewed 2026-11-20 and not ported: production now publishes the pilot offset from LateUpdate, against the seat pose
+// its avatar was posed on (PilotOffset), and skips the frame of sitting. Those correct a posed avatar's hip read a
+// frame late; the desktop rig here works its hip out from the seat when it is read, so the offset is already constant.
 using System;
 using System.Collections.Generic;
 using BS;
@@ -70,6 +77,8 @@ namespace BS.LocalMultiplayer.Attachments
         // race, so no mid-air freeze.
         private string _localPilotSeatId;
         private Transform _localSeatTf;
+        // The seat's object was found once: if it is gone afterwards, it was destroyed under the player.
+        private bool _localSeatResolved;
         private readonly PilotBroadcastGate _gate = new PilotBroadcastGate();
 
         // Diagnostics only: since when each instruction waits.
@@ -181,12 +190,14 @@ namespace BS.LocalMultiplayer.Attachments
                 CheckSeatId(seatObjId);
                 _localPilotSeatId = seatObjId;
                 _localSeatTf = null; // resolved lazily (the object may not exist the frame we sit)
+                _localSeatResolved = false;
                 _gate.ForceNextSend(); // force the first publish
             }
             else
             {
                 _localPilotSeatId = null;
                 _localSeatTf = null;
+                _localSeatResolved = false;
                 SetLocalUserState(PilotKey, string.Empty);
             }
         }
@@ -198,9 +209,18 @@ namespace BS.LocalMultiplayer.Attachments
         {
             if (_localSeatTf == null)
             {
+                // Found before and gone now: the seat was destroyed under the player (its scene unloaded). Nothing
+                // unseats them through the attachment then, so every other player kept them on that seat (as the
+                // client's BroadcastLocalPilot).
+                if (_localSeatResolved)
+                {
+                    OnLocalPilotChanged(null, false);
+                    return;
+                }
                 var seat = _scene != null ? _scene.GetObjectByBid(_localPilotSeatId) : default;
                 if (seat.gameObject == null) return; // seat object not present yet
                 _localSeatTf = seat.gameObject.transform;
+                _localSeatResolved = true;
             }
             var rig = Rig;
             if (rig == null) return; // no local rig (production: avatar not loaded yet)

@@ -25,6 +25,8 @@ namespace BS
             attachment = attachment.WithoutPhysicsOnPlayer();
             var go = attachment.attachedObject.gameObject;
             if (go == null || !IsLocalUser(attachment.uid)) return;
+            // A Ride Zone moves nobody: what it does (others draw the rider on the platform) is the app's networking.
+            if (attachment.avatarAttachmentType == AvatarAttachmentType.RideZone) return;
             if (attachment.avatarAttachmentType == AvatarAttachmentType.AvatarAttachTo)
             {
                 SeatLocalUser(attachment, go);
@@ -48,6 +50,7 @@ namespace BS
 
         static void Detach(BSAttachment attachment)
         {
+            if (attachment.avatarAttachmentType == AvatarAttachmentType.RideZone) return;
             var go = attachment.attachedObject.gameObject;
             if (attachment.avatarAttachmentType == AvatarAttachmentType.AvatarAttachTo)
             {

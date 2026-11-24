@@ -86,6 +86,7 @@ Its buttons:
 - **Roles come from the settings**, not from SideQuest: the world owner and moderators are the slots you pick.
 - **The app's own behaviours are kept on purpose**, so what works here works there: one-shots never come back to their sender, `syncPosition` is ignored, and so on. The overlay notes each one the first time it happens.
 - **Changing a script during Play stops local multiplayer.** Stop Play and press it again.
+- **`user-leaving` (On User Leaving) never fires:** a player never leaves your world here (`LoadUrl` and portals stay put) and stopping Play doesn't count. Test it in the app.
 - **Projects with the FlexaBody package** aren't supported.
 - **Each player is a whole editor plus its own browser**, so four players need a capable computer.
 

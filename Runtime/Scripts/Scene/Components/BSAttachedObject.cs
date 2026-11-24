@@ -73,7 +73,7 @@ namespace BS
         [HideWhen(nameof(avatarAttachmentType), AvatarAttachmentType.AttachToAvatar)]
         [See(initial = "0")][SerializeField] internal AttachmentType attachmentType = AttachmentType.Physics;
 
-        [Tooltip("Select if an object is attached to the player or the player to an object.")]
+        [Tooltip("Attach To Avatar: this object goes on the player. Avatar Attach To: the player goes on this object (a seat or vehicle). Ride Zone: a moving platform; while the player is inside this object's trigger colliders, other players draw them relative to it (nothing holds them on: friction does).")]
         [See(initial = "0")][SerializeField] internal AvatarAttachmentType avatarAttachmentType = AvatarAttachmentType.AttachToAvatar;
 
         [Tooltip("Bone of the player the object attaches to.")]
@@ -130,7 +130,8 @@ namespace BS
         internal override void StartStuff()
         {
             UpdateCallback(null);
-            if (attachment.autoAttach)
+            ArmRideZone(); // Ride Zone mode: attaches itself while the local player is inside its triggers
+            if (attachment.autoAttach && !IsRideZone)
             {
                 _Attach(attachment.uid);
                 Debug.Log("Auto-attaching object to uid: " + attachment.uid + " with attachment oid: " + oid + " " + BSScene.Instance().GetObject(oid) + " go: " + BSScene.Instance().GetGameObject(oid));

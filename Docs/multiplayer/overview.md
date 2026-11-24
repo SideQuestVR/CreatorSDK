@@ -26,7 +26,7 @@ Players join the room once the space has loaded, and leave it when they leave th
 | `id` | The player's session id for this visit. One-shots name their sender by it (`fromId`). Your own `id` reads `"local"` until you've joined the room, then updates in place. |
 | `name` | Display name. |
 | `isLocal` | `true` for you. |
-| `isSpaceAdmin` | The space's owner, a SideQuest admin, or (in a community space) one of its moderators. For other players it only covers a world's owner for now. Graphs read it as it was when the player joined; pages get later changes in place. Use it to decide what to show, not to protect anything: a modified client can claim it. |
+| `isSpaceAdmin` | The space's owner, a SideQuest admin, or an Owner or Moderator of the world's group (in a community space, of that community). For other players it only covers a world's owner for now. Graphs read it as it was when the player joined; pages get later changes in place. Use it to decide what to show, not to protect anything: a modified client can claim it. |
 | `color` | `"4488FF"` for you and `"AAAAAA"` for everyone else. It isn't the avatar's colour. |
 
 ## Synced objects
@@ -104,13 +104,27 @@ There is no event when ownership changes.
 
 !> Turn `takeOwnershipOnCollision` and `takeOwnershipOnProximity` off on kinematic objects such as vehicles and moving platforms. Walking into or near one claims it and turns its Rigidbody dynamic, so it starts to fall and be pushed around.
 
+The same two settings decide what happens to an object while someone sits on it. With `takeOwnershipOnCollision` on, another player who touches it takes it for as long as they touch it, so they can push it (a swing with someone on it), and it goes back to its rider a second after the last touch. With it off, nobody takes a ridden object by touching it or standing on it: turn it off on anything that is driven, such as a car or an aircraft. Coming close never takes a ridden object.
+
 ### Spawned copies
 
 A [Spawner Object](../components/special.md#spawnerobject) hands out synced copies of itself. They behave like any synced object above, with three differences: each copy's id comes from the server, so you don't set one; a copy is removed when its owner leaves rather than passed on; and the number of copies per spawner is capped (`maxSpawned`). Grabbing the spawner puts the copy in your hand at once; the other players see it after one round trip to the server.
 
 ### Attachments and seats
 
-A [BS Attached Object](../components/vr-interaction.md#attachedobject) attached to your avatar with **Auto Sync** on is shown on your avatar to the other players, and players sitting on a [seat](../building-in-unity/easy-prefabs.md#seat-bsseat) are shown seated. Each player attaches their own copy of the object, so it must be in the scene with a stable [BSObjectId](#bsobjectid), and it shouldn't also be a synced object.
+A [BS Attached Object](../components/vr-interaction.md#attachedobject) attached to your avatar with **Auto Sync** on is shown on your avatar to the other players, and players sitting on a [seat](../building-in-unity/seats.md) are shown seated. Each player attaches their own copy of the object, so it must be in the scene with a stable [BSObjectId](#bsobjectid), and it shouldn't also be a synced object.
+
+#### Vehicles with several seats
+
+Put the seats under one object that has the Rigidbody and the Synced Object: a car, a boat, a plane. The first player to sit drives it (they become its owner); everyone who sits after rides as a passenger. A vehicle with a driver's seat says who drives it itself: call `TakeOwnership()` on the vehicle from the player who took that seat (in the seat's click handler or a Visual Scripting **On Click**). That player then drives it whoever sat first, and a rider who was driving it becomes a passenger a few seconds later. Each player keeps every rider exactly on their seat on their own copy of the vehicle, so riders stay with the vehicle and with each other at any speed, upside down included.
+
+- **A vehicle that tilts or flips:** set its seats' **View Rotation** to **Follow Seat**, so each rider's view and whole body turn over with it. The default, Upright Follow Yaw, keeps the head upright, which is right for a car and wrong for a loop.
+- **Move it in Update or FixedUpdate:** physics, a kinematic Rigidbody with `MovePosition`, an animation, a script's `SetTransform`, a Visual Scripting **On Update** all carry their riders in the same frame. A vehicle moved in **Late Update** is seen a moment late by the player driving it (they sit well behind their seat at speed).
+- **Don't teleport it with riders on it.** A jump of tens of metres in one frame throws the riders' bodies and they are put back on the ground, off the seat. Stand them up first (each player's own `seat.Stand()`), or fly it there rather than jumping it.
+- **Hands** are physical bodies and lag a fast vehicle: a passenger's arms reach back behind them at speed (about a third of a metre at 10 m/s, a full arm's length by 20 m/s). Bodies, heads and name tags do not lag.
+- A seat needs nothing of its own for this: no Rigidbody, and its click collider can be on the seat or on a child.
+
+Setting the seats up, the Scene view gizmos and what was measured are on the [Seats](../building-in-unity/seats.md#vehicles) page.
 
 ## BSObjectId
 
@@ -206,8 +220,8 @@ window.addEventListener("bs-loaded", () => {
 
 - **Your own writes come back to you** as changes, so do the work in the change handler, not straight after writing. Then a player who arrives later runs the same code.
 - **Arriving players get everything:** when you join, `space-state-changed` fires with every value.
-- **It outlives the visit.** Space state is kept until 24 hours after the last change, whether or not anyone is in the space. Reading it, or joining, doesn't extend that.
-- **Public** values can be written by anyone in the room. **Protected** values can be written only by the world's owner, an Owner or Moderator of the community hosting it, or a SideQuest admin, and only while signed in. Anyone can read both. Once a key has been written as protected it stays protected; see [What "protected" means](../javascript-api/scene-api.md#what-quotprotectedquot-means).
+- **It outlives the visit.** Space state is kept until 24 hours after the last change, whether or not anyone is in the space. Reading it, or joining, doesn't extend that. To leave it tidy, the last player out can reset it from the [`user-leaving`](../javascript-api/scene-events.md#leaving) event (On User Leaving in Visual Scripting). That event doesn't fire on a crash, a dropped connection or a Quest app closed from the system, so the next visitor should still check for a game left behind.
+- **Public** values can be written by anyone in the room. **Protected** values can be written only by the world's owner, an Owner or Moderator of the world's group (in a community space, of that community), or a SideQuest admin, and only while signed in. A group manager who is banned from the world can't. Anyone can read both. Once a key has been written as protected it stays protected; see [What "protected" means](../javascript-api/scene-api.md#what-quotprotectedquot-means).
 - `SetPublicSpaceProps` and `SetProtectedSpaceProps` take strings. `SpaceStateSet`, `SpaceStateMerge` and `SpaceStateDelete` take real JSON values and nested paths, and reject with an error you can catch. See [JSON space state](../javascript-api/scene-api.md#json-space-state), [Limits](../javascript-api/scene-api.md#limits) and [State Events](../javascript-api/scene-events.md#state-events).
 
 ## User state
@@ -240,7 +254,7 @@ window.addEventListener("bs-loaded", () => {
 | Synced object | Its owner | Everyone | While anyone is in the room | Its current position |
 | One-shot | Anyone in the room | Everyone else in the room now | Not kept | Nothing |
 | Public space state | Anyone | Everyone | 24 h after the last change | Every value |
-| Protected space state | The world's owner, community Owners and Moderators, SideQuest admins | Everyone | 24 h after the last change | Every value |
+| Protected space state | The world's owner, Owners and Moderators of the world's group or community, SideQuest admins | Everyone | 24 h after the last change | Every value |
 | User state | The player it belongs to | Everyone | Until 30 s after the player leaves | Everyone's values |
 
 ## Shared time
