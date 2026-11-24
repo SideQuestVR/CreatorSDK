@@ -1791,6 +1791,15 @@ namespace BS
             }
             PushLoadProgress(loadedCount, totalCount, combinedPercentage);
         }
+        /// <summary>"BSAssetBundle on 'World' failed: ..." for the loading screen and the failure event.</summary>
+        internal static string DescribeComponentFailure(UnityEngine.Object comp, GameObject go, string message)
+        {
+            string type = comp != null ? comp.GetType().Name : "A component";
+            string where = go != null ? $" on '{go.name}'" : "";
+            string why = string.IsNullOrWhiteSpace(message) ? "no reason given" : message.Trim();
+            return $"{type}{where} failed: {why}";
+        }
+
         public void RegisterComponentOnMainThread(GameObject go, BSComponentBase comp)
         {
             var obj = go.GetComponent<BSObjectId>();
@@ -1814,7 +1823,7 @@ namespace BS
                             // Fails the load only while the load is still waiting for this component (BSLoadGate).
                             if (FailureCancelsCurrentLoad(cid, banterComp))
                             {
-                                Cancel(message, false);
+                                Cancel(DescribeComponentFailure(comp, go, message), false, SceneLoadFailureKind.ComponentFailed);
                             }
                             else
                             {
@@ -3140,14 +3149,24 @@ namespace BS
             CancelFor(loadUrlTaskCompletionSource, message, isUserCancel);
         }
 
-        /// <summary><see cref="Cancel"/>, asked while <paramref name="owningLoad"/> was the load in progress.</summary>
-        internal void CancelFor(TaskCompletionSource<bool> owningLoad, string message, bool isUserCancel)
+        /// <summary>
+        /// Fails the load in progress, saying what kind of failure it was (<see cref="BSSceneEvents.OnLoadFailed"/>).
+        /// <paramref name="title"/>, when given, is the loading screen's heading instead of "Loading failed".
+        /// </summary>
+        public void Cancel(string message, bool isUserCancel, SceneLoadFailureKind kind, string title = null, int netErrorCode = 0)
+        {
+            CancelFor(loadUrlTaskCompletionSource, message, isUserCancel, kind, title, netErrorCode);
+        }
+
+        /// <summary><see cref="Cancel(string, bool)"/>, asked while <paramref name="owningLoad"/> was the load in progress.</summary>
+        internal void CancelFor(TaskCompletionSource<bool> owningLoad, string message, bool isUserCancel,
+            SceneLoadFailureKind kind = SceneLoadFailureKind.Other, string title = null, int netErrorCode = 0)
         {
             if (!UnityGame.OnMainThread)
             {
                 UnityMainThreadTaskScheduler.Default.Enqueue(TaskRunner.Track(() =>
                 {
-                    CancelFor(owningLoad, message, isUserCancel);
+                    CancelFor(owningLoad, message, isUserCancel, kind, title, netErrorCode);
                 }, $"{nameof(BSScene)}.{nameof(Cancel)}"));
                 return;
             }
@@ -3158,6 +3177,10 @@ namespace BS
                 LogLine.Do("[LOADING] Ignored a cancel meant for a load a newer one replaced: " + BSLoadGate.Printable(message));
                 return;
             }
+            // Whether this ends a load still in progress: not a world that is open (its page navigating somewhere dead, a
+            // setting changed later), nor a load that already failed. No load at all (the boot gate) counts: the player is
+            // on the loading screen with nothing to show.
+            bool endsALoad = owningLoad == null || loading || !owningLoad.Task.IsCompleted;
             loaded = true;
             loading = false;
             UnityMainThreadTaskScheduler.Default.SetLoading(false); // the failure screen needs no 25 ms passes
@@ -3165,9 +3188,20 @@ namespace BS
             loadUrlTaskCompletionSource?.TrySetException(new SceneLoadFailedException(message, isUserCancel));
             loadUrlTaskCompletionSource?.TrySetCanceled();
             state = SceneState.LOAD_FAILED;
-            loadingManager?.SetLoadProgress(isUserCancel ? "Loading Cancelled" : "Loading failed", 0, message, true);
-            LogLine.Do(isUserCancel ? "Loading Cancelled" : "Loading failed");
+            if (isUserCancel) kind = SceneLoadFailureKind.UserCancel;
+            var heading = !string.IsNullOrEmpty(title) ? title : isUserCancel ? "Loading Cancelled" : "Loading failed";
+            loadingManager?.SetLoadProgress(heading, 0, message, true);
+            LogLine.Do($"{heading} ({kind}): {BSLoadGate.Printable(message)}");
             loadingManager?.UpdateCancelText();
+            if (!endsALoad) return;
+            try
+            {
+                events?.OnLoadFailed.Invoke(new SceneLoadFailure(CurrentUrl, kind, message, title, netErrorCode));
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
         }
         public void ResetLoadingProgress()
         {
@@ -3304,7 +3338,7 @@ namespace BS
                 string.Format(MissingWorldLabelFormat, shownUrl), MissingWorldSpawnPoint);
             if (pageUrl == null)
             {
-                Cancel("That world couldn't be found.");
+                Cancel("That world couldn't be found.", false, SceneLoadFailureKind.NotFound);
                 return Task.CompletedTask;
             }
             LoadingStatus = MissingWorldLoadingStatus;
@@ -3427,7 +3461,13 @@ namespace BS
                 catch (Exception e)
                 {
                     LogLine.Err($"[LOADING] LoadUrl body threw for {displayUrl}: {e}");
+                    // Finished already: it succeeded, or a Cancel failed it and said why.
+                    bool endedAlready = tcs.Task.IsCompleted;
                     tcs.TrySetException(e);
+                    // A faulted load used to leave the cage shut with no failure shown: fail it properly, so the
+                    // loading screen says so and the app can tell the player (CancelFor ignores a superseded load).
+                    if (!endedAlready && Application.isPlaying)
+                        CancelFor(tcs, "Unexpected error while loading: " + e.Message, false, SceneLoadFailureKind.Exception);
                 }
                 finally
                 {

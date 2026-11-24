@@ -220,7 +220,7 @@ namespace BS
                 {
                     scene.LoadingStatus = "Loading canceled, falling back to lobby";
                     LogLine.Do("Taking you to your home...");
-                    scene.Cancel("User cancelled loading", true);
+                    scene.Cancel("User cancelled loading", true, SceneLoadFailureKind.UserCancel);
                     UnityMainThreadTaskScheduler.Default.Enqueue(TaskRunner.Track(() => scene.events.OnLoadUrl.Invoke(BSScene.ORIGINAL_HOME_SPACE), $"{nameof(BSStarterUpper)}.{nameof(CancelLoading)}.LoadingCanceled"));
                 }
 

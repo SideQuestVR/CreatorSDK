@@ -66,6 +66,11 @@ public class BSSceneEvents
     /// scene is now loading the missing-world fallback instead. Argument: the URL that was asked for.
     /// </summary>
     public UnityEvent<string> OnMissingWorldFallback = new UnityEvent<string>();
+    /// <summary>
+    /// The load in progress failed (<see cref="BSScene.Cancel(string, bool, SceneLoadFailureKind, string, int)"/>) and the
+    /// loading screen now shows the failure. Raised once per failed load, on the main thread, after the scene's state changed.
+    /// </summary>
+    public UnityEvent<SceneLoadFailure> OnLoadFailed = new UnityEvent<SceneLoadFailure>();
     public UnityEvent<string, string, bool> OnJsCallbackRecieved = new UnityEvent<string, string, bool>();
     public UnityEvent<string, string> OnAvatarSet = new UnityEvent<string, string>();
     public UnityEvent<string, string> OnGuestAvatarSet = new UnityEvent<string, string>();

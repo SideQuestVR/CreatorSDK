@@ -128,12 +128,16 @@ namespace BS
                 // Likewise the replaced page's 4:20 timer must not cancel the new load.
                 if (scene.state == SceneState.NONE) return;
                 scene.state = SceneState.LOAD_FAILED;
-                scene.Cancel("No objects yet after 4:20 seconds, failing...");
+                scene.Cancel("The world's page created nothing in 4 min 20 s.", false, SceneLoadFailureKind.NothingLoaded);
             }
             else if (msg.StartsWith(APICommands.LOAD_FAILED))
             {
                 scene.state = SceneState.LOAD_FAILED;
-                scene.Cancel("The web page failed to load!");
+                // The page may say why after the delimiter; the bare command has no data.
+                var prefix = APICommands.LOAD_FAILED + MessageDelimiters.PRIMARY;
+                var why = msg.Length > prefix.Length && msg.StartsWith(prefix) ? msg.Substring(prefix.Length).Trim() : "";
+                scene.Cancel(string.IsNullOrEmpty(why) ? "The world's page reported that it failed to load." : "The world's page failed to load: " + why,
+                    false, SceneLoadFailureKind.PageFailed);
             }
             else if (msg.StartsWith(APICommands.ENABLE_LEGACY))
             {

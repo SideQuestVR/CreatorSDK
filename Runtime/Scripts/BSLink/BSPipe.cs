@@ -43,14 +43,59 @@ public class BSPipe
         try
         {
             var payload = JsonUtility.FromJson<LoadFailedPayload>(data);
-            return payload != null && payload.code == ErrAborted;
+            // -3 is ERR_ABORTED only on Windows (Chromium's codes); Android's WebViewClient numbers differ, and its
+            // description carries the same "net::ERR_ABORTED" name.
+            return payload != null && (payload.code == ErrAborted
+                || (payload.description != null && payload.description.IndexOf("ERR_ABORTED", StringComparison.Ordinal) >= 0));
         }
         catch
         {
             return false;
         }
     }
-    public CountingLogger IncomingLogger = new CountingLogger("Pipe: Web -> Unity");
+    /// <summary>
+    /// The browser's loadFailed payload in words: "Couldn't open example.com: net::ERR_NAME_NOT_RESOLVED (-105)".
+    /// <paramref name="code"/> is the browser's own number: Chromium's net error on Windows, WebViewClient's ERROR_*
+    /// on Android, so the ERR_ name in the description is what identifies the failure on both. Older Ora builds sent
+    /// the bare URL.
+    /// </summary>
+    internal static string DescribeLoadFailed(string data, out int code)
+    {
+        code = 0;
+        string url = null, description = null;
+        if (!string.IsNullOrEmpty(data))
+        {
+            try
+            {
+                var payload = JsonUtility.FromJson<LoadFailedPayload>(data);
+                if (payload != null)
+                {
+                    url = payload.url;
+                    code = payload.code;
+                    description = payload.description;
+                }
+            }
+            catch
+            {
+                url = data;
+            }
+        }
+        string where = url;
+        if (!string.IsNullOrEmpty(url) && Uri.TryCreate(url, UriKind.Absolute, out var uri) && !string.IsNullOrEmpty(uri.Host))
+            where = uri.Host;
+        // No host (a data: or file: page): the start of it is enough.
+        if (where != null && where.Length > 80) where = where.Substring(0, 79) + "…";
+        if (string.IsNullOrWhiteSpace(where) && string.IsNullOrWhiteSpace(description) && code == 0)
+            return "The web page failed to load!";
+        var text = string.IsNullOrWhiteSpace(where) ? "Couldn't open the world's page" : "Couldn't open " + where;
+        if (!string.IsNullOrWhiteSpace(description))
+            text += ": " + description.Trim() + (code != 0 ? $" ({code})" : "");
+        else if (code != 0)
+            text += $" (error {code})";
+        return text;
+    }
+
+    public CountingLogger IncomingLogger =new CountingLogger("Pipe: Web -> Unity");
     public CountingLogger OutgoingLogger = new CountingLogger("Pipe: Unity -> Web");
 
     // The space view starts on about:blank. On Windows, Ora's Electron injects the SDK into that document too, but it
@@ -78,9 +123,9 @@ public class BSPipe
     {
         manager?.browserConnected.AddListener(() => connectedCallback());
         // A load in progress fails rather than waits for a browser that isn't coming.
-        manager?.browserFailed.AddListener(reason => { if (link.scene != null && link.scene.loading) link.scene.Cancel(reason); });
+        manager?.browserFailed.AddListener(reason => { if (link.scene != null && link.scene.loading) link.scene.Cancel(reason, false, SceneLoadFailureKind.BrowserFailed); });
         // So does one for this view's window. Another view's failing, a menu or a BS Browser, is no reason to fail the world.
-        view.windowFailed.AddListener(reason => { if (link.scene != null && link.scene.loading) link.scene.Cancel(reason); });
+        view.windowFailed.AddListener(reason => { if (link.scene != null && link.scene.loading) link.scene.Cancel(reason, false, SceneLoadFailureKind.BrowserFailed); });
         if (manager != null && manager.connected)
             connectedCallback();
         view.browserMessage.AddListener((reqId, command, data) =>
@@ -131,7 +176,8 @@ public class BSPipe
                 return;
             }
             link.scene.state = SceneState.LOAD_FAILED;
-            link.scene.Cancel("The web page failed to load!");
+            var why = DescribeLoadFailed(data, out var code);
+            link.scene.Cancel(why, false, SceneLoadFailureKind.PageFailed, null, code);
         });
         view.domReady.AddListener((url) =>
         {
