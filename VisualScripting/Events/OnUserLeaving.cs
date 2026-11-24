@@ -7,7 +7,7 @@ namespace BS.VisualScripting
     /// Fires on this client just before it leaves the world (another world, home, a rejoin, quitting), while it can
     /// still write shared state: the place to tidy up, above all when Is Last User. A graph can't hold the leave, so
     /// do the writes straight away; the app sends them before it goes. Best-effort: a crash, a dropped connection, a
-    /// Quest quit or sleep and stopping Play mode leave without it. Counts itself in while it listens, so a world with
+    /// Quest app closed from the system or put to sleep, and stopping Play mode leave without it. Counts itself in while it listens, so a world with
     /// no such node costs its leave nothing.
     /// </summary>
     [UnitTitle("On User Leaving")]

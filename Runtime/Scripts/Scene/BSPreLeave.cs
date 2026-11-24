@@ -11,8 +11,8 @@ namespace BS
     /// <summary>
     /// The user-leaving hook: just before this client leaves a world (another world, home, a rejoin, quitting), the
     /// world's page gets the user-leaving event and its Visual Scripting graphs On User Leaving, so it can tidy shared
-    /// state, above all when it is the last one there. Best-effort: a crash, a dropped connection, a Quest quit or
-    /// sleep and stopping Play mode leave without it.
+    /// state, above all when it is the last one there. Best-effort: a crash, a dropped connection, closing a Quest app
+    /// from the system (rather than its own Exit) or putting it to sleep, and stopping Play mode leave without it.
     ///
     /// Costs nothing for a world that doesn't listen: the page says when its listener count leaves or reaches 0, and
     /// graphs count themselves in and out, so with neither nothing is sent and nothing waits. With a listener the
@@ -114,7 +114,9 @@ namespace BS
         /// <summary>The reason for leaving the current page for <paramref name="url"/>.</summary>
         public static string ReasonFor(BSScene scene, string url)
         {
-            if (scene != null && !string.IsNullOrEmpty(scene.CurrentUrl) && string.Equals(url, scene.CurrentUrl, StringComparison.Ordinal))
+            // The same page, written with or without a trailing slash, is a reload (crawl.example and crawl.example/).
+            if (scene != null && !string.IsNullOrEmpty(scene.CurrentUrl) && !string.IsNullOrEmpty(url)
+                && string.Equals(url.Trim().TrimEnd('/'), scene.CurrentUrl.Trim().TrimEnd('/'), StringComparison.Ordinal))
                 return ReasonReload;
             try
             {

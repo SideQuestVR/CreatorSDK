@@ -3180,9 +3180,11 @@ namespace BS
             // Whether this ends a load still in progress: not a world that is open (its page navigating somewhere dead, a
             // setting changed later), nor a load that already failed. No load at all (the boot gate) counts: the player is
             // on the loading screen with nothing to show.
-            bool endsALoad = owningLoad == null || loading || !owningLoad.Task.IsCompleted;
+            // While the user-leaving hook runs, `loading` is only held so the guards refuse: no load is in progress yet,
+            // so a late failure of the world being left is not a load failure and must not drop those guards.
+            bool endsALoad = owningLoad == null || (loading && !IsPreLeaving) || !owningLoad.Task.IsCompleted;
             loaded = true;
-            loading = false;
+            if (!IsPreLeaving) loading = false;
             UnityMainThreadTaskScheduler.Default.SetLoading(false); // the failure screen needs no 25 ms passes
             externalLoadFailed = true;
             loadUrlTaskCompletionSource?.TrySetException(new SceneLoadFailedException(message, isUserCancel));
@@ -3298,8 +3300,10 @@ namespace BS
         }
         public Task LoadUrl(string url, bool isLoadingOpen = false)
         {
-            // The world being left gets its user-leaving event first, while it can still write to the room. Finished at
-            // once (the load starts as it always has) unless its page or a graph listens.
+            // The world being left gets its user-leaving event first, while it can still write to the room. Nothing
+            // listening (the usual case): the load starts as it always has, without even working out the reason.
+            if (!BSPreLeave.HasListeners)
+                return ObserveLoadFailure(LoadUrlInternal(url, url, isLoadingOpen, isFallback: false), url);
             var preLeave = BSPreLeave.RunAsync(this, BSPreLeave.ReasonFor(this, url));
             if (preLeave.IsCompleted)
                 return ObserveLoadFailure(LoadUrlInternal(url, url, isLoadingOpen, isFallback: false), url);
@@ -3307,6 +3311,7 @@ namespace BS
             // page's own LoadUrl, menu joins, rejoins) must refuse while the world leaves, or the leaving world could
             // send the player somewhere else, or back into itself, from its own handler.
             loading = true;
+            pendingUrl = url;
             return ObserveLoadFailure(LoadAfterPreLeave(preLeave, url, isLoadingOpen), url);
         }
 
@@ -3314,12 +3319,29 @@ namespace BS
         // Go Home): only the newest goes ahead, the others end cancelled.
         int loadsAfterPreLeave;
 
+        // Where the player is going while the world they are leaving still has the user-leaving hook running.
+        string pendingUrl;
+
+        /// <summary>
+        /// While the user-leaving hook runs, the world being left is still <see cref="CurrentUrl"/>: this is where the
+        /// player is going (the newest load asked for). Null otherwise. Anything that means "the world the player is
+        /// in or headed for" (a rejoin, a same-account redirect) reads <c>PendingUrl ?? CurrentUrl</c>.
+        /// </summary>
+        public string PendingUrl => pendingUrl;
+
+        /// <summary>The user-leaving hook is running: the world being left is still open, its handlers still running.</summary>
+        public bool IsPreLeaving => pendingUrl != null;
+
         async Task LoadAfterPreLeave(Task preLeave, string url, bool isLoadingOpen)
         {
             int load = ++loadsAfterPreLeave;
-            await preLeave;
+            pendingUrl = url;
+            // Never faults (RunAsync logs its own failures), but a fault here would leave the player stuck loading.
+            try { await preLeave; }
+            catch (Exception e) { Debug.LogException(e); }
             if (load != loadsAfterPreLeave)
                 throw new OperationCanceledException($"Loading {url} was replaced by a newer load while the world was leaving.");
+            pendingUrl = null;
             await LoadUrlInternal(url, url, isLoadingOpen, isFallback: false);
         }
 
@@ -3523,7 +3545,8 @@ namespace BS
                             LogLine.Err($"[LOADING] LoadOut threw: {e}");
                         }
                     }
-                    if (!supersededByNewerLoad)
+                    // Not while a later load is waiting on the user-leaving hook: it holds `loading` for the guards.
+                    if (!supersededByNewerLoad && !IsPreLeaving)
                     {
                         loading = false;
                     }

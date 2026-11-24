@@ -79,7 +79,7 @@ scene.On("user-leaving", (e) => {
 - **Await your writes.** `SpaceStateSet`, `SpaceStateMerge` and `SpaceStateDelete` resolve when the server has
   answered, so hand those to `waitUntil`. `SetPublicSpaceProps` and `SetProtectedSpaceProps` are sent before
   the app leaves too, but you can't tell whether they arrived.
-- **It is best-effort.** It doesn't fire on a crash or a dropped connection, when a Quest app is closed or put to sleep,
+- **It is best-effort.** It doesn't fire on a crash or a dropped connection, when a Quest app is closed from the headset's system menu (its own Exit does fire it) or put to sleep,
   when you are removed from the world, or in the editor (SDK Play mode never leaves your world). Space state is
   [kept for 24 hours](../multiplayer/overview.md#space-state), so keep a fallback: for example, store when
   the game last changed and let the next visitor reset a game left too long.
