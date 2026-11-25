@@ -330,5 +330,8 @@ namespace BS
         isMegaphoneLocked,
         autoShift,
         shiftThreshold,
+        access,
+        instanceKey,
+        joinCode,
     }
 }

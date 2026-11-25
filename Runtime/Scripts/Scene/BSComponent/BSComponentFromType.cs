@@ -175,6 +175,8 @@ namespace BS
                     return gameObject.AddComponent<BSGaussianSplat>();
                 case ComponentType.LargeWorld:
                     return gameObject.AddComponent<BSLargeWorld>();
+                case ComponentType.InstanceJoin:
+                    return gameObject.AddComponent<BSInstanceJoin>();
                 default:
                     return null;
             }

@@ -188,18 +188,50 @@ Things to keep in mind:
 
 ## The Instance Join component
 
-**Instance Join** (`BSInstanceJoin`, under **BS** in Add Component) does the same from the Inspector, for a button wired with a UnityEvent or a graph:
+**Instance Join** (`BSInstanceJoin` in Unity, `BS.InstanceJoin` in a page script; under **BS** in Add Component) does the same as the `scene` calls from a component, for a button wired with a UnityEvent, a graph or a script. It needs a **BS Object Id** on the same object, which Unity adds for you.
 
-| Field | What it is |
+| Property | What it is |
 |---|---|
-| **Access** | Who an instance this component creates admits: Private, Friends or Friends Plus |
-| **Instance Key** | The instance `Join` goes to. `Create` fills it in; set it yourself to join one another player created |
-| **Join Code** | The join code sent with `Join`, when the player needs one |
-| **On Created** | Raised after `Create` made or found the player's instance |
-| **On Joining** | Raised when the player agreed and the world is about to reload |
-| **On Failed** | Raised with the error code when a create or a join didn't happen |
+| `access` (**Access**) | Who an instance this component creates admits besides the player and the people given its join code: `private` (also when left empty), `friends` or `friends_plus` |
+| `instanceKey` (**Instance Key**) | The instance `Join` goes to. `Create` fills it in; set it yourself to join one another player created |
+| `joinCode` (**Join Code**) | The join code sent with `Join`, when the player needs one. `Create` fills it in |
 
-Its methods are `Create()`, `CreateAndJoin()`, `Join()` and `Leave()`, and `InstanceKey`, `JoinCode`, `Access` and `LastError` can be read and set from C#. `CreateAndJoin()` on a button's click is all a "play in private" button needs. It is a Unity-side component: page scripts use the `scene` calls above instead.
+| Method | What it does |
+|---|---|
+| `Create()` | Creates a private instance for the player (or finds the one they have) and fills in `instanceKey` and `joinCode`. Moves nobody |
+| `CreateAndJoin()` | `Create`, then `Join` |
+| `Join()` | Asks the player to move to `instanceKey` |
+| `Leave()` | Asks the player to go back to the world's public instance |
+
+The player is asked before every move, exactly as with `scene.JoinPrivateInstance`: the question is the app's, so a component can't skip it.
+
+```js
+const button = await scene.Find("PlayPrivately"); // needs a BS Object Id
+const instance = await button.AddComponent(new BS.InstanceJoin({ access: "friends" }));
+button.On("click", () => instance.CreateAndJoin());
+```
+
+The methods answer nothing themselves. A page hears how each went through the `host-ext` event, with `data.object` the component's object (`gameObject.unityId`):
+
+```js
+scene.On("host-ext", (e) => {
+    const { command, evt, data } = e.detail;
+    if (command !== "instances" || String(data.object) !== String(button.unityId)) return;
+
+    if (evt === "created") share(data.key, data.joinCode);
+    if (evt === "failed") console.warn("Not moved:", data.error); // "declined" when the player said no
+});
+```
+
+| `evt` | `data` |
+|---|---|
+| `created` | `Create` worked: `key` and `joinCode` |
+| `joining` | The player agreed to a `Join` or a `Leave`; the world is about to reload |
+| `failed` | `error`, one of the codes in the tables above |
+
+In Unity the same three are the **On Created**, **On Joining** and **On Failed** UnityEvents, and the methods are `_Create()`, `_CreateAndJoin()`, `_Join()` and `_Leave()` (wire a button's UnityEvent to them, or use the nodes of the same names in a graph). `InstanceKey`, `JoinCode` and `Access` can be read and set from C#, and `LastError` read.
+
+Nothing on the component is sent to other players: its properties and events stay on the player's own app. The join code it holds after `Create` is the creator's to share, as in [Bringing players along](#bringing-players-along).
 
 From your own C#, `BS.WorldInstances.GetInfo`, `Create`, `Join` and `Leave` take a callback with the same reply fields (`reply.world` for the world).
 

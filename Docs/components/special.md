@@ -109,7 +109,12 @@ BS.Scene.GetInstance().On("origin-shifted", (e) => console.log(e.detail.delta, e
 
 ## InstanceJoin
 
-Moves the player into a private instance of this world: a separate room for up to 10 people that shares nothing with the public instance. `CreateAndJoin()` makes one for the player and takes them there; `Join()` goes to the `Instance Key` (and `Join Code`) another player created. The app asks the player before moving them. A Unity-side component (`BSInstanceJoin`): wire it to a button with a UnityEvent or a graph; page scripts use `scene.CreatePrivateInstance` and `scene.JoinPrivateInstance`. See [Private Instances](../javascript-api/private-instances.md#the-instance-join-component).
+Moves the player into a private instance of this world: a separate room for up to 10 people that shares nothing with the public instance. `CreateAndJoin()` makes one for the player and takes them there; `Join()` goes to the `Instance Key` (and `Join Code`) another player created. The app asks the player before moving them. `Leave()` goes back to the public instance. Its `access`, `instanceKey` and `joinCode` stay on the player's own app. See [Private Instances](../javascript-api/private-instances.md#the-instance-join-component).
+
+```js
+const instance = await button.AddComponent(new BS.InstanceJoin({ access: "friends" }));
+button.On("click", () => instance.CreateAndJoin());
+```
 
 ## WorldOption
 
