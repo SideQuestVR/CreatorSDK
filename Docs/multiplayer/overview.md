@@ -16,6 +16,12 @@ Each player loads their own copy of your scene and runs their own copy of your p
 
 Players join the room once the space has loaded, and leave it when they leave the space. The JavaScript calls and events below are listed in full in [User & Multiplayer](../javascript-api/user-multiplayer.md), [Scene API](../javascript-api/scene-api.md#state-management) and [Scene Events](../javascript-api/scene-events.md#state-events).
 
+## Rooms and instances
+
+A world has one **public instance**, the room everyone lands in whatever address of your world they opened: the query string (`?room=a`) no longer makes a separate room. When the public instance is full, players are placed in an **overflow** of it.
+
+A **private instance** is a separate room of your world for up to 10 people, created by a player from the menu or by your script. Separate instances share nothing: no players, voice, one-shots, space state or synced objects. See [Private Instances](../javascript-api/private-instances.md).
+
 ## Players
 
 `scene.users` holds everyone in the room, keyed by `uid`, and `scene.localUser` is you. `user-joined` fires for every player, including you and the players already in the space when you arrive; `user-left` fires when one leaves.

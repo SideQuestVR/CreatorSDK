@@ -107,6 +107,10 @@ const world = await obj.AddComponent(new BS.LargeWorld({ autoShift: true, shiftT
 BS.Scene.GetInstance().On("origin-shifted", (e) => console.log(e.detail.delta, e.detail.origin));
 ```
 
+## InstanceJoin
+
+Moves the player into a private instance of this world: a separate room for up to 10 people that shares nothing with the public instance. `CreateAndJoin()` makes one for the player and takes them there; `Join()` goes to the `Instance Key` (and `Join Code`) another player created. The app asks the player before moving them. A Unity-side component (`BSInstanceJoin`): wire it to a button with a UnityEvent or a graph; page scripts use `scene.CreatePrivateInstance` and `scene.JoinPrivateInstance`. See [Private Instances](../javascript-api/private-instances.md#the-instance-join-component).
+
 ## WorldOption
 
 Adds a button for your world to the player's radial menu. Add it with **Add Component > BS > World Option** (one per GameObject). There are two slots, and the button is there while the component is enabled. If two options want the same slot, the last one enabled shows. Set up the button in the Inspector: **Slot**, **Label** (up to 32 characters of plain text), **Icon**, and **Is Toggle** for a button that stays on or off.
