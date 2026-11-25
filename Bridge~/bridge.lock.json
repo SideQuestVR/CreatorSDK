@@ -87,7 +87,8 @@
     {"id": 82, "name": "AvatarMirror"},
     {"id": 83, "name": "PhotoWall"},
     {"id": 84, "name": "GaussianSplat"},
-    {"id": 85, "name": "LargeWorld"}
+    {"id": 85, "name": "LargeWorld"},
+    {"id": 86, "name": "InstanceJoin"}
   ],
   "propertyNames": [
     {"id": 0, "name": "hasUnity"},
@@ -417,7 +418,10 @@
     {"id": 324, "name": "enableMegaphone"},
     {"id": 325, "name": "isMegaphoneLocked"},
     {"id": 326, "name": "autoShift"},
-    {"id": 327, "name": "shiftThreshold"}
+    {"id": 327, "name": "shiftThreshold"},
+    {"id": 328, "name": "access"},
+    {"id": 329, "name": "instanceKey"},
+    {"id": 330, "name": "joinCode"}
   ],
   "tags": [
     {"index": 0, "name": "UserTag1"},
@@ -3435,6 +3439,23 @@
         }
       ],
       "tsConstructor": ["autoShift: boolean | any = false", "shiftThreshold: number = 128"]
+    },
+    {
+      "name": "InstanceJoin",
+      "cs": "BS.BSInstanceJoin",
+      "base": "BS.BSComponentBase",
+      "fields": [
+        {"name": "access", "attr": "See", "type": "System.String", "wire": "String", "propId": 328},
+        {"name": "instanceKey", "attr": "See", "type": "System.String", "wire": "String", "propId": 329},
+        {"name": "joinCode", "attr": "See", "type": "System.String", "wire": "String", "propId": 330}
+      ],
+      "methods": [
+        {"name": "_Create", "returns": "System.Void", "params": []},
+        {"name": "_CreateAndJoin", "returns": "System.Void", "params": []},
+        {"name": "_Join", "returns": "System.Void", "params": []},
+        {"name": "_Leave", "returns": "System.Void", "params": []}
+      ],
+      "tsConstructor": ["access: String | any = new String()", "instanceKey: String = new String()", "joinCode: String = new String()"]
     }
   ],
   "jsAliases": [

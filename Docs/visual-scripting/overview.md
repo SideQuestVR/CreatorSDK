@@ -125,6 +125,13 @@ Event nodes start a graph's control flow when something happens in the space. Th
 | On Persist File Saved | A save finished. Outputs `Saved Name`, `Success` and `Error` |
 | On Persist File Loaded | A load finished. Outputs `Loaded Name`, `Success`, `Data` and `Error` |
 
+**Private instance events** (`Events > BS > World`) — app only. See [Private Instances](../javascript-api/private-instances.md#visual-scripting).
+
+| Node | Purpose |
+|------|---------|
+| On Private Instance Result | A Create, Join or Leave Private Instance was answered. Outputs `Op`, `Success`, `Key`, `Join Code` and `Error` |
+| On Room Joined | The player has joined a room of this world. Outputs `Room Kind`, `Is Private Instance`, `Is Event Instance` and `Instance Key` |
+
 **Recording events** (`Events > BS > Recording`) — app only. See [Recording](../javascript-api/recording.md#visual-scripting).
 
 | Node | Purpose |
@@ -245,6 +252,16 @@ The action-side BS nodes, grouped as they appear in the fuzzy finder.
 |------|---------|
 | Persist File Set | Save `Data` as the file `Name`; the result arrives on `On Persist File Saved` |
 | Persist File Get | Load the file `Name`; the contents arrive on `On Persist File Loaded` |
+
+**Private instances** (`BS > World`) — app only. See [Private Instances](../javascript-api/private-instances.md#visual-scripting).
+
+| Node | Purpose |
+|------|---------|
+| Get Room Info | Which room of the world this is. Outputs `Room Kind`, `Is Private Instance`, `Is Event Instance`, `Instance Key`, `Access`, `Event Id`, `Max Occupancy`, `Can Overflow`, `Can Create` and `Is Admin` |
+| Get World Info | The world this room belongs to. Outputs `Is World`, `World Id`, `Name`, `Description`, `Image Url`, `Banner Url`, `Access Level` and `Is Owner` |
+| Create Private Instance | Create a private instance of this world for the player; the answer arrives on `On Private Instance Result` |
+| Join Private Instance | Ask the player to move to the private instance `Key`; the answer arrives on `On Private Instance Result` |
+| Leave Private Instance | Ask the player to go back to the world's public instance; the answer arrives on `On Private Instance Result` |
 
 **Recording** (`BS > Recording`) — app only. See [Recording](../javascript-api/recording.md#visual-scripting).
 

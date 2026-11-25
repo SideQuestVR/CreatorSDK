@@ -23,6 +23,7 @@
   - [User & Multiplayer](/javascript-api/user-multiplayer.md)
   - [Saving Data](/javascript-api/saving-data.md)
   - [World Roles](/javascript-api/world-roles.md)
+  - [Private Instances](/javascript-api/private-instances.md)
   - [Recording](/javascript-api/recording.md)
   - [Photos](/javascript-api/photos.md)
 - Multiplayer

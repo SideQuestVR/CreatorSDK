@@ -88,6 +88,7 @@ namespace BS
         PhotoWall,
         GaussianSplat,
         LargeWorld,
+        InstanceJoin,
 
         // Deprecated aliases for the pre-rename names. Same values, so they stay
         // wire-compatible; kept so existing content and scripts keep resolving.

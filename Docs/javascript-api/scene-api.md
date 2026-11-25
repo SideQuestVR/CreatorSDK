@@ -332,6 +332,21 @@ const { token, role } = await scene.GetRoleToken(nonceFromYourServer);
 Your own server verifies the token, so it can trust the role where `isSpaceAdmin` can be faked. See
 [World Roles](world-roles.md).
 
+## Private Instances
+
+```js
+// Which room of the world this is: "public", "private" or "event"
+const { roomKind, maxOccupancy } = await scene.GetRoomInfo();
+
+// A separate room of this world for up to 10 people; the player is asked before they are moved
+const { key, joinCode } = await scene.CreatePrivateInstance("private");
+await scene.JoinPrivateInstance(key, joinCode);
+await scene.LeavePrivateInstance(); // back to the public instance
+```
+
+Separate instances share no players, voice or state, and query strings no longer make separate rooms. See
+[Private Instances](private-instances.md).
+
 ## Utility Methods
 
 ```js
