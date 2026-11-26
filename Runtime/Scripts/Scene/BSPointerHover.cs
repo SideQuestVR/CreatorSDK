@@ -25,8 +25,9 @@ namespace BS
     /// pointers is (<see cref="BSScene.PointerHover"/>); this works out what changed and tells the world:
     /// <list type="bullet">
     /// <item>graphs, through an EventBus hook on the object itself, so only graphs listening on that object run;</item>
-    /// <item>the page, only for objects it listens on (<see cref="BSObjectId.pointerWatch"/>, which the page sets
-    /// when its listeners on that object change). A page that listens for nothing is sent nothing.</item>
+    /// <item>the page, only for the events it listens for on that object (<see cref="BSObjectId.pointerWatch"/>,
+    /// which the page sets when its listeners on that object change). A page that listens for nothing is sent
+    /// nothing.</item>
     /// </list>
     /// State is kept per pointer id, not per hand: the mouse and the right hand are two pointers that both report as
     /// the right hand, and one of them being on nothing must not end the other's hover.
@@ -37,13 +38,27 @@ namespace BS
         public const string MoveHook = "OnBSPointerMove";
         public const string ExitHook = "OnBSPointerExit";
 
-        /// <summary><see cref="BSObjectId.pointerWatch"/>: the page listens for pointer-enter or pointer-exit.</summary>
-        public const int WatchEnterExit = 1;
+        /// <summary><see cref="BSObjectId.pointerWatch"/>: the page listens for pointer-enter on the object.</summary>
+        public const int WatchEnter = 1;
         /// <summary><see cref="BSObjectId.pointerWatch"/>: the page listens for pointer-move.</summary>
         public const int WatchMove = 2;
+        /// <summary><see cref="BSObjectId.pointerWatch"/>: the page listens for pointer-exit.</summary>
+        public const int WatchExit = 4;
 
         /// <summary>A move is raised once the hit point is this far, in metres, from the last point raised.</summary>
         public const float MoveThreshold = 0.001f;
+
+        static int s_page;
+
+        /// <summary>
+        /// Counts the pages this client has started loading. What a page listens for is its own: a
+        /// <see cref="BSObjectId.pointerWatch"/> set for an earlier page reads as nothing, whether or not the object
+        /// outlived that page, and without visiting every object.
+        /// </summary>
+        internal static int Page => s_page;
+
+        /// <summary>A new page is loading (BSScene.OnLoad): it is sent nothing it has not asked for itself.</summary>
+        internal static void PageStarted() => s_page++;
 
         sealed class Pointer
         {
@@ -83,7 +98,7 @@ namespace BS
                 if (!ReferenceEquals(pointer.target, null))
                 {
                     var left = pointer.target;
-                    bool told = Watches(pointer, WatchEnterExit);
+                    bool told = Watches(pointer, WatchExit);
                     Forget(pointer);
                     if (told) _scene.link.OnPointerExit(left, pointer.hit.side);
                     Raise(ExitHook, left, pointer.hit);
@@ -94,7 +109,7 @@ namespace BS
                 pointer.target = obj;
                 pointer.id = obj.GetComponent<BSObjectId>();
                 Fill(pointer.hit, obj, point, normal, side);
-                if (Watches(pointer, WatchEnterExit)) _scene.link.OnPointerEnter(obj, point, normal, side);
+                if (Watches(pointer, WatchEnter)) _scene.link.OnPointerEnter(obj, point, normal, side);
                 Raise(EnterHook, obj, pointer.hit);
                 return;
             }
@@ -113,8 +128,8 @@ namespace BS
         /// </summary>
         public void Watch(BSObjectId id, int mask)
         {
-            mask &= WatchEnterExit | WatchMove;
-            bool startsEnter = (mask & WatchEnterExit) != 0 && (id.pointerWatch & WatchEnterExit) == 0;
+            mask &= WatchEnter | WatchMove | WatchExit;
+            bool startsEnter = (mask & WatchEnter) != 0 && (id.pointerWatch & WatchEnter) == 0;
             id.pointerWatch = mask;
 
             foreach (var pointer in _pointers.Values)

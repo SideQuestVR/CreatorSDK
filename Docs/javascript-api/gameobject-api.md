@@ -251,9 +251,9 @@ obj.On("browser-message", (e) => {
   - `pointer-move` fires at most once a frame, and only once the point has moved a millimetre.
   - `pointer-exit` also fires when the pointer stops pointing, for example while a desktop player holds the
     right mouse button to turn.
-  - Only objects you listen on are reported, so listen on the surface you need (an aim pad, a button, a board
-    square) rather than on everything. If the pointer is already on the object when you start listening,
-    `pointer-enter` fires at once.
+  - Only the events you listen for on an object are sent for it, so listen on the surface you need (an aim pad,
+    a button, a board square) rather than on everything. If the pointer is already on the object when you start
+    listening for `pointer-enter`, it fires at once.
   - Players on older app versions get none of these events, so keep anything they must be able to do working
     from `click`.
 - **`grab`** gives the point and the hand; `drop` gives the hand. In Play mode the mouse grabs as `BS.HandSide.RIGHT`.

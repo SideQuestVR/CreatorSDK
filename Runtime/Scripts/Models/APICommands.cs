@@ -250,7 +250,7 @@ public class APICommands
 
     // Pointer events on world objects (BSPointerHover). Unity -> page, for objects the page listens on: a pointer
     // came onto the object or moved across it: oid§px§py§pz§nx§ny§nz§side; it left: oid§side. Page -> Unity, no
-    // request id: what the page listens for on one object: oid§mask (1 = enter and exit, 2 = move), sent when that changes.
+    // request id: what the page listens for on one object: oid§mask (1 = enter, 2 = move, 4 = exit), sent when that changes.
     public const string POINTER_ENTER = "pen!";
     public const string POINTER_MOVE = "pmv!";
     public const string POINTER_EXIT = "pex!";

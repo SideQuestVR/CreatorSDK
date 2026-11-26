@@ -20,6 +20,7 @@ namespace BS.SDKEditor.Tests
     public class PointerHoverTests
     {
         const int Mouse = -1, LeftHand = 1, RightHand = 2;
+        const int All = BSPointerHover.WatchEnter | BSPointerHover.WatchMove | BSPointerHover.WatchExit;
 
         GameObject _linkObject;
         BSScene _scene;
@@ -173,7 +174,7 @@ namespace BS.SDKEditor.Tests
         [Test]
         public void AnObjectDestroyedUnderThePointer_IsDroppedWithoutAnExit()
         {
-            var pad = Target("Pad", BSPointerHover.WatchEnterExit | BSPointerHover.WatchMove);
+            var pad = Target("Pad", All);
             var ball = Target("Ball");
             Listen(pad);
             Listen(ball);
@@ -192,9 +193,11 @@ namespace BS.SDKEditor.Tests
         }
 
         [TestCase(0, "")]
-        [TestCase(BSPointerHover.WatchEnterExit, "pen! pex!")]
+        [TestCase(BSPointerHover.WatchEnter, "pen!")]
         [TestCase(BSPointerHover.WatchMove, "pmv!")]
-        [TestCase(BSPointerHover.WatchEnterExit | BSPointerHover.WatchMove, "pen! pmv! pex!")]
+        [TestCase(BSPointerHover.WatchExit, "pex!")]
+        [TestCase(BSPointerHover.WatchEnter | BSPointerHover.WatchExit, "pen! pex!")]
+        [TestCase(All, "pen! pmv! pex!")]
         public void ThePage_IsSentOnlyWhatItListensFor(int watch, string expected)
         {
             var pad = Target("Pad", watch);
@@ -220,24 +223,45 @@ namespace BS.SDKEditor.Tests
             On(RightHand, pad, 4f);
             CollectionAssert.IsEmpty(_sent);
 
-            _hover.Watch(elsewhere.GetComponent<BSObjectId>(), BSPointerHover.WatchEnterExit);
+            _hover.Watch(elsewhere.GetComponent<BSObjectId>(), BSPointerHover.WatchEnter);
             CollectionAssert.IsEmpty(_sent, "No pointer is on that one.");
 
-            _hover.Watch(id, BSPointerHover.WatchMove);
-            CollectionAssert.IsEmpty(_sent, "Move alone asks for no enter.");
+            _hover.Watch(id, BSPointerHover.WatchMove | BSPointerHover.WatchExit);
+            CollectionAssert.IsEmpty(_sent, "Move and exit ask for no enter.");
 
-            _hover.Watch(id, BSPointerHover.WatchEnterExit | BSPointerHover.WatchMove);
+            _hover.Watch(id, All);
             CollectionAssert.AreEqual(new[] { "pen!" }, PageHeard());
             StringAssert.Contains(MessageDelimiters.SECONDARY + "4" + MessageDelimiters.SECONDARY, _sent[0], "It carries where the pointer is now.");
 
-            _hover.Watch(id, BSPointerHover.WatchEnterExit | BSPointerHover.WatchMove);
-            _hover.Watch(id, BSPointerHover.WatchEnterExit);
-            Assert.AreEqual(1, _sent.Count, "Already listening: nothing new to say.");
+            _hover.Watch(id, All);
+            _hover.Watch(id, BSPointerHover.WatchEnter | BSPointerHover.WatchExit);
+            Assert.AreEqual(1, _sent.Count, "Already listening for enter: nothing new to say.");
 
             On(RightHand, pad, 5f);
             Assert.AreEqual(1, _sent.Count, "Move is no longer listened for.");
             Off(RightHand);
             CollectionAssert.AreEqual(new[] { "pen!", "pex!" }, PageHeard());
+        }
+
+        [Test]
+        public void ANewPage_IsSentNothingTheOldPageListenedFor_UntilItListensItself()
+        {
+            var pad = Target("Pad", All); // the object outlives the page, as a scene object does over a reload
+            var id = pad.GetComponent<BSObjectId>();
+            On(Mouse, pad, 1f);
+            CollectionAssert.AreEqual(new[] { "pen!" }, PageHeard());
+            _sent.Clear();
+
+            BSPointerHover.PageStarted();
+
+            Assert.AreEqual(0, id.pointerWatch);
+            On(Mouse, pad, 2f);
+            Off(Mouse);
+            On(Mouse, pad, 3f);
+            CollectionAssert.IsEmpty(_sent, "The new page has asked for nothing.");
+
+            _hover.Watch(id, BSPointerHover.WatchEnter);
+            CollectionAssert.AreEqual(new[] { "pen!" }, PageHeard(), "Its first enter listener is told the pointer is there, as on any page.");
         }
 
         [Test]
@@ -247,7 +271,7 @@ namespace BS.SDKEditor.Tests
             On(Mouse, pad, 1f);
 
             var id = pad.AddComponent<BSObjectId>();
-            _hover.Watch(id, BSPointerHover.WatchEnterExit | BSPointerHover.WatchMove);
+            _hover.Watch(id, All);
             On(Mouse, pad, 2f);
             Off(Mouse);
 
@@ -257,7 +281,7 @@ namespace BS.SDKEditor.Tests
         [Test]
         public void AGraphThatThrows_CostsNeitherThePageItsEventNorTheHostItsPointer()
         {
-            var pad = Target("Pad", BSPointerHover.WatchEnterExit | BSPointerHover.WatchMove);
+            var pad = Target("Pad", All);
             var hook = new EventHook(BSPointerHover.EnterHook, pad);
             Action<BSPointerHit> throwing = _ => throw new InvalidOperationException("graph");
             EventBus.Register(hook, throwing);
@@ -274,11 +298,11 @@ namespace BS.SDKEditor.Tests
         public void WithNoPage_GraphsStillHear()
         {
             _scene.link = null; // a world with graphs and no page
-            var pad = Target("Pad", BSPointerHover.WatchEnterExit | BSPointerHover.WatchMove);
+            var pad = Target("Pad", All);
             Listen(pad);
 
             On(Mouse, pad, 1f);
-            _hover.Watch(pad.GetComponent<BSObjectId>(), BSPointerHover.WatchEnterExit);
+            _hover.Watch(pad.GetComponent<BSObjectId>(), BSPointerHover.WatchEnter);
             Off(Mouse);
 
             Assert.AreEqual(2, _heard.Count);

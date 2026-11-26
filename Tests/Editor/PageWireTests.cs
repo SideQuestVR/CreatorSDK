@@ -467,9 +467,9 @@ namespace BS.SDKEditor.Tests
             _link.scene.PointerHover(2, HandSide.RIGHT, null, default, default);
             CollectionAssert.IsEmpty(_sent);
 
-            FromPage(APICommands.WATCH_POINTER, oid + S + "3");
-            Assert.AreEqual(BSPointerHover.WatchEnterExit | BSPointerHover.WatchMove, id.pointerWatch);
-            FromPage(APICommands.WATCH_POINTER, "999999" + S + "3"); // an object that has gone: ignored
+            FromPage(APICommands.WATCH_POINTER, oid + S + "7");
+            Assert.AreEqual(BSPointerHover.WatchEnter | BSPointerHover.WatchMove | BSPointerHover.WatchExit, id.pointerWatch);
+            FromPage(APICommands.WATCH_POINTER, "999999" + S + "7"); // an object that has gone: ignored
             CollectionAssert.IsEmpty(_sent);
 
             _link.scene.PointerHover(2, HandSide.RIGHT, pad, new Vector3(1f, 2f, 3f), Vector3.up);
@@ -484,6 +484,13 @@ namespace BS.SDKEditor.Tests
                 "!e!pex!" + P + oid + S + "1",
                 "!e!pen!" + P + oid + S + "0" + S + "0" + S + "0" + S + "0" + S + "1" + S + "0" + S + "0",
             }, _sent);
+
+            // A page that listens for exits only is sent exits only.
+            _sent.Clear();
+            FromPage(APICommands.WATCH_POINTER, oid + S + "4");
+            _link.scene.PointerHover(2, HandSide.RIGHT, pad, new Vector3(1f, 2f, 3f), Vector3.up);
+            _link.scene.PointerHover(2, HandSide.RIGHT, null, default, default);
+            CollectionAssert.AreEqual(new[] { "!e!pex!" + P + oid + S + "1" }, _sent);
 
             FromPage(APICommands.WATCH_POINTER, oid + S + "0");
             Assert.AreEqual(0, id.pointerWatch);

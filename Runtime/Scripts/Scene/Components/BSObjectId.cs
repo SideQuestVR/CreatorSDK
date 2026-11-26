@@ -26,11 +26,22 @@ namespace BS
         public bool watchRotation;
         public bool watchLocalRotation;
         public bool watchLocalScale;
+        [NonSerialized] int pointerWatchMask;
+        [NonSerialized] int pointerWatchPage;
         /// <summary>
-        /// Which pointer events the page listens for on this object (BSPointerHover.WatchEnterExit, WatchMove): the
-        /// page sets it as its listeners change, and only those are sent to it.
+        /// Which pointer events the page listens for on this object (BSPointerHover.WatchEnter, WatchMove, WatchExit):
+        /// the page sets it as its listeners change, and only those are sent to it. It belongs to the page that set
+        /// it: once another page has started loading it reads as nothing, though the object lives on.
         /// </summary>
-        [NonSerialized] public int pointerWatch;
+        internal int pointerWatch
+        {
+            get => pointerWatchPage == BSPointerHover.Page ? pointerWatchMask : 0;
+            set
+            {
+                pointerWatchMask = value;
+                pointerWatchPage = BSPointerHover.Page;
+            }
+        }
         public bool lerpPosition;
         public bool lerpRotation;
         Vector3 tempPosition;

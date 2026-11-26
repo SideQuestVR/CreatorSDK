@@ -287,6 +287,22 @@ namespace BS.SDKEditor.Tests
                 Invoke(module, "UnregisterProvider", provider);
                 Assert.That(heard[heard.Count - 1], Does.StartWith("OnBSPointerExit RIGHT"));
                 Assert.That(heard.Count, Is.EqualTo(3));
+
+                // The module is switched off while the pointer is on the object.
+                states.Add(pointer.pointerId, state);
+                Frame(new Ray(origin, Vector3.forward));
+                Assert.That(heard[heard.Count - 1], Does.StartWith("OnBSPointerEnter RIGHT"));
+                Invoke(module, "OnDisable");
+                Assert.That(heard[heard.Count - 1], Does.StartWith("OnBSPointerExit RIGHT"));
+                Assert.That(heard.Count, Is.EqualTo(5));
+                Invoke(module, "OnEnable");
+
+                // The dispatcher itself stops listening: the pointer goes on pointing, with nobody to say where.
+                Frame(new Ray(origin, Vector3.forward));
+                Assert.That(heard[heard.Count - 1], Does.StartWith("OnBSPointerEnter RIGHT"));
+                Invoke(dispatcher, "OnDisable");
+                Assert.That(heard[heard.Count - 1], Does.StartWith("OnBSPointerExit RIGHT"));
+                Assert.That(heard.Count, Is.EqualTo(7));
             }
             finally
             {

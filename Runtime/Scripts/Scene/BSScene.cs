@@ -503,8 +503,18 @@ namespace BS
         }
 
         /// <summary>
-        /// The page's pointer listeners on one object changed: oid§mask (BSPointerHover.WatchEnterExit / WatchMove),
-        /// sent without a request id. An object the page no longer has is ignored.
+        /// <see cref="PointerHover"/> on the live scene, if there is one. For hosts that report every frame: unlike
+        /// <see cref="Instance"/> this never makes a scene, so a pointer that is still reporting while the app has no
+        /// scene, or is shutting down, leaves none behind.
+        /// </summary>
+        public static void ReportPointerHover(int pointerId, HandSide side, GameObject obj, Vector3 point, Vector3 normal)
+        {
+            _instance?.PointerHover(pointerId, side, obj, point, normal);
+        }
+
+        /// <summary>
+        /// The page's pointer listeners on one object changed: oid§mask (BSPointerHover.WatchEnter, WatchMove,
+        /// WatchExit), sent without a request id. An object the page no longer has is ignored.
         /// </summary>
         public void WatchPointer(string msg)
         {
@@ -3663,6 +3673,8 @@ namespace BS
             // Here, not in OnLoad's queued listeners: the new page's first messages (it may say it listens straight
             // away) must not arrive before the old page's listening is forgotten.
             BSPreLeave.PageLoadStarted();
+            // The same for the pointer events the old page listened for on each object.
+            BSPointerHover.PageStarted();
             UnityMainThreadTaskScheduler.Default.Enqueue(TaskRunner.Track(() =>
              {
                  if (settings != null)
