@@ -58,6 +58,11 @@ namespace BS
         /// Stored as given; the app clamps it when it applies it.</summary>
         private float _VoiceDistanceMultiplier = 1f;
         public float VoiceDistanceMultiplier { get { return _VoiceDistanceMultiplier; } set { _VoiceDistanceMultiplier = value; scene.events.OnVoiceDistanceMultiplierChanged.Invoke(value); } }
+        /// <summary>Scales how far megaphones and walkie-talkies carry in this space, apart from normal voices (their fade
+        /// is 40-100 m times it). 0 = unset: they follow <see cref="VoiceDistanceMultiplier"/>, as before this setting
+        /// existed. Stored as given; the app clamps it when it applies it.</summary>
+        private float _MegaphoneDistanceMultiplier = 0f;
+        public float MegaphoneDistanceMultiplier { get { return _MegaphoneDistanceMultiplier; } set { _MegaphoneDistanceMultiplier = value; scene.events.OnMegaphoneDistanceMultiplierChanged.Invoke(value); } }
         /// <summary>Players can run (hold Shift on desktop, click the left stick in VR). On unless the space turns it off;
         /// off, everyone moves at the space's walking speed only.</summary>
         private bool _EnableRun = true;
@@ -322,6 +327,7 @@ namespace BS
             EnableBirdFlight = true;
             AvatarSyncMode = AvatarSyncModes.Social;
             VoiceDistanceMultiplier = 1f;
+            MegaphoneDistanceMultiplier = 0f;
             EnableRun = true;
             TeleportMaxRange = 0f;
             EnableBrowserStreaming = true;

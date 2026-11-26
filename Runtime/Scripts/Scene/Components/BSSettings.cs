@@ -50,6 +50,7 @@ namespace BS
     - `isPhysicsSettingsLocked` - Lock the physics settings so nothing can change them afterwards.
     - `enableMegaphone` - Anyone in the space can turn their own megaphone on from the radial menu (heard across the room). Off by default: only moderators can megaphone people. Megaphone Volumes work either way.
     - `isMegaphoneLocked` - Lock the megaphone: only moderators can megaphone people, and Megaphone Volumes and `enableMegaphone` stop working. Players can still turn their own megaphone off. Once on it stays on until the space is left or rejoined: nothing can unlock it before then.
+    - `megaphoneDistanceMultiplier` - How far megaphones and friends' walkie-talkies carry here, apart from normal voices: full volume to 40 m and silent at 100 m, times this (10 = silent at 1 km). 0 (the default) follows `voiceDistanceMultiplier`, as before.
 
     **Code Example**
     ```js
@@ -181,6 +182,13 @@ namespace BS
                  "stop working. Players can still turn their own megaphone off. Once on it stays on until the space is " +
                  "left or rejoined: nothing can unlock it before then.")]
         [See(initial = "false")][SerializeField] internal bool isMegaphoneLocked = false;
+        [Tooltip("How far megaphones and friends' walkie-talkies carry in this space, apart from normal voices: full " +
+                 "volume to 40 m and silent at 100 m, times this. 10 = silent at 1 km, 25 = full volume to 1 km. " +
+                 "Normal voices keep following Voice Distance Multiplier. 0 (the default) uses Voice Distance " +
+                 "Multiplier for these too, as before. The app clamps it to 0.1-100, and never lets a megaphone go " +
+                 "quiet nearer than a normal voice would. They are received at any " +
+                 "distance anyway, so a large value costs players no bandwidth.")]
+        [See(initial = "0")][SerializeField] internal float megaphoneDistanceMultiplier = 0f;
 
         bool started;
         // The settings object (it is recreated on every page load) that this component locked, if any.
@@ -246,6 +254,7 @@ namespace BS
                 if (Has(PropertyName.enableBrowserStreaming)) settings.EnableBrowserStreaming = enableBrowserStreaming;
                 if (Has(PropertyName.enableUserUICollider)) settings.EnableUserUICollider = enableUserUICollider;
                 if (Has(PropertyName.enableMegaphone)) settings.EnableMegaphone = enableMegaphone;
+                if (Has(PropertyName.megaphoneDistanceMultiplier)) settings.MegaphoneDistanceMultiplier = megaphoneDistanceMultiplier;
                 if (Has(PropertyName.enableHandHold)) settings.EnableHandHold = enableHandHold;
                 if (Has(PropertyName.enableRadar)) settings.EnableRadar = enableRadar;
                 if (Has(PropertyName.enableNametags)) settings.EnableNametags = enableNametags;

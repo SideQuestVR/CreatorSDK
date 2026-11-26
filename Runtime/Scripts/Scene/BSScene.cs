@@ -36,6 +36,7 @@ namespace BS
         public const string EnableBirdFlight = "EnableBirdFlight";
         public const string AvatarSyncMode = "AvatarSyncMode";
         public const string VoiceDistanceMultiplier = "VoiceDistanceMultiplier";
+        public const string MegaphoneDistanceMultiplier = "MegaphoneDistanceMultiplier";
         public const string EnableRun = "EnableRun";
         public const string TeleportMaxRange = "TeleportMaxRange";
         public const string EnableBrowserStreaming = "EnableBrowserStreaming";
@@ -4127,6 +4128,9 @@ namespace BS
                                  break;
                              case SettingsMap.VoiceDistanceMultiplier:
                                  settings.VoiceDistanceMultiplier = NumberFormat.Parse(setting[1]);
+                                 break;
+                             case SettingsMap.MegaphoneDistanceMultiplier:
+                                 settings.MegaphoneDistanceMultiplier = NumberFormat.Parse(setting[1]);
                                  break;
                              case SettingsMap.EnableRun:
                                  settings.EnableRun = PageAbility(setting[1], settings.EnableRun, SettingsMap.EnableRun, c => c.enableRun);

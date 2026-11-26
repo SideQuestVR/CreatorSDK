@@ -337,5 +337,6 @@ namespace BS
         errorMessage,
         isMember,
         checkState,
+        megaphoneDistanceMultiplier,
     }
 }
