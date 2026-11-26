@@ -82,7 +82,7 @@ BS.HandSide.RIGHT  // 1
 
 ## ButtonType
 
-Controller buttons:
+Controller buttons, and the hand's grab and trigger actions:
 
 ```js
 BS.ButtonType.TRIGGER          // 0
@@ -90,7 +90,16 @@ BS.ButtonType.GRIP             // 1
 BS.ButtonType.PRIMARY          // 2: A/X button
 BS.ButtonType.SECONDARY        // 3: B/Y button
 BS.ButtonType.THUMBSTICKCLICK  // 4: pressing the thumbstick down
+BS.ButtonType.GRAB_ACTION      // 5: the hand's grab, from any device
+BS.ButtonType.TRIGGER_ACTION   // 6: the hand's trigger, from any device
 ```
+
+`TRIGGER` to `THUMBSTICKCLICK` are a VR controller's own buttons, so they come only from a VR controller.
+`GRAB_ACTION` and `TRIGGER_ACTION` are what the player does with each hand on whatever they are using: a controller's
+grip and trigger, a hand-tracked grab and pinch, a gamepad's shoulders and triggers, the desktop and touchscreen controls.
+A controller sends both (its grip as `GRIP` and `GRAB_ACTION`). The actions are not sent while something has that hand's
+grab or trigger for itself: a held object that uses the trigger (its own `OnTrigger` fires instead), the hand camera,
+typing into a text field.
 
 ## KeyCode
 

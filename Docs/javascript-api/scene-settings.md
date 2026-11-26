@@ -223,7 +223,9 @@ Like the abilities above, blocks stay until you lift them. Blocking a control on
 
 ### Controller Input Events
 
-The app sends your page the local player's VR controller input. They don't fire on desktop or in SDK Play Mode.
+The app sends your page the local player's controller input: a VR controller's own buttons and sticks, the grab and
+trigger of each hand from any device, and in 2D the sticks and buttons of a gamepad or the touchscreen controls (see
+[which device sends what](#which-device-sends-what)). They don't fire in SDK Play Mode.
 
 ```js
 // A button went down or up
@@ -247,9 +249,33 @@ scene.On("trigger-axis-update", (e) => {
 
 | Event | `detail` |
 |---|---|
-| `button-pressed`, `button-released` | `button`: a `BS.ButtonType` (`TRIGGER`, `GRIP`, `PRIMARY` (A or X), `SECONDARY` (B or Y), `THUMBSTICKCLICK`). `side`: a `BS.HandSide` (`LEFT`, `RIGHT`). |
+| `button-pressed`, `button-released` | `button`: a `BS.ButtonType` (`TRIGGER`, `GRIP`, `PRIMARY` (A or X), `SECONDARY` (B or Y), `THUMBSTICKCLICK`: a VR controller's buttons; `GRAB_ACTION`, `TRIGGER_ACTION`: the hand's grab and trigger from any device, see [enums](../reference/enums.md#buttontype)). `side`: a `BS.HandSide` (`LEFT`, `RIGHT`). |
 | `controller-axis-update` | `hand`: a `BS.HandSide`. `x` and `y`: the thumbstick, -1 to 1 (left/right, down/up). Sent when the stick moves by more than 0.01. |
 | `trigger-axis-update` | `hand`: a `BS.HandSide`. `value`: how far the trigger is pressed, 0 to 1. Sent when it changes by more than 0.01. |
+
+#### Which device sends what
+
+| Event / `ButtonType` | VR controller | Hand tracking | Gamepad (2D) | Touchscreen (2D) | Desktop keyboard and mouse |
+|---|---|---|---|---|---|
+| `TRIGGER` (0) | trigger | | | | |
+| `GRIP` (1) | grip | | | | |
+| `PRIMARY` (2) | A (right), X (left) | | A (left), B (right) | jump (left) | |
+| `SECONDARY` (3) | B (right), Y (left) | | X (left), Y (right) | | |
+| `THUMBSTICKCLICK` (4) | stick press | | stick press (L3, R3) | the stick-click buttons | |
+| `GRAB_ACTION` (5) | grip | grab | shoulder buttons (LB, RB) | the Grab buttons | G (left), H (right), changeable |
+| `TRIGGER_ACTION` (6) | trigger | pinch | triggers (LT, RT) | the Trigger buttons | 1 (left), 3 (right) |
+| `controller-axis-update` | thumbsticks | | left and right stick | move stick (left), look stick (right) | |
+| `trigger-axis-update` | how far the trigger is pressed | | | | |
+
+- `GRAB_ACTION` and `TRIGGER_ACTION` are the ones to use for anything that should work on every device; keep `GRIP`
+  and `TRIGGER` for what really is about a VR controller. Each press comes with its hand in `side`, so a grab with both
+  hands is two presses.
+- A press is sent past halfway and its release below about a third, once per hand. They aren't sent while something
+  else has that hand: a held object that uses the trigger (its own `OnTrigger` fires instead), the hand camera, typing
+  into a text field.
+- Desktop keyboard and mouse sends no stick events (its look is the mouse); keys and mouse buttons come as
+  `key-press` / `key-release`.
+- Switching from one kind of control to another releases anything still held and centres the sticks.
 
 ### Pointer Over UI
 
