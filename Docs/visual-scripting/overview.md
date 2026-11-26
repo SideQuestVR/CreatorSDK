@@ -42,6 +42,9 @@ Event nodes start a graph's control flow when something happens in the space. Th
 | Node | Purpose |
 |------|---------|
 | On Click | A user clicked the object's collider, which must be on the UI or Menu layer. The object input defaults to this object; outputs the click `Point` and `Normal` |
+| On BS Pointer Enter | One of the player's pointers (the mouse cursor, or the laser of the hand that is pointing) came onto the object's collider. It reaches the same objects as On Click: UI or Menu layer, in pointer range, nothing else clickable or UI in front. The object input defaults to this object; outputs the `Point` and `Normal` it hits and the `Hand Side` as a number (see [HandSide](../reference/enums.md#handside); the mouse is the right hand) |
+| On BS Pointer Move | The pointer moved across the object: at most once a frame, and only once the point has moved a millimetre. Same outputs as On BS Pointer Enter |
+| On BS Pointer Exit | The pointer left the object, or stopped pointing (a desktop player turning with the right mouse button, a VR player switching pointer hand). Outputs `Hand Side` |
 
 **Held events** (`Events > BS > HeldEvents`) — fire while a player holds the object. On Grab and On Release fire for anything a player grabs: without BS Held Events, on the object with the Rigidbody, or the collider's object if there's no Rigidbody. The others need a **BS Held Events** component on the object, which makes it grabbable and reports the input (see [HeldEvents](../components/vr-interaction.md#heldevents)); like anything grabbable, its collider goes on the Grabbable layer. The object input defaults to this object; every held event outputs `Is Left`, which reports which hand.
 

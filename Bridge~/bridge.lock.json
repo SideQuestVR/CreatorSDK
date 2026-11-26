@@ -693,7 +693,11 @@
     {"name": "USER_LEAVING_LISTEN", "code": "!ulvl!"},
     {"name": "USER_LEAVING_DONE", "code": "!ulvd!"},
     {"name": "ORIGIN_SHIFTED", "code": "osh!"},
-    {"name": "GROUP_CHECKED", "code": "grc!"}
+    {"name": "GROUP_CHECKED", "code": "grc!"},
+    {"name": "POINTER_ENTER", "code": "pen!"},
+    {"name": "POINTER_MOVE", "code": "pmv!"},
+    {"name": "POINTER_EXIT", "code": "pex!"},
+    {"name": "WATCH_POINTER", "code": "!wptr!"}
   ],
   "uiCommands": [
     {"name": "CREATE_UI_ELEMENT", "code": "!cui!"},

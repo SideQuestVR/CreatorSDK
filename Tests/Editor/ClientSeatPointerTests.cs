@@ -244,6 +244,69 @@ namespace BS.SDKEditor.Tests
             Assert.That((bool)resolve.Invoke(tooltip, args), Is.True);
         }
 
+        [Test]
+        public void WorldPointerEvents_FollowThePhysicsHit_AndEndWhenThePointerStops()
+        {
+            var dispatcherType = moduleType.Assembly.GetType("SideQuest.Greenfield.UI.BanterSceneClickDispatcher");
+            if (dispatcherType == null) Assert.Ignore("The client's scene dispatcher is not compiled in.");
+
+            // The world's side: a scene with no page, and a graph listening on the object (On BS Pointer Enter / Move / Exit).
+            var sceneInstance = typeof(BSScene).GetField("_instance", BindingFlags.Static | BindingFlags.NonPublic);
+            var previousScene = sceneInstance.GetValue(null);
+            sceneInstance.SetValue(null, System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(BSScene)));
+            var heard = new List<string>();
+            var hooks = new List<(Unity.VisualScripting.EventHook hook, Action<BSPointerHit> handler)>();
+            foreach (var hookName in new[] { BSPointerHover.EnterHook, BSPointerHover.MoveHook, BSPointerHover.ExitHook })
+            {
+                var name = hookName;
+                var hook = new Unity.VisualScripting.EventHook(name, seat.gameObject);
+                Action<BSPointerHit> handler = hit => heard.Add($"{name} {hit.side} {(hit.point - playerCamera.transform.position).z.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}");
+                Unity.VisualScripting.EventBus.Register(hook, handler);
+                hooks.Add((hook, handler));
+            }
+            var dispatcher = Create("Scene dispatcher").AddComponent(dispatcherType);
+            try
+            {
+                dispatcherType.GetField("_pointerModule", Instance).SetValue(dispatcher, module);
+                Invoke(dispatcher, "OnEnable");
+
+                SceneManager.MoveGameObjectToScene(seat.gameObject, SceneManager.GetActiveScene());
+                var origin = new Vector3(10000f, 10000f, 0f);
+                playerCamera.transform.position = origin;
+                seat.GetComponent<BoxCollider>().size = Vector3.one * .2f;
+                seat.transform.position = origin + Vector3.forward * 1.5f;
+
+                // Each frame the module raycasts, settles hover, then tells its listeners where the pointer is.
+                Frame(new Ray(origin, Vector3.forward));
+                Frame(new Ray(origin, Vector3.forward));
+                Frame(new Ray(origin + Vector3.right * .05f, Vector3.forward));
+                CollectionAssert.AreEqual(new[] { "OnBSPointerEnter RIGHT 1.40", "OnBSPointerMove RIGHT 1.40" }, heard,
+                    "The mouse is the right hand; the point is the hit on the collider's near face.");
+
+                // The pointer stops pointing (its provider is removed; going inactive takes the same path).
+                Invoke(module, "UnregisterProvider", provider);
+                Assert.That(heard[heard.Count - 1], Does.StartWith("OnBSPointerExit RIGHT"));
+                Assert.That(heard.Count, Is.EqualTo(3));
+            }
+            finally
+            {
+                Invoke(dispatcher, "OnDisable");
+                foreach (var (hook, handler) in hooks) Unity.VisualScripting.EventBus.Unregister(hook, handler);
+                sceneInstance.SetValue(null, previousScene);
+            }
+
+            void Frame(Ray ray)
+            {
+                stateType.GetField("CurrentRay").SetValue(state, ray);
+                Physics.SyncTransforms();
+                Invoke(module, "PerformRaycast", state);
+                Invoke(module, "ProcessMovement", state);
+                // Process() raises this after ProcessMovement for every active pointer.
+                var raised = (MulticastDelegate)moduleType.GetField("PointerHoverUpdated", Instance).GetValue(module);
+                raised.DynamicInvoke(state);
+            }
+        }
+
         void Move(GameObject target)
         {
             var hit = new RaycastResult { gameObject = target, distance = 2f };

@@ -187,6 +187,20 @@ obj.On("click", (e) => {
     console.log("Surface normal:", e.detail.normal); // Vector3
 });
 
+// The pointer (mouse cursor or VR laser) comes onto the object, moves across it, leaves it
+obj.On("pointer-enter", (e) => {
+    console.log("Pointing at:", e.detail.point, e.detail.normal); // Vector3
+    console.log("Hand:", e.detail.side); // BS.HandSide (the mouse is RIGHT)
+});
+
+obj.On("pointer-move", (e) => {
+    console.log("Now pointing at:", e.detail.point); // same detail as pointer-enter
+});
+
+obj.On("pointer-exit", (e) => {
+    console.log("Stopped pointing, hand:", e.detail.side);
+});
+
 // VR grab
 obj.On("grab", (e) => {
     console.log("Grabbed at:", e.detail.point);
@@ -229,6 +243,19 @@ obj.On("browser-message", (e) => {
 ```
 
 - **Clicks** only reach objects with a collider on the UI or Menu layer; see [Layers](../building-in-unity/layers.md).
+- **Pointer events** (`pointer-enter`, `pointer-move`, `pointer-exit`) reach the same objects as clicks, under the
+  same rules: a collider on the UI or Menu layer, within pointer range, nothing else clickable or UI in front, and
+  the event goes to the object the collider is on. They fire for the mouse cursor on desktop and in Play mode
+  (as `BS.HandSide.RIGHT`) and for the laser of the hand that is pointing in VR.
+  - `pointer-enter` and `pointer-move` give `point` and `normal` (world space) and `side`; `pointer-exit` gives `side`.
+  - `pointer-move` fires at most once a frame, and only once the point has moved a millimetre.
+  - `pointer-exit` also fires when the pointer stops pointing, for example while a desktop player holds the
+    right mouse button to turn.
+  - Only objects you listen on are reported, so listen on the surface you need (an aim pad, a button, a board
+    square) rather than on everything. If the pointer is already on the object when you start listening,
+    `pointer-enter` fires at once.
+  - Players on older app versions get none of these events, so keep anything they must be able to do working
+    from `click`.
 - **`grab`** gives the point and the hand; `drop` gives the hand. In Play mode the mouse grabs as `BS.HandSide.RIGHT`.
 - **Collision and trigger events** need a [ColliderEvents](../components/physics.md#colliderevents) component on
   this object, and, as always in Unity, a Rigidbody on at least one of the two objects. `e.detail` has the

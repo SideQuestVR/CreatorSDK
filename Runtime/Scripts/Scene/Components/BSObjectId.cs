@@ -26,6 +26,11 @@ namespace BS
         public bool watchRotation;
         public bool watchLocalRotation;
         public bool watchLocalScale;
+        /// <summary>
+        /// Which pointer events the page listens for on this object (BSPointerHover.WatchEnterExit, WatchMove): the
+        /// page sets it as its listeners change, and only those are sent to it.
+        /// </summary>
+        [NonSerialized] public int pointerWatch;
         public bool lerpPosition;
         public bool lerpRotation;
         Vector3 tempPosition;

@@ -479,6 +479,48 @@ namespace BS
             }
         }
 
+        BSPointerHover _pointerHover;
+
+        /// <summary>
+        /// Where one of the local player's pointers is this frame: on a world object it could click (in range, no UI
+        /// in front; <paramref name="obj"/> is the object that owns the collider, with the hit point and normal), or on
+        /// nothing such (null). Hosts call it once a frame for each pointer, with the pointer's own id: the mouse
+        /// counts as the right hand, as for a click, but it and the right hand are two pointers. The world gets
+        /// pointer-enter, pointer-move and pointer-exit from it: Visual Scripting's On BS Pointer Enter / Move / Exit
+        /// on the object, and the page's events of those names on the objects it listens on (BSPointerHover).
+        /// </summary>
+        public void PointerHover(int pointerId, HandSide side, GameObject obj, Vector3 point, Vector3 normal)
+        {
+            try
+            {
+                (_pointerHover ??= new BSPointerHover(this)).Report(pointerId, side, obj, point, normal);
+            }
+            catch (Exception e)
+            {
+                // Called from inside the host's pointer processing, as PointerOverUI is.
+                Debug.LogException(e);
+            }
+        }
+
+        /// <summary>
+        /// The page's pointer listeners on one object changed: oid§mask (BSPointerHover.WatchEnterExit / WatchMove),
+        /// sent without a request id. An object the page no longer has is ignored.
+        /// </summary>
+        public void WatchPointer(string msg)
+        {
+            var parts = msg.Split(MessageDelimiters.SECONDARY);
+            if (parts.Length < 2 || !int.TryParse(parts[0], out var oid) || !int.TryParse(parts[1], out var mask))
+            {
+                Debug.LogError("[Banter] WatchPointer message is malformed: " + msg);
+                return;
+            }
+            UnityMainThreadTaskScheduler.Default.Enqueue(TaskRunner.Track(() =>
+            {
+                var id = GetObject(oid).id;
+                if (id) (_pointerHover ??= new BSPointerHover(this)).Watch(id, mask);
+            }, $"{nameof(BSScene)}.{nameof(WatchPointer)}"));
+        }
+
         /// <summary>
         /// The local player has just been teleported: Visual Scripting's On Player Teleported, and the page's
         /// player-teleported event. Hosts call it once the player has moved, for every teleport: a script, a portal,
