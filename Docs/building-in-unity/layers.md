@@ -51,7 +51,8 @@ What works on each layer (✓ = yes):
   those two. Use Grabbable unless players should also be able to teleport onto the object. In Play mode
   only Grabbable can be grabbed for now (see [Testing in Play Mode](../getting-started/testing-in-play-mode.md)).
 - **Click** only ever looks at UI and Menu, in the app and in Play mode, so anything a player clicks (a
-  button, a seat, an object with a `click` listener) needs a collider on one of those two layers.
+  button, a seat, an object with a `click` listener) needs a collider on one of those two layers. The pointer
+  events (`pointer-enter`, `pointer-move`, `pointer-exit`, and the On BS Pointer nodes) reach the same colliders.
 - **Body** is the CharacterColliders layer and **hands** are CharacterHandColliders. The hands
   only touch UserLayer8, UserLayer9–15, Grabbable and Invisible; they pass through everything else.
 - **Invisible** objects are hidden from the player's camera, and from the hand camera and

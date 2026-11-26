@@ -4,7 +4,7 @@ Ready-made objects for common space features, under `GameObject > BS` (also the 
 
 - **Player**: Spawn Point, Spawn Range, Seat, Teleporter, Scene Settings.
 - **Grab**: one preset per grab type (Point, Point as a gun, Cylinder, Ball, Soft) and a climbable handhold.
-- **Objects**: Mirror, Avatar Mirror, Photo Wall, Browser, Video Player, Text, Audio Source, Portal, GLTF Model, Synced Object, UI Panel, Billboard, Collider Events, Verify Host.
+- **Objects**: Mirror, Avatar Mirror, Photo Wall, Browser, Video Player, Text, Audio Source, Portal, GLTF Model, Synced Object, UI Panel, Billboard, Collider Events, Verify Host, Verify Group.
 
 New objects land where Unity's own `GameObject` menu puts them: under the object you right-clicked, otherwise at the Scene view's centre (or the world origin, if **Preferences > Scene View > Create Objects at Origin** is on).
 
@@ -58,7 +58,7 @@ Sets the space's settings from the scene:
 
 - abilities: teleport, force grab (distance grab), spider-man, bird flight, running, hand holding, radar, name tags, portals, guests. Distance grab, bird flight and running are on unless you turn them off here
 - the furthest players can teleport (Teleport Max Range, in metres; 0 leaves it to each player), and whether players may stream their menu browser into the space (on unless you turn it off)
-- the megaphone: whether anyone can turn their own on (off unless you turn it on), and a lock that keeps it to moderators until the player leaves
+- the megaphone: whether anyone can turn their own on (off unless you turn it on), how far megaphones and walkie-talkies carry (Megaphone Distance Multiplier; 0 follows the voice distance), and a lock that keeps it to moderators until the player leaves
 - refresh rate and clipping planes
 - player physics
 - the locks (settings, physics, megaphone)
@@ -126,6 +126,7 @@ Each object is one SDK component, set up for the usual case:
 | Billboard | A quad with `BSBillboard`, which turns it to face the player. |
 | Collider Events | A 2 m trigger box standing on the object, with `BSColliderEvents` reporting enter and exit to the page and Visual Scripting. |
 | Verify Host | `BSVerifyHost` on an empty object, checking the world is running from its own address. Set its **Url** and choose what happens at any other address; see [VerifyHost](../components/special.md#verifyhost). |
+| Verify Group | `BSVerifyGroup` on an empty object, checking the player is a member of a SideQuest group. Set its **Group Id** and choose what happens to anyone else; see [VerifyGroup](../components/special.md#verifygroup). |
 
 ### Avatar Mirror (`BSAvatarMirror`)
 

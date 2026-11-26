@@ -43,6 +43,7 @@ namespace BS
         public System.Boolean EnableUserUICollider { get { return enableUserUICollider; } set { enableUserUICollider = value; UpdateCallback(new List<PropertyName> { PropertyName.enableUserUICollider }); } }
         public System.Boolean EnableMegaphone { get { return enableMegaphone; } set { enableMegaphone = value; UpdateCallback(new List<PropertyName> { PropertyName.enableMegaphone }); } }
         public System.Boolean IsMegaphoneLocked { get { return isMegaphoneLocked; } set { isMegaphoneLocked = value; UpdateCallback(new List<PropertyName> { PropertyName.isMegaphoneLocked }); } }
+        public System.Single MegaphoneDistanceMultiplier { get { return megaphoneDistanceMultiplier; } set { megaphoneDistanceMultiplier = value; UpdateCallback(new List<PropertyName> { PropertyName.megaphoneDistanceMultiplier }); } }
 
         BSScene _scene;
         public BSScene scene
@@ -65,12 +66,12 @@ namespace BS
 
         internal override void ReSetup()
         {
-            List<PropertyName> changedProperties = new List<PropertyName>() { PropertyName.enableTeleport, PropertyName.enableForceGrab, PropertyName.enableSpiderMan, PropertyName.enableHandHold, PropertyName.enableRadar, PropertyName.enableNametags, PropertyName.enablePortals, PropertyName.enableGuests, PropertyName.refreshRate, PropertyName.clippingPlane, PropertyName.physicsMoveSpeed, PropertyName.physicsMoveAcceleration, PropertyName.physicsAirControlSpeed, PropertyName.physicsAirControlAcceleration, PropertyName.physicsDrag, PropertyName.physicsFreeFallAngularDrag, PropertyName.physicsJumpStrength, PropertyName.physicsHandPositionStrength, PropertyName.physicsHandRotationStrength, PropertyName.physicsHandSpringiness, PropertyName.physicsGrappleRange, PropertyName.physicsGrappleReelSpeed, PropertyName.physicsGrappleSpringiness, PropertyName.physicsGorillaMode, PropertyName.isSettingsLocked, PropertyName.isPhysicsSettingsLocked, PropertyName.enableBirdFlight, PropertyName.avatarSyncMode, PropertyName.voiceDistanceMultiplier, PropertyName.enableRun, PropertyName.teleportMaxRange, PropertyName.enableBrowserStreaming, PropertyName.enableUserUICollider, PropertyName.enableMegaphone, PropertyName.isMegaphoneLocked, };
+            List<PropertyName> changedProperties = new List<PropertyName>() { PropertyName.enableTeleport, PropertyName.enableForceGrab, PropertyName.enableSpiderMan, PropertyName.enableHandHold, PropertyName.enableRadar, PropertyName.enableNametags, PropertyName.enablePortals, PropertyName.enableGuests, PropertyName.refreshRate, PropertyName.clippingPlane, PropertyName.physicsMoveSpeed, PropertyName.physicsMoveAcceleration, PropertyName.physicsAirControlSpeed, PropertyName.physicsAirControlAcceleration, PropertyName.physicsDrag, PropertyName.physicsFreeFallAngularDrag, PropertyName.physicsJumpStrength, PropertyName.physicsHandPositionStrength, PropertyName.physicsHandRotationStrength, PropertyName.physicsHandSpringiness, PropertyName.physicsGrappleRange, PropertyName.physicsGrappleReelSpeed, PropertyName.physicsGrappleSpringiness, PropertyName.physicsGorillaMode, PropertyName.isSettingsLocked, PropertyName.isPhysicsSettingsLocked, PropertyName.enableBirdFlight, PropertyName.avatarSyncMode, PropertyName.voiceDistanceMultiplier, PropertyName.enableRun, PropertyName.teleportMaxRange, PropertyName.enableBrowserStreaming, PropertyName.enableUserUICollider, PropertyName.enableMegaphone, PropertyName.isMegaphoneLocked, PropertyName.megaphoneDistanceMultiplier, };
             UpdateCallback(changedProperties);
         }
         internal override string GetSignature()
         {
-            return "Settings" +  PropertyName.enableTeleport + enableTeleport + PropertyName.enableForceGrab + enableForceGrab + PropertyName.enableSpiderMan + enableSpiderMan + PropertyName.enableHandHold + enableHandHold + PropertyName.enableRadar + enableRadar + PropertyName.enableNametags + enableNametags + PropertyName.enablePortals + enablePortals + PropertyName.enableGuests + enableGuests + PropertyName.refreshRate + refreshRate + PropertyName.clippingPlane + clippingPlane + PropertyName.physicsMoveSpeed + physicsMoveSpeed + PropertyName.physicsMoveAcceleration + physicsMoveAcceleration + PropertyName.physicsAirControlSpeed + physicsAirControlSpeed + PropertyName.physicsAirControlAcceleration + physicsAirControlAcceleration + PropertyName.physicsDrag + physicsDrag + PropertyName.physicsFreeFallAngularDrag + physicsFreeFallAngularDrag + PropertyName.physicsJumpStrength + physicsJumpStrength + PropertyName.physicsHandPositionStrength + physicsHandPositionStrength + PropertyName.physicsHandRotationStrength + physicsHandRotationStrength + PropertyName.physicsHandSpringiness + physicsHandSpringiness + PropertyName.physicsGrappleRange + physicsGrappleRange + PropertyName.physicsGrappleReelSpeed + physicsGrappleReelSpeed + PropertyName.physicsGrappleSpringiness + physicsGrappleSpringiness + PropertyName.physicsGorillaMode + physicsGorillaMode + PropertyName.isSettingsLocked + isSettingsLocked + PropertyName.isPhysicsSettingsLocked + isPhysicsSettingsLocked + PropertyName.enableBirdFlight + enableBirdFlight + PropertyName.avatarSyncMode + avatarSyncMode + PropertyName.voiceDistanceMultiplier + voiceDistanceMultiplier + PropertyName.enableRun + enableRun + PropertyName.teleportMaxRange + teleportMaxRange + PropertyName.enableBrowserStreaming + enableBrowserStreaming + PropertyName.enableUserUICollider + enableUserUICollider + PropertyName.enableMegaphone + enableMegaphone + PropertyName.isMegaphoneLocked + isMegaphoneLocked;
+            return "Settings" +  PropertyName.enableTeleport + enableTeleport + PropertyName.enableForceGrab + enableForceGrab + PropertyName.enableSpiderMan + enableSpiderMan + PropertyName.enableHandHold + enableHandHold + PropertyName.enableRadar + enableRadar + PropertyName.enableNametags + enableNametags + PropertyName.enablePortals + enablePortals + PropertyName.enableGuests + enableGuests + PropertyName.refreshRate + refreshRate + PropertyName.clippingPlane + clippingPlane + PropertyName.physicsMoveSpeed + physicsMoveSpeed + PropertyName.physicsMoveAcceleration + physicsMoveAcceleration + PropertyName.physicsAirControlSpeed + physicsAirControlSpeed + PropertyName.physicsAirControlAcceleration + physicsAirControlAcceleration + PropertyName.physicsDrag + physicsDrag + PropertyName.physicsFreeFallAngularDrag + physicsFreeFallAngularDrag + PropertyName.physicsJumpStrength + physicsJumpStrength + PropertyName.physicsHandPositionStrength + physicsHandPositionStrength + PropertyName.physicsHandRotationStrength + physicsHandRotationStrength + PropertyName.physicsHandSpringiness + physicsHandSpringiness + PropertyName.physicsGrappleRange + physicsGrappleRange + PropertyName.physicsGrappleReelSpeed + physicsGrappleReelSpeed + PropertyName.physicsGrappleSpringiness + physicsGrappleSpringiness + PropertyName.physicsGorillaMode + physicsGorillaMode + PropertyName.isSettingsLocked + isSettingsLocked + PropertyName.isPhysicsSettingsLocked + isPhysicsSettingsLocked + PropertyName.enableBirdFlight + enableBirdFlight + PropertyName.avatarSyncMode + avatarSyncMode + PropertyName.voiceDistanceMultiplier + voiceDistanceMultiplier + PropertyName.enableRun + enableRun + PropertyName.teleportMaxRange + teleportMaxRange + PropertyName.enableBrowserStreaming + enableBrowserStreaming + PropertyName.enableUserUICollider + enableUserUICollider + PropertyName.enableMegaphone + enableMegaphone + PropertyName.isMegaphoneLocked + isMegaphoneLocked + PropertyName.megaphoneDistanceMultiplier + megaphoneDistanceMultiplier;
         }
 
         internal override void Init(List<object> constructorProperties = null)
@@ -427,6 +428,15 @@ namespace BS
                     {
                         isMegaphoneLocked = valisMegaphoneLocked.x;
                         changedProperties.Add(PropertyName.isMegaphoneLocked);
+                    }
+                }
+                if (values[i] is BSFloat)
+                {
+                    var valmegaphoneDistanceMultiplier = (BSFloat)values[i];
+                    if (valmegaphoneDistanceMultiplier.n == PropertyName.megaphoneDistanceMultiplier)
+                    {
+                        megaphoneDistanceMultiplier = valmegaphoneDistanceMultiplier.x;
+                        changedProperties.Add(PropertyName.megaphoneDistanceMultiplier);
                     }
                 }
             }
@@ -851,6 +861,18 @@ namespace BS
                     name = PropertyName.isMegaphoneLocked,
                     type = PropertyType.Bool,
                     value = isMegaphoneLocked,
+                    componentType = ComponentType.Settings,
+                    oid = oid,
+                    cid = cid
+                });
+            }
+            if (force)
+            {
+                updates.Add(new BSComponentPropertyUpdate()
+                {
+                    name = PropertyName.megaphoneDistanceMultiplier,
+                    type = PropertyType.Float,
+                    value = megaphoneDistanceMultiplier,
                     componentType = ComponentType.Settings,
                     oid = oid,
                     cid = cid

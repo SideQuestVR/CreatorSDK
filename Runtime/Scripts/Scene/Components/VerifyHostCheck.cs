@@ -104,7 +104,7 @@ namespace BS
             Debug.LogWarning(isExpression
                 ? $"[BS] Verify Host: this world is running from {pageHost}, which doesn't match its expression."
                 : $"[BS] Verify Host: this world is running from {pageHost}, not {HostOf(url)}.");
-            RunOutcome(scene, outcome, teleportPosition, worldUrl, errorMessage, pageHost);
+            RunOutcome("Verify Host", scene, outcome, teleportPosition, worldUrl, errorMessage, pageHost);
             done?.Invoke(true);
         }
 
@@ -142,8 +142,13 @@ namespace BS
             }
         }
 
-        static void RunOutcome(BSScene scene, VerifyHostOutcome outcome, Vector3 teleportPosition, string worldUrl,
-                               string errorMessage, string pageHost)
+        /// <summary>
+        /// Runs a failed check's outcome for the local player: Verify Host's, and Verify Group's. <paramref name="checkName"/>
+        /// names the check in the log; <paramref name="pageHost"/> is where this world runs, spelled as <see cref="HostOf"/>
+        /// spells it, so the player is never sent to the world they are already in.
+        /// </summary>
+        internal static void RunOutcome(string checkName, BSScene scene, VerifyHostOutcome outcome, Vector3 teleportPosition,
+                                        string worldUrl, string errorMessage, string pageHost)
         {
             if (outcome == VerifyHostOutcome.TeleportToPosition)
             {
@@ -153,13 +158,13 @@ namespace BS
             var address = WorldAddressOf(worldUrl);
             if (address.Length == 0)
             {
-                Debug.LogWarning($"[BS] Verify Host needs a world to send the player to, got '{Shown(worldUrl)}'.");
+                Debug.LogWarning($"[BS] {checkName} needs a world to send the player to, got '{Shown(worldUrl)}'.");
                 return;
             }
             // Sent to the host it is already on, the world would load, fail the check and send the player again, for ever.
             if (IsSameWorldHost(HostOf(address), pageHost))
             {
-                Debug.LogWarning($"[BS] Verify Host won't send the player to '{Shown(address)}': this world is already there.");
+                Debug.LogWarning($"[BS] {checkName} won't send the player to '{Shown(address)}': this world is already there.");
                 return;
             }
             if (!string.IsNullOrWhiteSpace(errorMessage))

@@ -501,6 +501,7 @@ namespace BS
             {
                 SetHoverTarget(null);
                 SetOverUI(false);
+                ReportHover(null, default);
                 _hand.UpdateHeldGripHologram(_gripHologram, Time.unscaledDeltaTime);
                 return;
             }
@@ -513,6 +514,7 @@ namespace BS
                 ? new RaycastResult { gameObject = hit.collider.gameObject, worldPosition = hit.point, worldNormal = hit.normal, distance = hit.distance }
                 : default;
             SetHoverTarget(target == PressOwner.Click ? hit.collider.gameObject : null);
+            ReportHover(target == PressOwner.Click ? hit.collider.gameObject : null, hit);
             if (!ActionsSystem.canGrab || ActionsSystem.Blocker_RightGrip.Grab)
                 _gripHologram.Clear();
             else if (target == PressOwner.Grab && _hand != null)
@@ -525,7 +527,15 @@ namespace BS
         {
             SetHoverTarget(null);
             SetOverUI(false);
+            ReportHover(null, default);
             _gripHologram.Clear();
+        }
+
+        // The world's pointer-enter / move / exit, for the object a click would go to. The mouse is one pointer (id -1,
+        // as in the client) and counts as the right hand.
+        void ReportHover(GameObject target, RaycastHit hit)
+        {
+            _scene?.PointerHover(-1, HandSide.RIGHT, target, hit.point, hit.normal);
         }
 
         // The client's pointer reports the same: worlds pause their own mouse input while it's on a panel.

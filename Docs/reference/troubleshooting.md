@@ -151,6 +151,8 @@ The scene has no active spawn point. Add one with **GameObject > BS > Player > S
 
 A [VerifyHost](../components/special.md#verifyhost) found the world somewhere its **Url** doesn't allow. Check that **Url** matches the address under the Builder's **World** dropdown, and that your last build is newer than your last address change. The log has a `[BS] Verify Host:` line naming the host it found.
 
+Or a [VerifyGroup](../components/special.md#verifygroup) found the player isn't in its group, or couldn't find out. The log has a `[BS] Verify Group` line saying which. Check that **Group Id** is the group's number, that the player is signed in and a member, and that they aren't banned from the group.
+
 ### A teleporter keeps teleporting the player
 
 Its destination is inside its own trigger, so the player lands back in it and is teleported again whenever the cooldown ends. Move the destination outside the trigger.

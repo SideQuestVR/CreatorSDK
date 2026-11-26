@@ -175,6 +175,8 @@ namespace BS
                     return gameObject.AddComponent<BSGaussianSplat>();
                 case ComponentType.LargeWorld:
                     return gameObject.AddComponent<BSLargeWorld>();
+                case ComponentType.VerifyGroup:
+                    return gameObject.AddComponent<BSVerifyGroup>();
                 default:
                     return null;
             }

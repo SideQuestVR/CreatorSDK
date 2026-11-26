@@ -36,6 +36,7 @@ namespace BS
         public const string EnableBirdFlight = "EnableBirdFlight";
         public const string AvatarSyncMode = "AvatarSyncMode";
         public const string VoiceDistanceMultiplier = "VoiceDistanceMultiplier";
+        public const string MegaphoneDistanceMultiplier = "MegaphoneDistanceMultiplier";
         public const string EnableRun = "EnableRun";
         public const string TeleportMaxRange = "TeleportMaxRange";
         public const string EnableBrowserStreaming = "EnableBrowserStreaming";
@@ -476,6 +477,58 @@ namespace BS
                 // Called from inside the host's pointer processing, which a world's graph must not stop.
                 Debug.LogException(e);
             }
+        }
+
+        BSPointerHover _pointerHover;
+
+        /// <summary>
+        /// Where one of the local player's pointers is this frame: on a world object it could click (in range, no UI
+        /// in front; <paramref name="obj"/> is the object that owns the collider, with the hit point and normal), or on
+        /// nothing such (null). Hosts call it once a frame for each pointer, with the pointer's own id: the mouse
+        /// counts as the right hand, as for a click, but it and the right hand are two pointers. The world gets
+        /// pointer-enter, pointer-move and pointer-exit from it: Visual Scripting's On BS Pointer Enter / Move / Exit
+        /// on the object, and the page's events of those names on the objects it listens on (BSPointerHover).
+        /// </summary>
+        public void PointerHover(int pointerId, HandSide side, GameObject obj, Vector3 point, Vector3 normal)
+        {
+            try
+            {
+                (_pointerHover ??= new BSPointerHover(this)).Report(pointerId, side, obj, point, normal);
+            }
+            catch (Exception e)
+            {
+                // Called from inside the host's pointer processing, as PointerOverUI is.
+                Debug.LogException(e);
+            }
+        }
+
+        /// <summary>
+        /// <see cref="PointerHover"/> on the live scene, if there is one. For hosts that report every frame: unlike
+        /// <see cref="Instance"/> this never makes a scene, so a pointer that is still reporting while the app has no
+        /// scene, or is shutting down, leaves none behind.
+        /// </summary>
+        public static void ReportPointerHover(int pointerId, HandSide side, GameObject obj, Vector3 point, Vector3 normal)
+        {
+            _instance?.PointerHover(pointerId, side, obj, point, normal);
+        }
+
+        /// <summary>
+        /// The page's pointer listeners on one object changed: oid§mask (BSPointerHover.WatchEnter, WatchMove,
+        /// WatchExit), sent without a request id. An object the page no longer has is ignored.
+        /// </summary>
+        public void WatchPointer(string msg)
+        {
+            var parts = msg.Split(MessageDelimiters.SECONDARY);
+            if (parts.Length < 2 || !int.TryParse(parts[0], out var oid) || !int.TryParse(parts[1], out var mask))
+            {
+                Debug.LogError("[Banter] WatchPointer message is malformed: " + msg);
+                return;
+            }
+            UnityMainThreadTaskScheduler.Default.Enqueue(TaskRunner.Track(() =>
+            {
+                var id = GetObject(oid).id;
+                if (id) (_pointerHover ??= new BSPointerHover(this)).Watch(id, mask);
+            }, $"{nameof(BSScene)}.{nameof(WatchPointer)}"));
         }
 
         /// <summary>
@@ -3620,6 +3673,8 @@ namespace BS
             // Here, not in OnLoad's queued listeners: the new page's first messages (it may say it listens straight
             // away) must not arrive before the old page's listening is forgotten.
             BSPreLeave.PageLoadStarted();
+            // The same for the pointer events the old page listened for on each object.
+            BSPointerHover.PageStarted();
             UnityMainThreadTaskScheduler.Default.Enqueue(TaskRunner.Track(() =>
              {
                  if (settings != null)
@@ -4127,6 +4182,9 @@ namespace BS
                                  break;
                              case SettingsMap.VoiceDistanceMultiplier:
                                  settings.VoiceDistanceMultiplier = NumberFormat.Parse(setting[1]);
+                                 break;
+                             case SettingsMap.MegaphoneDistanceMultiplier:
+                                 settings.MegaphoneDistanceMultiplier = NumberFormat.Parse(setting[1]);
                                  break;
                              case SettingsMap.EnableRun:
                                  settings.EnableRun = PageAbility(setting[1], settings.EnableRun, SettingsMap.EnableRun, c => c.enableRun);

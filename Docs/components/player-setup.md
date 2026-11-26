@@ -183,6 +183,7 @@ When it starts, it applies all of its values, so anything you don't set goes bac
 | `enableUserUICollider` | boolean | true | `EnableUserUICollider`: pointers land on other players, and clicking one opens their profile. Untick it so pointers pass through players, for a world that aims at them itself |
 | `enableMegaphone` | boolean | false | `EnableMegaphone`: anyone can turn their own megaphone on from the radial menu (heard across the room). Off: only moderators can megaphone people. Megaphone Volumes work either way |
 | `voiceDistanceMultiplier` | number | 1 | `VoiceDistanceMultiplier`: scales how far voices carry here, on top of each player's own Voice Distance setting: 2 = twice as far (a stage or auditorium), 0.5 = half. Clamped to 0.1-10. Voices beyond that distance aren't received at all, so a large multiplier in a crowded space costs players bandwidth |
+| `megaphoneDistanceMultiplier` | number | 0 | `MegaphoneDistanceMultiplier`: scales how far megaphones and friends' walkie-talkies carry here, apart from normal voices: full volume to 40 m and silent at 100 m, times this (10 = silent at 1 km). 0 uses `voiceDistanceMultiplier` for them too, as before. Clamped to 0.1-100, and never shorter than a normal voice's reach. They're received at any distance anyway, so it costs players no bandwidth |
 | `enableHandHold` | boolean | true | `EnableHandHold`: players can hold hands |
 | `enableRadar` | boolean | true | `EnableRadar`: the radar is shown |
 | `enableNametags` | boolean | true | `EnableNametags`: name tags show above players |

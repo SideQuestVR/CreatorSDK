@@ -270,6 +270,11 @@ namespace BS
             {
                 BSPreLeave.PageDone(GetMsgData(msg, APICommands.USER_LEAVING_DONE));
             }
+            // Pointer events (BSPointerHover): which of them the page listens for on one object.
+            else if (msg.StartsWith(APICommands.WATCH_POINTER))
+            {
+                scene.WatchPointer(GetMsgData(msg, APICommands.WATCH_POINTER));
+            }
             else if (UIElementBridge.IsUICommand(msg))
             {
                 UnityMainThreadTaskScheduler.Default.Enqueue(TaskRunner.Track(() => UIElementBridge.HandleMessage(msg), $"{nameof(BSLink)}.{nameof(ParseCommand)}.UIElementBridge.IsUICommand"));
@@ -1397,6 +1402,12 @@ namespace BS
             Send(APICommands.EVENT + APICommands.WORLD_OPTION_PRESSED + MessageDelimiters.PRIMARY + BSScene.UnityId(obj) + MessageDelimiters.SECONDARY + (isOn ? "1" : "0"));
         }
 
+        /// <summary>A BSVerifyGroup's check finished: the page's group-checked event on that component (cid§1/0§state).</summary>
+        public void OnGroupChecked(int cid, bool isMember, string state)
+        {
+            Send(APICommands.EVENT + APICommands.GROUP_CHECKED + MessageDelimiters.PRIMARY + cid + MessageDelimiters.SECONDARY + (isMember ? "1" : "0") + MessageDelimiters.SECONDARY + state);
+        }
+
         public void OnGrab(GameObject obj, Vector3 point, HandSide side)
         {
             Send(APICommands.EVENT + APICommands.GRABBED + MessageDelimiters.PRIMARY + BSScene.UnityId(obj) + MessageDelimiters.SECONDARY + NumberFormat.Format(point.x) + MessageDelimiters.SECONDARY + NumberFormat.Format(point.y) + MessageDelimiters.SECONDARY + NumberFormat.Format(point.z) + MessageDelimiters.SECONDARY + (int)side);
@@ -1420,6 +1431,29 @@ namespace BS
         public void OnPointerOverUI(bool isOverUI, HandSide side)
         {
             Send(APICommands.EVENT + APICommands.POINTER_OVER_UI + MessageDelimiters.PRIMARY + (isOverUI ? "1" : "0") + MessageDelimiters.SECONDARY + (int)side);
+        }
+
+        /// <summary>A pointer came onto an object the page listens on: oid§px§py§pz§nx§ny§nz§side (BSPointerHover).</summary>
+        public void OnPointerEnter(GameObject obj, Vector3 point, Vector3 normal, HandSide side)
+        {
+            SendPointerHit(APICommands.POINTER_ENTER, obj, point, normal, side);
+        }
+
+        /// <summary>The pointer moved across the object: the same fields as OnPointerEnter.</summary>
+        public void OnPointerMove(GameObject obj, Vector3 point, Vector3 normal, HandSide side)
+        {
+            SendPointerHit(APICommands.POINTER_MOVE, obj, point, normal, side);
+        }
+
+        /// <summary>The pointer left the object: oid§side.</summary>
+        public void OnPointerExit(GameObject obj, HandSide side)
+        {
+            Send(APICommands.EVENT + APICommands.POINTER_EXIT + MessageDelimiters.PRIMARY + BSScene.UnityId(obj) + MessageDelimiters.SECONDARY + (int)side);
+        }
+
+        void SendPointerHit(string command, GameObject obj, Vector3 point, Vector3 normal, HandSide side)
+        {
+            Send(APICommands.EVENT + command + MessageDelimiters.PRIMARY + BSScene.UnityId(obj) + MessageDelimiters.SECONDARY + NumberFormat.Format(point.x) + MessageDelimiters.SECONDARY + NumberFormat.Format(point.y) + MessageDelimiters.SECONDARY + NumberFormat.Format(point.z) + MessageDelimiters.SECONDARY + NumberFormat.Format(normal.x) + MessageDelimiters.SECONDARY + NumberFormat.Format(normal.y) + MessageDelimiters.SECONDARY + NumberFormat.Format(normal.z) + MessageDelimiters.SECONDARY + (int)side);
         }
 
         public void OnPlayerTeleported(Vector3 position, Vector3 rotation, bool isSpawn)

@@ -24,6 +24,7 @@ public class BSSceneEvents
     public UnityEvent<bool> OnEnableBirdFlightChanged = new UnityEvent<bool>();
     public UnityEvent<string> OnAvatarSyncModeChanged = new UnityEvent<string>();
     public UnityEvent<float> OnVoiceDistanceMultiplierChanged = new UnityEvent<float>();
+    public UnityEvent<float> OnMegaphoneDistanceMultiplierChanged = new UnityEvent<float>();
     public UnityEvent<bool> OnEnableRunChanged = new UnityEvent<bool>();
     public UnityEvent<float> OnTeleportMaxRangeChanged = new UnityEvent<float>();
     public UnityEvent<bool> OnEnableBrowserStreamingChanged = new UnityEvent<bool>();
@@ -202,6 +203,7 @@ public class BSSceneEvents
         OnEnableBirdFlightChanged.RemoveAllListeners();
         OnAvatarSyncModeChanged.RemoveAllListeners();
         OnVoiceDistanceMultiplierChanged.RemoveAllListeners();
+        OnMegaphoneDistanceMultiplierChanged.RemoveAllListeners();
         OnEnableRunChanged.RemoveAllListeners();
         OnTeleportMaxRangeChanged.RemoveAllListeners();
         OnEnableBrowserStreamingChanged.RemoveAllListeners();
