@@ -1397,6 +1397,12 @@ namespace BS
             Send(APICommands.EVENT + APICommands.WORLD_OPTION_PRESSED + MessageDelimiters.PRIMARY + BSScene.UnityId(obj) + MessageDelimiters.SECONDARY + (isOn ? "1" : "0"));
         }
 
+        /// <summary>A BSVerifyGroup's check finished: the page's group-checked event on that component (cid§1/0§state).</summary>
+        public void OnGroupChecked(int cid, bool isMember, string state)
+        {
+            Send(APICommands.EVENT + APICommands.GROUP_CHECKED + MessageDelimiters.PRIMARY + cid + MessageDelimiters.SECONDARY + (isMember ? "1" : "0") + MessageDelimiters.SECONDARY + state);
+        }
+
         public void OnGrab(GameObject obj, Vector3 point, HandSide side)
         {
             Send(APICommands.EVENT + APICommands.GRABBED + MessageDelimiters.PRIMARY + BSScene.UnityId(obj) + MessageDelimiters.SECONDARY + NumberFormat.Format(point.x) + MessageDelimiters.SECONDARY + NumberFormat.Format(point.y) + MessageDelimiters.SECONDARY + NumberFormat.Format(point.z) + MessageDelimiters.SECONDARY + (int)side);

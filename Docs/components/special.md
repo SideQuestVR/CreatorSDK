@@ -154,6 +154,42 @@ This deters copies; it can't stop them. For the strongest check, keep it on its 
 
 In a script graph, instantiate a prefab that holds the component, or use the **Verify Host** node (`BS > Space`), which runs the same check and then carries on from **Verified** or **Wrong Host**. That happens later, in a new flow, so use graph or object variables for anything you need from before the node. The node's inputs live in the graph, which a page can edit, so use the component when that matters.
 
+## VerifyGroup
+
+Checks that the player is a member of a SideQuest group, so a members' area or a members-only world can send everyone else somewhere else. Add it with **GameObject > BS > Objects > Verify Group**, or **Add Component > BS > Verify Group** on any object.
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| **Group Id** | empty | The group to check: the number at the end of its page's address, as in `altvr.app/groups/12345` |
+| **Outcome** | Teleport To Position | What happens to a player who isn't a member: Teleport To Position or Send To World |
+| **Teleport Position** | `0, 0, 0` | Where Teleport To Position puts the player, in world space |
+| **World Url** | empty | Where Send To World sends the player. Without `https://`, it's assumed |
+| **Error Message** | `This world is only open to members of its group.` | The message Send To World shows as the player leaves. Empty shows nothing |
+| **On Member**, **On Not Member** | | Events raised when the check finishes. On Not Member runs after the outcome |
+
+Once the space has loaded, it checks each player against the group, in their own app. The group's owner, its moderators and its members count as members. Anyone else doesn't: a player who isn't in the group or is banned from it, a guest, or a player who isn't signed in. **The check fails closed**: if the player's app can't find out (no connection, or no answer within 10 seconds), the player counts as not a member and the outcome runs.
+
+A player's app checks at most 4 different groups for each world while the app is running, so a page can't use the component to find out which groups its visitors are in. Any more count as not a member, and coming back to the world doesn't reset the count. Your world's other address (`.bant.ing` or `.worldspace.host`) counts as the same world, and so does every subdomain of your own domain. Answers are kept for 30 seconds, and a failed lookup for 5.
+
+If **Group Id** isn't a number, nothing happens to the player and a warning is logged. A number that isn't a group counts as not a member. SDK Play Mode can't tell which groups you're in, so the check is skipped there: visit your world once it's published to test it. Send To World behaves as in [VerifyHost](#verifyhost), and won't send a player to the world they're already in.
+
+This keeps visitors out of the way; it can't lock them out, because a modified app can get past it. To close a whole world to everyone outside the group, set its access to the group's members on SideQuest.
+
+From a page script, add `BS.VerifyGroup` and listen for `group-checked` on the component. `isMember` and `checkState` are read only: `checkState` is `none`, `checking`, `member`, `not-member`, `error` (couldn't tell, counted as not a member), `invalid` (not a group id) or `skipped` (SDK Play Mode, which can't check). `outcome` is a number here: 0 is Teleport To Position and 1 is Send To World. The check runs again when `groupId` changes, and when you call `Recheck()`, for instance after the player has signed in. The outcome settings are read when the outcome runs, so you can set them after adding the component. Turning the object off and on again doesn't repeat a check that has finished.
+
+```js
+const gate = await new BS.GameObject("MembersOnly").AddComponent(new BS.VerifyGroup({
+    groupId: "12345",
+    outcome: 0,
+    teleportPosition: new BS.Vector3(0, 0, -20)
+}));
+gate.On("group-checked", (e) => console.log("Member:", e.detail.isMember, e.detail.state));
+```
+
+Unlike VerifyHost, this is a BS component: your page scripts can read, change or remove it, the same as any other.
+
+In a script graph, use the **Verify Group** node (`BS > Space`), which runs the same check and then carries on from **Member** or **Not Member**. That happens later, in a new flow, so use graph or object variables for anything you need from before the node. **Member** also runs when the check is skipped (SDK Play Mode), and **Not Member** also runs for a **Group ID** that isn't a number, without running the outcome.
+
 ## MegaphoneVolume
 
 Anyone standing inside is megaphoned: their voice carries across the room. Use it for a stage, a podium or a DJ booth. Add it with **Add Component > BS > Megaphone Volume**; it adds a 4 × 3 × 4 m trigger box standing on the object for you, and moves an object on Default to Ignore Raycast so the box doesn't block teleports or pointers (see [Layers](../building-in-unity/layers.md)).

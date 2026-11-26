@@ -244,4 +244,7 @@ public class APICommands
     // Large worlds, Unity -> page: the floating origin shifted (BSLargeWorld): dx§dy§dz§origin, where origin is the
     // new origin as "x,y,z" (doubles, invariant culture).
     public const string ORIGIN_SHIFTED = "osh!";
+
+    // Unity -> page: a BSVerifyGroup check finished: cid§isMember (1/0)§state, sent to the component.
+    public const string GROUP_CHECKED = "grc!";
 }

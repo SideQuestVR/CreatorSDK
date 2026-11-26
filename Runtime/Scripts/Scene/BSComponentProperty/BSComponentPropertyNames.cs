@@ -330,5 +330,12 @@ namespace BS
         isMegaphoneLocked,
         autoShift,
         shiftThreshold,
+        groupId,
+        outcome,
+        teleportPosition,
+        worldUrl,
+        errorMessage,
+        isMember,
+        checkState,
     }
 }

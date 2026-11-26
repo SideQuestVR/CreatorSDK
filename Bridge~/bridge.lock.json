@@ -87,7 +87,8 @@
     {"id": 82, "name": "AvatarMirror"},
     {"id": 83, "name": "PhotoWall"},
     {"id": 84, "name": "GaussianSplat"},
-    {"id": 85, "name": "LargeWorld"}
+    {"id": 85, "name": "LargeWorld"},
+    {"id": 86, "name": "VerifyGroup"}
   ],
   "propertyNames": [
     {"id": 0, "name": "hasUnity"},
@@ -417,7 +418,14 @@
     {"id": 324, "name": "enableMegaphone"},
     {"id": 325, "name": "isMegaphoneLocked"},
     {"id": 326, "name": "autoShift"},
-    {"id": 327, "name": "shiftThreshold"}
+    {"id": 327, "name": "shiftThreshold"},
+    {"id": 328, "name": "groupId"},
+    {"id": 329, "name": "outcome"},
+    {"id": 330, "name": "teleportPosition"},
+    {"id": 331, "name": "worldUrl"},
+    {"id": 332, "name": "errorMessage"},
+    {"id": 333, "name": "isMember"},
+    {"id": 334, "name": "checkState"}
   ],
   "tags": [
     {"index": 0, "name": "UserTag1"},
@@ -683,7 +691,8 @@
     {"name": "USER_LEAVING", "code": "ulv!"},
     {"name": "USER_LEAVING_LISTEN", "code": "!ulvl!"},
     {"name": "USER_LEAVING_DONE", "code": "!ulvd!"},
-    {"name": "ORIGIN_SHIFTED", "code": "osh!"}
+    {"name": "ORIGIN_SHIFTED", "code": "osh!"},
+    {"name": "GROUP_CHECKED", "code": "grc!"}
   ],
   "uiCommands": [
     {"name": "CREATE_UI_ELEMENT", "code": "!cui!"},
@@ -3435,6 +3444,24 @@
         }
       ],
       "tsConstructor": ["autoShift: boolean | any = false", "shiftThreshold: number = 128"]
+    },
+    {
+      "name": "VerifyGroup",
+      "cs": "BS.BSVerifyGroup",
+      "base": "BS.BSComponentBase",
+      "fields": [
+        {"name": "groupId", "attr": "See", "type": "System.String", "wire": "String", "propId": 328},
+        {"name": "outcome", "attr": "See", "type": "System.Int32", "wire": "Int", "propId": 329, "initial": "0"},
+        {"name": "teleportPosition", "attr": "See", "type": "UnityEngine.Vector3", "wire": "Vector3", "propId": 330, "initial": "0,0,0"},
+        {"name": "worldUrl", "attr": "See", "type": "System.String", "wire": "String", "propId": 331},
+        {"name": "errorMessage", "attr": "See", "type": "System.String", "wire": "String", "propId": 332, "initial": "\"This world is only open to members of its group.\""},
+        {"name": "isMember", "attr": "See", "type": "System.Boolean", "wire": "Bool", "propId": 333, "initial": "false"},
+        {"name": "checkState", "attr": "See", "type": "System.String", "wire": "String", "propId": 334, "initial": "\"none\""}
+      ],
+      "methods": [
+        {"name": "_Recheck", "returns": "System.Boolean", "params": []}
+      ],
+      "tsConstructor": ["groupId: String | any = new String()", "outcome: number = 0", "teleportPosition: Vector3 = new Vector3(0,0,0)", "worldUrl: String = new String()", "errorMessage: String = new String(\"This world is only open to members of its group.\")", "isMember: boolean = false", "checkState: String = new String(\"none\")"]
     }
   ],
   "jsAliases": [
