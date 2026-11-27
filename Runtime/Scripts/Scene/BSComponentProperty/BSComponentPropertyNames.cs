@@ -338,5 +338,7 @@ namespace BS
         isMember,
         checkState,
         megaphoneDistanceMultiplier,
+        enableSafetyNet,
+        safetyNetHeight,
     }
 }

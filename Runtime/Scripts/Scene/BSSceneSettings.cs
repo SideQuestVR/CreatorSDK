@@ -63,6 +63,15 @@ namespace BS
         /// existed. Stored as given; the app clamps it when it applies it.</summary>
         private float _MegaphoneDistanceMultiplier = 0f;
         public float MegaphoneDistanceMultiplier { get { return _MegaphoneDistanceMultiplier; } set { _MegaphoneDistanceMultiplier = value; scene.events.OnMegaphoneDistanceMultiplierChanged.Invoke(value); } }
+        /// <summary>A player who falls below <see cref="SafetyNetHeight"/> is put back at their spawn point (or
+        /// wherever the world last moved them). On unless the space turns it off; off, players fall as far as the world goes (one flung 100 km or
+        /// more away is still brought back).</summary>
+        private bool _EnableSafetyNet = true;
+        public bool EnableSafetyNet { get { return _EnableSafetyNet; } set { _EnableSafetyNet = value; scene.events.OnEnableSafetyNetChanged.Invoke(value); } }
+        /// <summary>The height (world Y, metres) below which the safety net catches a falling player. -250 unless the
+        /// space sets it. Stored as given; the app ignores a value that is not a finite number.</summary>
+        private float _SafetyNetHeight = -250f;
+        public float SafetyNetHeight { get { return _SafetyNetHeight; } set { _SafetyNetHeight = value; scene.events.OnSafetyNetHeightChanged.Invoke(value); } }
         /// <summary>Players can run (hold Shift on desktop, click the left stick in VR). On unless the space turns it off;
         /// off, everyone moves at the space's walking speed only.</summary>
         private bool _EnableRun = true;
@@ -328,6 +337,8 @@ namespace BS
             AvatarSyncMode = AvatarSyncModes.Social;
             VoiceDistanceMultiplier = 1f;
             MegaphoneDistanceMultiplier = 0f;
+            EnableSafetyNet = true;
+            SafetyNetHeight = -250f;
             EnableRun = true;
             TeleportMaxRange = 0f;
             EnableBrowserStreaming = true;

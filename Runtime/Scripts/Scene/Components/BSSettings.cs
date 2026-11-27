@@ -51,6 +51,8 @@ namespace BS
     - `enableMegaphone` - Anyone in the space can turn their own megaphone on from the radial menu (heard across the room). Off by default: only moderators can megaphone people. Megaphone Volumes work either way.
     - `isMegaphoneLocked` - Lock the megaphone: only moderators can megaphone people, and Megaphone Volumes and `enableMegaphone` stop working. Players can still turn their own megaphone off. Once on it stays on until the space is left or rejoined: nothing can unlock it before then.
     - `megaphoneDistanceMultiplier` - How far megaphones and friends' walkie-talkies carry here, apart from normal voices: full volume to 40 m and silent at 100 m, times this (10 = silent at 1 km). 0 (the default) follows `voiceDistanceMultiplier`, as before.
+    - `enableSafetyNet` - Players who fall below `safetyNetHeight` are put back at their spawn point (or wherever the world last moved them). On by default; turn it off to let players fall as far as the world goes (a player flung right out of the world, 100 km or more, is still brought back).
+    - `safetyNetHeight` - The height, in metres, below which the safety net catches a falling player (default -250). Keep it below everywhere players can stand or spawn.
 
     **Code Example**
     ```js
@@ -190,6 +192,15 @@ namespace BS
                  "distance anyway, so a large value costs players no bandwidth.")]
         [See(initial = "0")][SerializeField] internal float megaphoneDistanceMultiplier = 0f;
 
+        [Header("Safety net")]
+        [Tooltip("Players who fall below Safety Net Height are put back at their spawn point (or wherever the world last moved them). On by " +
+                 "default; turn it off to let players fall as far as the world goes. A player flung right out of the " +
+                 "world (100 km or more away) is still brought back.")]
+        [See(initial = "true")][SerializeField] internal bool enableSafetyNet = true;
+        [Tooltip("The height, in metres, below which the safety net catches a falling player. -250 by default. Keep it " +
+                 "below everywhere players can stand or spawn: a player put back below it is caught again at once.")]
+        [See(initial = "-250")][SerializeField] internal float safetyNetHeight = -250f;
+
         bool started;
         // The settings object (it is recreated on every page load) that this component locked, if any.
         // Its own locks don't stop it; locks set by anything else do.
@@ -255,6 +266,8 @@ namespace BS
                 if (Has(PropertyName.enableUserUICollider)) settings.EnableUserUICollider = enableUserUICollider;
                 if (Has(PropertyName.enableMegaphone)) settings.EnableMegaphone = enableMegaphone;
                 if (Has(PropertyName.megaphoneDistanceMultiplier)) settings.MegaphoneDistanceMultiplier = megaphoneDistanceMultiplier;
+                if (Has(PropertyName.enableSafetyNet)) settings.EnableSafetyNet = enableSafetyNet;
+                if (Has(PropertyName.safetyNetHeight)) settings.SafetyNetHeight = safetyNetHeight;
                 if (Has(PropertyName.enableHandHold)) settings.EnableHandHold = enableHandHold;
                 if (Has(PropertyName.enableRadar)) settings.EnableRadar = enableRadar;
                 if (Has(PropertyName.enableNametags)) settings.EnableNametags = enableNametags;
