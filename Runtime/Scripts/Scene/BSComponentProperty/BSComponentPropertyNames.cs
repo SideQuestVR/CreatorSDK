@@ -340,5 +340,6 @@ namespace BS
         megaphoneDistanceMultiplier,
         enableSafetyNet,
         safetyNetHeight,
+        enableDistanceLimit,
     }
 }

@@ -27,6 +27,7 @@ public class BSSceneEvents
     public UnityEvent<float> OnMegaphoneDistanceMultiplierChanged = new UnityEvent<float>();
     public UnityEvent<bool> OnEnableSafetyNetChanged = new UnityEvent<bool>();
     public UnityEvent<float> OnSafetyNetHeightChanged = new UnityEvent<float>();
+    public UnityEvent<bool> OnEnableDistanceLimitChanged = new UnityEvent<bool>();
     public UnityEvent<bool> OnEnableRunChanged = new UnityEvent<bool>();
     public UnityEvent<float> OnTeleportMaxRangeChanged = new UnityEvent<float>();
     public UnityEvent<bool> OnEnableBrowserStreamingChanged = new UnityEvent<bool>();
@@ -208,6 +209,7 @@ public class BSSceneEvents
         OnMegaphoneDistanceMultiplierChanged.RemoveAllListeners();
         OnEnableSafetyNetChanged.RemoveAllListeners();
         OnSafetyNetHeightChanged.RemoveAllListeners();
+        OnEnableDistanceLimitChanged.RemoveAllListeners();
         OnEnableRunChanged.RemoveAllListeners();
         OnTeleportMaxRangeChanged.RemoveAllListeners();
         OnEnableBrowserStreamingChanged.RemoveAllListeners();
