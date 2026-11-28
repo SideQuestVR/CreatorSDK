@@ -149,6 +149,25 @@ namespace BS.SDKEditor.Tests
             Assert.IsFalse(ValidateVisualScripting.IsDisallowed(id));
         }
 
+        [Test]
+        public void VerifyGroup_IsOfferedAndAllowed()
+        {
+            var unitType = FindType("BS.VisualScripting.VerifyGroup");
+            Assert.IsNotNull(unitType, "the Verify Group unit isn't loaded");
+            CollectionAssert.Contains(VsNodeGeneration.assemblyAllowList, unitType.Assembly.GetName().Name);
+
+            var unit = (Unity.VisualScripting.IUnit)Activator.CreateInstance(unitType);
+            unit.EnsureDefined();
+            CollectionAssert.AreEquivalent(new[] { "Group ID", "Outcome", "Teleport Position", "World URL", "Error Message" },
+                unit.valueInputs.Select(port => port.key));
+            CollectionAssert.AreEquivalent(new[] { "Member", "Not Member" }, unit.controlOutputs.Select(port => port.key));
+            CollectionAssert.IsEmpty(unit.valueOutputs);
+
+            var id = unit.GetAnalyticsIdentifier()?.Identifier?.Split('(')[0].Trim();
+            Assert.AreEqual("BS.VisualScripting.VerifyGroup", id);
+            Assert.IsFalse(ValidateVisualScripting.IsDisallowed(id));
+        }
+
         [TestCase("BS.VisualScripting.AttachToPlayer", "Attached")]
         [TestCase("BS.VisualScripting.DetachFromPlayer", "Detached")]
         public void AttachNodes_AreOfferedAndAllowed(string typeName, string output)

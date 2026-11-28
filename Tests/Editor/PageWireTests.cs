@@ -448,6 +448,56 @@ namespace BS.SDKEditor.Tests
             }, _sent);
         }
 
+        // ---------------------------------------------------------------------------- pointer enter, move and exit
+        // The page's half is "pointer enter, move and exit reach the object..." and "an object tells Unity which pointer
+        // events it listens for..." in page-wire.test.mjs, with these same messages.
+
+        [Test]
+        public void PointerEvents_AreSentOnceThePageSaysItListens_WithThePointTheNormalAndTheHand()
+        {
+            var pad = Made(new GameObject("Pad"));
+            var id = pad.AddComponent<BSObjectId>(); // Edit Mode runs no Awake: registered by hand below
+            int oid = BSScene.UnityId(pad);
+            var objects = new ConcurrentDictionary<int, UnityAndBanterObject>();
+            objects[oid] = new UnityAndBanterObject { gameObject = pad, id = id };
+            typeof(BSScene).GetField("objects", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(_link.scene, objects);
+
+            // Nobody listens yet: the pointer crossing the object is not the page's business.
+            _link.scene.PointerHover(2, HandSide.RIGHT, pad, new Vector3(1f, 2f, 3f), Vector3.up);
+            _link.scene.PointerHover(2, HandSide.RIGHT, null, default, default);
+            CollectionAssert.IsEmpty(_sent);
+
+            FromPage(APICommands.WATCH_POINTER, oid + S + "7");
+            Assert.AreEqual(BSPointerHover.WatchEnter | BSPointerHover.WatchMove | BSPointerHover.WatchExit, id.pointerWatch);
+            FromPage(APICommands.WATCH_POINTER, "999999" + S + "7"); // an object that has gone: ignored
+            CollectionAssert.IsEmpty(_sent);
+
+            _link.scene.PointerHover(2, HandSide.RIGHT, pad, new Vector3(1f, 2f, 3f), Vector3.up);
+            _link.scene.PointerHover(2, HandSide.RIGHT, pad, new Vector3(1.5f, 2f, -3f), Vector3.forward);
+            _link.scene.PointerHover(2, HandSide.RIGHT, null, default, default);
+            _link.scene.PointerHover(1, HandSide.LEFT, pad, Vector3.zero, Vector3.up);
+
+            CollectionAssert.AreEqual(new[]
+            {
+                "!e!pen!" + P + oid + S + "1" + S + "2" + S + "3" + S + "0" + S + "1" + S + "0" + S + "1",
+                "!e!pmv!" + P + oid + S + "1.5" + S + "2" + S + "-3" + S + "0" + S + "0" + S + "1" + S + "1",
+                "!e!pex!" + P + oid + S + "1",
+                "!e!pen!" + P + oid + S + "0" + S + "0" + S + "0" + S + "0" + S + "1" + S + "0" + S + "0",
+            }, _sent);
+
+            // A page that listens for exits only is sent exits only.
+            _sent.Clear();
+            FromPage(APICommands.WATCH_POINTER, oid + S + "4");
+            _link.scene.PointerHover(2, HandSide.RIGHT, pad, new Vector3(1f, 2f, 3f), Vector3.up);
+            _link.scene.PointerHover(2, HandSide.RIGHT, null, default, default);
+            CollectionAssert.AreEqual(new[] { "!e!pex!" + P + oid + S + "1" }, _sent);
+
+            FromPage(APICommands.WATCH_POINTER, oid + S + "0");
+            Assert.AreEqual(0, id.pointerWatch);
+            LogAssert.Expect(LogType.Error, new Regex("WatchPointer message is malformed"));
+            FromPage(APICommands.WATCH_POINTER, "pad");
+        }
+
         // ------------------------------------------------------------------------------------------------ event order
 
         [Test]
